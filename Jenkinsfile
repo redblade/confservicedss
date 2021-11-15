@@ -18,29 +18,29 @@ node {
 
     stage('clean') {
         sh "chmod +x mvnw"
-        sh "/mvnw -ntp clean -P-webpack"
+        sh "./mvnw -ntp clean -P-webpack"
     }
     stage('nohttp') {
-        sh "/mvnw -ntp checkstyle:check"
+        sh "./mvnw -ntp checkstyle:check"
     }
 
     stage('install tools') {
-        sh "/mvnw -ntp com.github.eirslett:frontend-maven-plugin:install-node-and-npm -DnodeVersion=v12.16.1 -DnpmVersion=6.14.5"
+        sh "./mvnw -ntp com.github.eirslett:frontend-maven-plugin:install-node-and-npm -DnodeVersion=v12.16.1 -DnpmVersion=6.14.5"
     }
 
     stage('npm install') {
-        sh "/mvnw -ntp com.github.eirslett:frontend-maven-plugin:npm"
+        sh "./mvnw -ntp com.github.eirslett:frontend-maven-plugin:npm"
     }
 
     stage('package image') {
-        sh "/mvnw -ntp verify -P-webpack -Pprod -DskipTests"
+        sh "./mvnw -ntp verify -P-webpack -Pprod -DskipTests"
         archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
     }
 
     stage('publish  image') {
         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'Artifacts', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
             sh "docker login --password=${PASSWORD} --username=${USERNAME} ${ARTIFACTORY_SERVER}"
-            sh "/mvnw -ntp jib:build -Djib.allowInsecureRegistries=true -Dimage=$ARTIFACTORY_DOCKER_REGISTRY$DOCKER_IMAGE_TAG"
+            sh "./mvnw -ntp jib:build -Djib.allowInsecureRegistries=true -Dimage=$ARTIFACTORY_DOCKER_REGISTRY$DOCKER_IMAGE_TAG"
             sh "docker images"
         }
     }
