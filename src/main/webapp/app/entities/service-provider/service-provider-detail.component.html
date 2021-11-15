@@ -1,0 +1,38 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="serviceProvider">
+            <h2><span>Service Provider</span> {{ serviceProvider.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ serviceProvider.name }}</span>
+                </dd>
+                <dt><span>Organisation</span></dt>
+                <dd>
+                    <span>{{ serviceProvider.organisation }}</span>
+                </dd>
+                <dt><span>Preferences</span></dt>
+                <dd>
+                    <textarea rows="10" cols="80" disabled="true">{{ serviceProvider.preferences }}</textarea>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button" *jhiHasAnyAuthority="['ROLE_ADMIN']"
+                    [routerLink]="['/service-provider', serviceProvider.id, 'edit']" 
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

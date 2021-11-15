@@ -1,0 +1,13 @@
+export const enum AppStatus {
+  RUNNING = 'RUNNING',
+
+  STOPPED = 'STOPPED',
+
+  ERROR = 'ERROR',
+
+  STARTING = 'STARTING',
+
+  STOPPING = 'STOPPING',
+
+  SCHEDULED = 'SCHEDULED',
+}

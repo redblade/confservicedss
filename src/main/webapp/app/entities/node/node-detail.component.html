@@ -1,0 +1,52 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="node">
+            <h2><span>Node</span> {{ node.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ node.name }}</span>
+                </dd>
+                <dt><span>Ipaddress</span></dt>
+                <dd>
+                    <span>{{ node.ipaddress }}</span>
+                </dd>
+                <dt><span>Properties</span></dt>
+                <dd>
+                    <span>{{ node.properties }}</span>
+                </dd>
+                <dt><span>Features</span></dt>
+                <dd>
+                    <span>{{ node.features }}</span>
+                </dd>
+                <dt><span>Total Resources</span></dt>
+                <dd>
+                    <span>{{ node.totalResources }}</span>
+                </dd>
+                <dt><span>Infrastructure</span></dt>
+                <dd>
+                    <div *ngIf="node.infrastructure">
+                        <a [routerLink]="['/infrastructure', node.infrastructure?.id, 'view']">{{ node.infrastructure?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button" *jhiHasAnyAuthority="['ROLE_IP']"
+                    [routerLink]="['/node', node.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

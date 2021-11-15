@@ -1,0 +1,110 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-project-heading">Create or edit a Project</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_name">Name</label>
+                    <input required type="text" class="form-control" name="name" id="field_name"
+                           formControlName="name"/>
+                    <div *ngIf="editForm.get('name')!.invalid && (editForm.get('name')!.dirty || editForm.get('name')!.touched)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_group">Group (eg. usecase name)</label>
+                    <input type="text" class="form-control" name="group" id="field_group"
+                           formControlName="group"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_properties">Properties (eg. &#123;&#39;namespace&#39;: &#39;default&#39;&#125;)</label>
+                    <input required type="text" class="form-control" name="properties" id="field_properties"
+                           formControlName="properties"/>
+                    <div *ngIf="editForm.get('properties')!.invalid && (editForm.get('properties')!.dirty || editForm.get('properties')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('properties')?.errors?.maxlength">
+                        This field cannot be longer than 20000 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_quotaCpuMillicore">Quota Cpu (millicore)</label>
+                    <input type="number" class="form-control" name="quotaCpuMillicore" id="field_quotaCpuMillicore"
+                           formControlName="quotaCpuMillicore"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_quotaMemMB">Quota Mem (MB)</label>
+                    <input type="number" class="form-control" name="quotaMemMB" id="field_quotaMemMB"
+                           formControlName="quotaMemMB"/>
+                </div>
+
+                <div hidden=true class="form-group">
+                    <label class="form-control-label" for="field_quotaDiskGB">Quota Disk (GB)</label>
+                    <input type="number" class="form-control" name="quotaDiskGB" id="field_quotaDiskGB"
+                           formControlName="quotaDiskGB"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_credentials">Credentials (token) to launch Apps [for K8S, if Properties.secret_name is not configured, use the Base64.decode of the SP's service account secret]</label>
+                    <input class="form-control" name="credentials" id="field_credentials"
+                           formControlName="credentials" type="password" />
+                    <div *ngIf="editForm.get('credentials')!.invalid && (editForm.get('credentials')!.dirty || editForm.get('credentials')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('credentials')?.errors?.maxlength">
+                        This field cannot be longer than 20000 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_enableBenchmark">Enable Benchmark</label>
+                    <input type="checkbox"  name="enableBenchmark" id="field_enableBenchmark"
+                           formControlName="enableBenchmark"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_privateBenchmark">Private Benchmark</label>
+                    <input type="checkbox"  name="privateBenchmark" id="field_privateBenchmark"
+                           formControlName="privateBenchmark"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_infrastructure">Infrastructure</label>
+                    <select class="form-control" id="field_infrastructure" name="infrastructure" formControlName="infrastructure">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="infrastructureOption.id === editForm.get('infrastructure')!.value?.id ? editForm.get('infrastructure')!.value : infrastructureOption" *ngFor="let infrastructureOption of infrastructures; trackBy: trackById">{{ infrastructureOption.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_serviceProvider">Service Provider</label>
+                    <select class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="serviceProviderOption.id === editForm.get('serviceProvider')!.value?.id ? editForm.get('serviceProvider')!.value : serviceProviderOption" *ngFor="let serviceProviderOption of serviceproviders; trackBy: trackById">{{ serviceProviderOption.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="serviceReport">
+            <h2><span>Service Report</span> {{ serviceReport.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Timestamp</span></dt>
+                <dd>
+                    <span>{{ serviceReport.timestamp }}</span>
+                </dd>
+                <dt><span>Group</span></dt>
+                <dd>
+                    <span>{{ serviceReport.group }}</span>
+                </dd>
+                <dt><span>Category</span></dt>
+                <dd>
+                    <span>{{ serviceReport.category }}</span>
+                </dd>
+                <dt><span>Key</span></dt>
+                <dd>
+                    <span>{{ serviceReport.key }}</span>
+                </dd>
+                <dt><span>Value</span></dt>
+                <dd>
+                    <span>{{ serviceReport.value }}</span>
+                </dd>
+                <dt><span>Service</span></dt>
+                <dd>
+                    <div *ngIf="serviceReport.service">
+                        <a [routerLink]="['/service', serviceReport.service?.id, 'view']">{{ serviceReport.service?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/service-report', serviceReport.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

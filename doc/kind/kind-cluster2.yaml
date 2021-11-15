@@ -1,0 +1,14 @@
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  podSubnet: "12.244.0.0/16"
+  serviceSubnet: "12.96.0.0/12"
+  apiServerAddress: "127.0.0.1"
+  apiServerPort: 44442
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 30080
+    hostPort: 30092
+- role: worker

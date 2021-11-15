@@ -1,0 +1,11 @@
+This folder, along with Jenkinsfile are specific for Pledger and are not part of the public release, so they are stored in a separate private source repository
+
+This folders contains the custom ConfServiceDSS custom configuration for Pledger:
+
+deployment descriptors for Kubernetes (*.yaml)
+keystore/truststore for Kafka
+Eclipse launching scripts
+MySQL dump with the official configuration (dump.sql), copied to config/sql folder by the CI/CD before the actual deployment on ENG cluster 
+
+
+

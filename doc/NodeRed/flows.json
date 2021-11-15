@@ -1,0 +1,466 @@
+[
+    {
+        "id": "2e306bb9.e956c4",
+        "type": "tab",
+        "label": "Service check",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "61e27229.2626dc",
+        "type": "tab",
+        "label": "Kafka pub_sub",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "bfddf44c.37bfe8",
+        "type": "kafka-broker",
+        "name": "INTRA",
+        "hosts": "static.180.8.203.116.clients.your-server.de:9093,static.194.8.203.116.clients.your-server.de:9093,static.240.8.203.116.clients.your-server.de:9093",
+        "selfsign": true,
+        "usetls": true,
+        "cacert": "/var/kafka_certificateroot/certificateroot.pem",
+        "clientcert": "/var/kafka_certificate/certificate.pem",
+        "privatekey": "/var/kafka_key/my.key",
+        "passphrase": ""
+    },
+    {
+        "id": "90bfea22.dd2b98",
+        "type": "inject",
+        "z": "2e306bb9.e956c4",
+        "name": "test credentials",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "192.168.70.13:30288",
+                "vt": "str"
+            },
+            {
+                "p": "user",
+                "v": "august",
+                "vt": "str"
+            },
+            {
+                "p": "pass",
+                "v": "august",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "",
+        "topic": "",
+        "x": 120,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3f8edd65.5b6e72",
+        "type": "function",
+        "z": "2e306bb9.e956c4",
+        "name": "authentication",
+        "func": "msg.headers = {};\nvar userpass = Buffer.from(msg.user + ':' + msg.pass).toString(\"base64\");\nmsg.headers['Authorization'] = 'Basic ' + userpass;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 220,
+        "wires": [
+            [
+                "75abbde0.a37294"
+            ]
+        ]
+    },
+    {
+        "id": "83f8fd53.640c8",
+        "type": "kafka-producer",
+        "z": "61e27229.2626dc",
+        "name": "",
+        "broker": "bfddf44c.37bfe8",
+        "topic": "configuration_test",
+        "requireAcks": 1,
+        "ackTimeoutMs": 100,
+        "attributes": 0,
+        "x": 460,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "d7c483c5.1ea7e",
+        "type": "inject",
+        "z": "61e27229.2626dc",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 220,
+        "y": 280,
+        "wires": [
+            [
+                "83f8fd53.640c8"
+            ]
+        ]
+    },
+    {
+        "id": "a13efd81.d8fac",
+        "type": "kafka-consumer",
+        "z": "61e27229.2626dc",
+        "name": "",
+        "broker": "bfddf44c.37bfe8",
+        "outOfRangeOffset": "earliest",
+        "fromOffset": "latest",
+        "topic": "configuration_test",
+        "groupid": "",
+        "x": 220,
+        "y": 360,
+        "wires": [
+            [
+                "505d744d.fe053c"
+            ]
+        ]
+    },
+    {
+        "id": "505d744d.fe053c",
+        "type": "debug",
+        "z": "61e27229.2626dc",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 470,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "75abbde0.a37294",
+        "type": "http request",
+        "z": "2e306bb9.e956c4",
+        "name": "check sla-violations",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "{{endpoint}}/api/sla-violations",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 720,
+        "y": 280,
+        "wires": [
+            [
+                "900af10.02e151"
+            ]
+        ]
+    },
+    {
+        "id": "900af10.02e151",
+        "type": "json",
+        "z": "2e306bb9.e956c4",
+        "name": "convert to json",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 700,
+        "y": 340,
+        "wires": [
+            [
+                "498b4b8a.ebba14"
+            ]
+        ]
+    },
+    {
+        "id": "71faada7.9b5e64",
+        "type": "trigger",
+        "z": "2e306bb9.e956c4",
+        "name": "repeat every 10s",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "date",
+        "duration": "-10",
+        "extend": false,
+        "overrideDelay": true,
+        "units": "s",
+        "reset": "stop",
+        "bytopic": "all",
+        "topic": "user",
+        "outputs": 1,
+        "x": 510,
+        "y": 120,
+        "wires": [
+            [
+                "c3260385.c491b"
+            ]
+        ]
+    },
+    {
+        "id": "3ffd9dfb.046432",
+        "type": "inject",
+        "z": "2e306bb9.e956c4",
+        "name": "stop manual",
+        "props": [
+            {
+                "p": "reset",
+                "v": "",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 230,
+        "y": 140,
+        "wires": [
+            [
+                "71faada7.9b5e64"
+            ]
+        ]
+    },
+    {
+        "id": "2c765177.f02b8e",
+        "type": "inject",
+        "z": "2e306bb9.e956c4",
+        "name": "start manual",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "192.168.70.13:30288",
+                "vt": "str"
+            },
+            {
+                "p": "user",
+                "v": "august",
+                "vt": "str"
+            },
+            {
+                "p": "pass",
+                "v": "august",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 230,
+        "y": 100,
+        "wires": [
+            [
+                "71faada7.9b5e64"
+            ]
+        ]
+    },
+    {
+        "id": "a206e108.2a79e",
+        "type": "debug",
+        "z": "2e306bb9.e956c4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 690,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "498b4b8a.ebba14",
+        "type": "function",
+        "z": "2e306bb9.e956c4",
+        "name": "get sla service name",
+        "func": "msg.payload = msg.payload[0].sla.service.name;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 400,
+        "wires": [
+            [
+                "a206e108.2a79e"
+            ]
+        ]
+    },
+    {
+        "id": "9e4cea0f.6618d8",
+        "type": "http in",
+        "z": "2e306bb9.e956c4",
+        "name": "/startTest method",
+        "url": "/startTest",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 100,
+        "y": 200,
+        "wires": [
+            [
+                "d98cd39d308881fb"
+            ]
+        ]
+    },
+    {
+        "id": "c3260385.c491b",
+        "type": "change",
+        "z": "2e306bb9.e956c4",
+        "name": "set params",
+        "rules": [
+            {
+                "t": "set",
+                "p": "endpoint",
+                "pt": "msg",
+                "to": "192.168.70.13:30288",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "user",
+                "pt": "msg",
+                "to": "august",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "pass",
+                "pt": "msg",
+                "to": "august",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "serviceID",
+                "pt": "msg",
+                "to": "serviceID",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 160,
+        "wires": [
+            [
+                "3f8edd65.5b6e72"
+            ]
+        ]
+    },
+    {
+        "id": "91898d91.c6b13",
+        "type": "http in",
+        "z": "2e306bb9.e956c4",
+        "name": "/stopTest method",
+        "url": "/stopTest",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 100,
+        "y": 360,
+        "wires": [
+            [
+                "594567da.569e18"
+            ]
+        ]
+    },
+    {
+        "id": "594567da.569e18",
+        "type": "change",
+        "z": "2e306bb9.e956c4",
+        "name": "set stop params",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 320,
+        "y": 280,
+        "wires": [
+            [
+                "71faada7.9b5e64"
+            ]
+        ]
+    },
+    {
+        "id": "d98cd39d308881fb",
+        "type": "delay",
+        "z": "2e306bb9.e956c4",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "30",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "x": 140,
+        "y": 280,
+        "wires": [
+            [
+                "594567da.569e18"
+            ]
+        ]
+    },
+    {
+        "id": "feaafbbd24f5a8ce",
+        "type": "http in",
+        "z": "2e306bb9.e956c4",
+        "name": "/doTest method",
+        "url": "/doTest",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 100,
+        "y": 500,
+        "wires": [
+            [
+                "c3260385.c491b"
+            ]
+        ]
+    }
+]

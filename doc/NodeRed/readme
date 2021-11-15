@@ -1,0 +1,7 @@
+import flow.json in NodeRed
+
+Integrations provided are:
+
+- publish/subscribe with INTRA's Kafka with authentication
+- API calls to DSS with authentication
+- REST API published to allow integration with external tools (eg. DSS invoking NodeRed)

@@ -1,0 +1,111 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="manageForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="manageForm">
+            <h2 id="jhi-service-heading">Manage a Service</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!manageForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_name">Name</label>
+                    <input type="text" class="form-control" name="name" id="field_name"
+                           formControlName="name" readonly/>
+                </div>
+
+                <div class="form-group" hidden=true>
+                    <label class="form-control-label" for="field_profile">Profile</label>
+                    <input type="text" class="form-control" list="staticProfile" name="profile" id="field_profile"
+                           formControlName="profile"/>
+                           <datalist id="staticProfile">
+					        <option>CPU_INTENSIVE</option>
+					        <option>MEM_INTENSIVE</option>
+					        <option>CPU_MEM_INTENSIVE</option>
+					       </datalist>
+                </div>
+
+                <div class="form-group" >
+                    <label class="form-control-label" for="field_initialConfiguration">Initial Configuration</label>
+                    <input [readonly]="manageForm.get('status')?.value != 'RUNNING'" rows="5" cols="80" class="form-control" name="initialConfiguration" id="field_initialConfiguration"
+                           formControlName="initialConfiguration" list="staticInitialConfiguration"/>
+                           <datalist id="staticInitialConfiguration">
+					        <option>&#123;&quot;initial_memory_mb&quot;:&quot;200&quot;,&quot;initial_cpu_millicore&quot;:&quot;200&quot;&#125;</option>
+					       </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_priority">Priority (1 is highest)</label>
+                    <input type="number" min="1" class="form-control" name="priority" id="field_priority"
+                           formControlName="priority" readonly/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_runtimeConfiguration">Runtime Configuration</label>
+                    <input readonly=true type="text" class="form-control" name="runtimeConfiguration" id="field_runtimeConfiguration"
+                           formControlName="runtimeConfiguration"/>
+                </div>
+
+                <div class="form-group" hidden=true>
+                    <label class="form-control-label" for="field_deployType">Deploy Type</label>
+                    <select class="form-control" name="deployType" formControlName="deployType" id="field_deployType" >
+                        <option value="KUBERNETES">KUBERNETES</option>
+                        <option value="DOCKER">DOCKER</option>
+                        <option value="TOSCA">TOSCA</option>
+                        <option value="CUSTOM">CUSTOM</option>
+                    </select>
+                </div>
+
+                <div class="form-group" hidden=true>
+                    <label class="form-control-label" for="field_deployDescriptor">Deploy Descriptor</label>
+                    <textarea rows="30" cols="80" class="form-control" name="deployDescriptor" id="field_deployDescriptor"
+                           formControlName="deployDescriptor"></textarea>
+                    <div *ngIf="manageForm.get('deployDescriptor')!.invalid && (manageForm.get('deployDescriptor')!.dirty || manageForm.get('deployDescriptor')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="manageForm.get('deployDescriptor')?.errors?.maxlength">
+                        This field cannot be longer than 40000 characters.
+                        </small>
+                    </div>
+                </div>
+
+				<div class="form-group">
+                    <label class="form-control-label" for="field_status">Status</label>
+                    <input readonly=true type="text" class="form-control" name="status" formControlName="status" id="field_status"/>
+                </div>
+
+                <div class="form-group" [hidden]="manageForm.get('status')?.value != 'RUNNING' && manageForm.get('status')?.value != 'SCALING_MORE_RESOURCES' && manageForm.get('status')?.value != 'SCALING_LESS_RESOURCES' && manageForm.get('status')?.value != 'OFFLOADING_BETTER_RANKING' && manageForm.get('status')?.value != 'OFFLOADING_WORSE_RANKING'">
+                    <label class="form-control-label" for="field_status">Action</label>
+                    <select class="form-control" name="status" formControlName="status" id="field_status">
+                        <option value="SCALING_MORE_RESOURCES">SCALE UP/OUT (increase resources) ...</option>
+                        <option value="SCALING_LESS_RESOURCES">SCALE DOWN/IN (decrease resources) ...</option>
+                        <option value="OFFLOADING_BETTER_RANKING">OFFLOAD to BETTER RANKING (currentRanking -1) ...</option>
+                        <option value="OFFLOADING_WORSE_RANKING">OFFLOAD to WORSE RANKING (currentRanking +1) ...</option>
+                        
+                    </select>
+                </div>
+
+                <div hidden=true class="form-group" >
+                    <label class="form-control-label" for="field_app">App</label>
+                    <select class="form-control" id="field_app" name="app" formControlName="app" readonly>
+                    
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="appOption.id === manageForm.get('app')!.value?.id ? manageForm.get('app')!.value : appOption" *ngFor="let appOption of apps; trackBy: trackById">{{ appOption.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button [hidden]="manageForm.get('status')?.value != 'RUNNING' && manageForm.get('status')?.value != 'SCALING_MORE_RESOURCES' && manageForm.get('status')?.value != 'SCALING_LESS_RESOURCES' && manageForm.get('status')?.value != 'OFFLOADING_BETTER_RANKING' && manageForm.get('status')?.value != 'OFFLOADING_WORSE_RANKING'" type="submit" id="save-entity" [disabled]="manageForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

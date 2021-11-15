@@ -1,0 +1,54 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="nodeReport">
+            <h2><span>Node Report</span> {{ nodeReport.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Timestamp</span></dt>
+                <dd>
+                    <span>{{ nodeReport.timestamp }}</span>
+                </dd>
+                <dt><span>Category</span></dt>
+                <dd>
+                    <span>{{ nodeReport.category }}</span>
+                </dd>
+                <dt><span>Key</span></dt>
+                <dd>
+                    <span>{{ nodeReport.key }}</span>
+                </dd>
+                <dt><span>Value</span></dt>
+                <dd>
+                    <span>{{ nodeReport.value }}</span>
+                </dd>
+                <dt><span>Node</span></dt>
+                <dd>
+                    <div *ngIf="nodeReport.node">
+                        <a [routerLink]="['/node', nodeReport.node?.id, 'view']">{{ nodeReport.node?.name }}</a>
+                    </div>
+                </dd>
+                <dt><span>Node Destination</span></dt>
+                <dd>
+                    <div *ngIf="nodeReport.nodeDestination">
+                        <a [routerLink]="['/node', nodeReport.nodeDestination?.id, 'view']">{{ nodeReport.nodeDestination?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/node-report', nodeReport.id, 'edit']" hidden=true
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

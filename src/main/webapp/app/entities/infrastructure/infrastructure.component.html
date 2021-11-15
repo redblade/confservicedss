@@ -1,0 +1,100 @@
+<div>
+    <h2 id="page-heading">
+        <span>Infrastructures</span>
+
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-infrastructure" [routerLink]="['/infrastructure/new']" *jhiHasAnyAuthority="['ROLE_IP']">
+            <fa-icon icon="plus"></fa-icon>
+            <span>
+            Create a new Infrastructure
+            </span>
+        </button>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="infrastructures?.length === 0">
+        <span>No infrastructures found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="infrastructures && infrastructures.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="name"><span>Name</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="type"><span>Type</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="endpoint"><span>Endpoint</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="monitoringPlugin"><span>Monitoring Plugin</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="properties"><span>Properties</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="totalResources"><span>Total Resources</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="infrastructureProvider.id"><span>Infrastructure Provider</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let infrastructure of infrastructures ;trackBy: trackId">
+                    <td><a [routerLink]="['/infrastructure', infrastructure.id, 'view']">{{ infrastructure.id }}</a></td>
+                    <td>{{ infrastructure.name }}</td>
+                    <td>{{ infrastructure.type }}</td>
+                    <td>{{ infrastructure.endpoint }}</td>
+                    <td>{{ infrastructure.monitoringPlugin }}</td>
+                    <td>{{ infrastructure.properties }}</td>
+                    <td>{{ infrastructure.totalResources }}</td>
+                    <td>
+                        <div *ngIf="infrastructure.infrastructureProvider">
+                            <a [routerLink]="['/infrastructure-provider', infrastructure.infrastructureProvider?.id, 'view']" >{{ infrastructure.infrastructureProvider?.name }}</a>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="btn-group">
+	                        <a class="dropdown-item" target="_blank" href={{getLatencyURL(infrastructure)}} [hidden]="isLatencyURLEmpty(infrastructure)" >
+			                    <span>
+			                        <fa-icon icon="tachometer-alt"></fa-icon>
+			                        <span>latency</span>
+			                    </span>
+			                </a>
+			                <a class="dropdown-item" [hidden]="!isLatencyURLEmpty(infrastructure)" >
+			                    <span>
+			                        <fa-icon ></fa-icon>
+			                        <span></span>
+			                    </span>
+			                </a>
+                            
+                            <button type="submit"
+                                    [routerLink]="['/infrastructure', infrastructure.id, 'view']"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon icon="eye"></fa-icon>
+                                <span class="d-none d-md-inline">View</span>
+                            </button>
+
+                            <button type="submit"
+                                    [routerLink]="['/infrastructure', infrastructure.id, 'edit']" 
+                                    class="btn btn-primary btn-sm"  *jhiHasAnyAuthority="['ROLE_IP']">
+                                <fa-icon icon="pencil-alt"></fa-icon>
+                                <span class="d-none d-md-inline">Edit</span>
+                            </button>
+
+                            <button type="submit" (click)="delete(infrastructure)"
+                                    class="btn btn-danger btn-sm"  *jhiHasAnyAuthority="['ROLE_IP']">
+                                <fa-icon icon="times"></fa-icon>
+                                <span class="d-none d-md-inline">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="infrastructures && infrastructures.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>

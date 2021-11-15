@@ -1,0 +1,52 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="slaViolation">
+            <h2><span>SLA Violation</span> {{ slaViolation.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Timestamp</span></dt>
+                <dd>
+                    <span>{{ slaViolation.timestamp }}</span>
+                </dd>
+                <dt><span>Violation Name</span></dt>
+                <dd>
+                    <span>{{ slaViolation.violationName }}</span>
+                </dd>
+                <dt><span>Severity Type</span></dt>
+                <dd>
+                    <span>{{ slaViolation.severityType }}</span>
+                </dd>
+                <dt><span>Description</span></dt>
+                <dd>
+                    <span>{{ slaViolation.description }}</span>
+                </dd>
+                <dt><span>Status</span></dt>
+                <dd>
+                    <span>{{ slaViolation.status }}</span>
+                </dd>
+                <dt><span>SLA</span></dt>
+                <dd>
+                    <div *ngIf="slaViolation.sla">
+                        <a [routerLink]="['/sla', slaViolation.sla?.id, 'view']">{{ slaViolation.sla?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/sla-violation', slaViolation.id, 'edit']" hidden=true
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

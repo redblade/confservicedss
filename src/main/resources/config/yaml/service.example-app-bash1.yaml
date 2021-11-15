@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: example-app-bash1
+  name: example-app-bash1
+  namespace: PLACEHOLDER_NAMESPACE
+spec:
+  replicas: PLACEHOLDER_REPLICAS
+  selector:
+    matchLabels:
+      app: example-app-bash1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: example-app-bash1
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - PLACEHOLDER_HOSTNAME
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - sleep 1d
+        image: bash 
+        name: bash1
+        resources:
+          limits:
+            cpu: PLACEHOLDER_CPU_MILLICOREm
+            memory: PLACEHOLDER_MEMORY_MBMi
+          requests:
+            cpu: PLACEHOLDER_CPU_MILLICOREm
+            memory: PLACEHOLDER_MEMORY_MBMi
+        readinessProbe:
+          exec:
+            command:
+            - ls
+          initialDelaySeconds: 1
+          periodSeconds: 5

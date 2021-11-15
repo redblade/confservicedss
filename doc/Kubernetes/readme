@@ -1,0 +1,8 @@
+HOWTO get secrets from service account
+
+export sa=$1
+export ns=$2
+
+echo secret $sa in namespace $ns has base64-decoded token equals to:
+kubectl get secret `kubectl get sa $sa -n $ns -o yaml | grep token | awk '{print $3}'` -n $ns -o yaml | grep " token" | awk '{print $2}' | base64 --decode
+

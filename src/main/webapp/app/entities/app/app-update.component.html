@@ -1,0 +1,71 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-app-heading">Create or edit an App</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_name">Name</label>
+                    <input required type="text" class="form-control" name="name" id="field_name"
+                           formControlName="name" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_managementType">Management Type</label>
+                    <select class="form-control" name="managementType" formControlName="managementType" id="field_managementType" >
+                        <option value="MANAGED">MANAGED</option>
+                        <option value="DELEGATED">DELEGATED</option>
+                    </select>
+                </div>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label class="form-control-label" for="field_status">Status</label>
+                    <input type="text" class="form-control" name="status" id="field_name" readonly
+                           formControlName="status"/>
+                </div>
+                
+                <div class="form-group" [hidden]="!editForm.get('catalogApp')!.value?.id">
+                	<label [hidden]="editForm.get('id')!.value" class="form-control-label" >CatalogApp selected: <b>{{ editForm.get('catalogApp')!.value?.name}}</b></label>
+                </div>
+
+                <div class="form-group" [hidden]="editForm.get('catalogApp')!.value?.id">
+                    <label class="form-control-label" for="field_appDescriptor">App Descriptor</label>
+                    <textarea type="text" class="form-control" name="appDescriptor" id="field_appDescriptor"
+                           formControlName="appDescriptor"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_serviceProvider">Service Provider</label>
+                    <select class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider" required>
+                        <option [ngValue]="serviceProviderOption.id === editForm.get('serviceProvider')!.value?.id ? editForm.get('serviceProvider')!.value : serviceProviderOption" *ngFor="let serviceProviderOption of serviceproviders; trackBy: trackById">{{ serviceProviderOption.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group" [hidden]="editForm.get('catalogApp')!.value?.id">
+                    <label class="form-control-label" for="field_catalogApp">Catalog App to copy descriptors from</label>
+                    <select class="form-control" id="field_catalogApp" name="catalogApp" formControlName="catalogApp" >
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="catalogAppOption.id === editForm.get('catalogApp')!.value?.id ? editForm.get('catalogApp')!.value : catalogAppOption" *ngFor="let catalogAppOption of catalogapps; trackBy: trackById" >{{ catalogAppOption.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary" [hidden]="editForm.get('status')?.value != 'STOPPED' && editForm.get('id')!.value">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

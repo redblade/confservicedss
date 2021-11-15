@@ -1,0 +1,60 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="guarantee">
+            <h2><span>Guarantee</span> {{ guarantee.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ guarantee.name }}</span>
+                </dd>
+                <dt><span>Constraint</span></dt>
+                <dd>
+                    <span>{{ guarantee.constraint }}</span>
+                </dd>
+                <dt><span>Threshold Warning</span></dt>
+                <dd>
+                    <span>{{ guarantee.thresholdWarning }}</span>
+                </dd>
+                <dt><span>Threshold Mild</span></dt>
+                <dd>
+                    <span>{{ guarantee.thresholdMild }}</span>
+                </dd>
+                <dt><span>Threshold Serious</span></dt>
+                <dd>
+                    <span>{{ guarantee.thresholdSerious }}</span>
+                </dd>
+                <dt><span>Threshold Severe</span></dt>
+                <dd>
+                    <span>{{ guarantee.thresholdSevere }}</span>
+                </dd>
+                <dt><span>Threshold Catastrophic</span></dt>
+                <dd>
+                    <span>{{ guarantee.thresholdCatastrophic }}</span>
+                </dd>
+                <dt><span>SLA</span></dt>
+                <dd>
+                    <div *ngIf="guarantee.sla">
+                        <a [routerLink]="['/sla', guarantee.sla?.id, 'view']">{{ guarantee.sla?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/guarantee', guarantee.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

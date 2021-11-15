@@ -1,0 +1,76 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-app-constraint-heading">Create or edit an App Constraint</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_name">Name</label>
+                    <input required type="text" list="staticName" class="form-control" name="name" id="field_name"
+                           formControlName="name"/>
+                           <datalist id="staticName">
+					        <option>latency</option>
+					       </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_category">Category</label>
+                    <input type="text" list="staticCategory" class="form-control" name="category" id="field_category"
+                           formControlName="category"/>
+                           <datalist id="staticCategory">
+					        <option>rule</option>
+					       </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_value">Value</label>
+                    <input type="text" class="form-control" name="value" id="field_value"
+                           formControlName="value"/>
+                           
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_valueType">Value Type</label>
+                    <input type="text" list="staticValueType" class="form-control" name="valueType" id="field_valueType"
+                           formControlName="valueType"/>
+                           <datalist id="staticValueType">
+					        <option>ms</option>
+					       </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_serviceSource">Service Source</label>
+                    <select class="form-control" id="field_serviceSource" name="serviceSource" formControlName="serviceSource">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="serviceOption.id === editForm.get('serviceSource')!.value?.id ? editForm.get('serviceSource')!.value : serviceOption" *ngFor="let serviceOption of services; trackBy: trackById">{{ serviceOption.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_serviceDestination">Service Destination</label>
+                    <select class="form-control" id="field_serviceDestination" name="serviceDestination" formControlName="serviceDestination">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="serviceOption.id === editForm.get('serviceDestination')!.value?.id ? editForm.get('serviceDestination')!.value : serviceOption" *ngFor="let serviceOption of services; trackBy: trackById">{{ serviceOption.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

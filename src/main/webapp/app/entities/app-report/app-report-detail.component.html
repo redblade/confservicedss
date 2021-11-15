@@ -1,0 +1,52 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="appReport">
+            <h2><span>App Report</span> {{ appReport.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Timestamp</span></dt>
+                <dd>
+                    <span>{{ appReport.timestamp }}</span>
+                </dd>
+                <dt><span>Group</span></dt>
+                <dd>
+                    <span>{{ appReport.group }}</span>
+                </dd>
+                <dt><span>Category</span></dt>
+                <dd>
+                    <span>{{ appReport.category }}</span>
+                </dd>
+                <dt><span>Key</span></dt>
+                <dd>
+                    <span>{{ appReport.key }}</span>
+                </dd>
+                <dt><span>Value</span></dt>
+                <dd>
+                    <span>{{ appReport.value }}</span>
+                </dd>
+                <dt><span>App</span></dt>
+                <dd>
+                    <div *ngIf="appReport.app">
+                        <a [routerLink]="['/app', appReport.app?.id, 'view']">{{ appReport.app?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/app-report', appReport.id, 'edit']" hidden=true
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

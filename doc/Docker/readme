@@ -1,0 +1,10 @@
+HOWTO push image, create a container, start a container, list the containers using Docker API 
+
+https://docs.docker.com/engine/api/v1.41/#operation/ContainerUpdate
+https://www.baeldung.com/ops/docker-engine-api-container-info
+
+curl -X POST  http://192.168.111.40:2375/images/create?fromImage=nginx:latest
+curl -X POST -H "Content-Type: application/json" -d @create.json http://192.168.111.40:2375/containers/create
+curl -X POST http://192.168.111.40:2375/containers/fb3c054e00191f6245de9b42efcdbf4fc2b00e7b1555081d22e3b1f3851f773c/start
+curl -s http://192.168.111.40:2375/containers/json 
+

@@ -1,0 +1,1 @@
+{'metric': 'duration_s', 'tool': 'YCSB MongoDB', 'workload': '10k reads', 'pledgerInfrastructure': '5', 'pledgerServiceProvider': '5', 'pledgerProject': '6', 'mean': 10.666666666666666, 'stabilityIndex': 6.027713773341708, 'interval': 604800}

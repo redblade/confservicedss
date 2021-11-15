@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: delegated-app-ve
+  name: delegated-app-ve
+  namespace: PLACEHOLDER_NAMESPACE
+spec:
+  replicas: PLACEHOLDER_REPLICAS
+  selector:
+    matchLabels:
+      app: delegated-app-ve
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: delegated-app-ve
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - PLACEHOLDER_HOSTNAME
+      containers:
+      - image: etiennetremel/nginx-prometheus 
+        name: nginx
+        resources:
+          limits:
+            cpu: PLACEHOLDER_CPU_MILLICOREm
+            memory: PLACEHOLDER_MEMORY_MBMi
+          requests:
+            cpu: PLACEHOLDER_CPU_MILLICOREm
+            memory: PLACEHOLDER_MEMORY_MBMi

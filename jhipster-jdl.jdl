@@ -1,0 +1,295 @@
+entity Event {
+    id Long
+    timestamp Instant
+    severity String
+    category String
+    details String
+}
+
+entity ServiceOptimisation {
+	id Long
+    name String
+    optimisation String
+    parameters String
+}
+
+
+relationship OneToMany {
+    ServiceProvider{eventSet} to Event{serviceProvider}
+}
+ 
+
+entity ServiceProvider {
+	id Long
+    name String unique //the service provider unique name, for report purposes
+    organisation String //the organisation the SP belongs to
+    preferences String maxlength(20000) //the preferences about App and SLA priorities
+}
+
+entity InfrastructureProvider {
+	id Long
+    name String unique //the infrastructure provider unique name, for report purposes
+    organisation String //the organisation the IP belongs to
+}
+
+entity Infrastructure {
+	id Long
+	name String unique //the infrastructure unique name, for report purposes
+    type String //K8S, Docker, etc
+    endpoint String //endpoint URL
+    credentials String maxlength(2000) 
+    monitoringPlugin String maxlength(20000)
+    properties String maxlength(2000) //key-value set to store information about infrastructure peculiarities, eg {position: Barcelona} 
+    totalResources String maxlength(2000) //key-value set to represents the total resources available eg. {'memory_mb' : '1000'}
+}
+entity InfrastructureReport {
+	id Long
+    timestamp Instant
+    group String
+    category String
+    key String
+    value Double
+}
+entity Node {
+	id Long 
+    name String //the node unique name, for report purposes
+    ipaddress String
+    properties String maxlength(2000) //key-value set to store information about nodes peculiarities, eg {'GPU': 'Tesla'}
+    features String maxlength(20000) //key-value set to represents the node labels (eg. produced by node-feature)
+    totalResources String maxlength(2000) //key-value set to represents the total resources available eg. {'memory_mb' : '1000'}
+}
+
+entity NodeReport {
+	id Long
+    timestamp Instant
+    category String
+    key String
+    value Double
+}
+
+entity Benchmark {
+	id Long
+    name String unique //the benchmark unique name, for report purposes
+    category String //cpu intensive, etc
+}
+
+entity BenchmarkReport {
+    id Long
+    time Instant
+    metric String
+    tool String
+    mean Double //main indicator of the performance: more time means slow
+    interval Integer 
+    stabilityIndex Double //variance to describe how stable is the main indicator
+}
+
+relationship OneToMany {
+    Infrastructure{nodeSet} to Node{infrastructure}
+    Infrastructure{benchmarkSet} to Benchmark{infrastructure}
+
+    Node{benchmarkReportSet} to BenchmarkReport{node}
+    Node{nodeReportSet} to NodeReport{node}
+    Node{nodeReportDestinationSet} to NodeReport{nodeDestination}
+    Infrastructure{infrastructureReportSet} to InfrastructureReport{infrastructure}
+    Benchmark{benchmarkReportSet} to BenchmarkReport{benchmark}
+}
+
+entity Project {
+    id Long
+    name String unique //the project unique name, for report purposes
+    group String //project belonging to the same groups have resources that are visible to each other
+	properties String maxlength(20000) //namespace, etc.
+    quotaCpuMillicore Integer //quota available
+    quotaMemMB Integer //quota available
+    quotaDiskGB Integer //quota available
+    credentials String maxlength(20000) 
+    enableBenchmark Boolean
+    privateBenchmark Boolean
+}
+
+
+entity CatalogApp {
+	id Long 
+    name String unique //unique name, for report purposes
+    appDescriptor String maxlength(40000) //eg. service graph descriptor
+}
+
+relationship OneToMany {
+    ServiceProvider{catalogAppSet} to CatalogApp{serviceProvider}
+    ServiceProvider{appSet} to App{serviceProvider}
+
+    CatalogApp{appSet} to App{catalogApp}
+}
+
+entity App {
+	id Long
+    name String //for report purposes
+    managementType ManagementType
+    status ExecStatus //running, stopped, error
+    appDescriptor String maxlength(40000)
+}
+
+entity Service {
+	id Long
+    name String //for report purposes
+    profile String //used by the AppProfiler
+    priority Integer 
+    initialConfiguration String //initial cpu & memory, etc.
+    runtimeConfiguration String //node_id, etc.
+    deployType DeployType //K8S, docker compose, etc.
+    deployDescriptor String maxlength(40000) //yaml for K8S, etc.
+    status ExecStatus //running, stopped, error
+}
+
+entity CriticalService {
+	id Long
+    timestampCreated Instant
+    timestampProcessed Instant
+    actionTaken String
+    score Long 
+    details String 
+    monitoringPeriodSec Integer 
+}
+
+entity SteadyService {
+	id Long
+    timestampCreated Instant
+    timestampProcessed Instant
+    actionTaken String
+	score Long 
+    details String 
+    monitoringPeriodSec Integer 
+}
+
+relationship OneToMany {
+    App{serviceSet} to Service{app}
+    Service{criticalServiceSet} to CriticalService{service}
+    Service{steadyServiceSet} to SteadyService{service}
+}
+
+enum ManagementType {
+	MANAGED,
+    DELEGATED
+}
+
+enum DeployType {
+	KUBERNETES,
+    DOCKER,
+    TOSCA,
+    CUSTOM
+
+}
+
+enum ExecStatus {
+	RUNNING, 
+    STOPPED, 
+    ERROR, 
+    STARTING, 
+    STOPPING, 
+    FORCE_STOP, 
+    SCALING_MORE_RESOURCES, 
+    SCALING_LESS_RESOURCES, 
+    OFFLOADING_BETTER_RANKING, 
+    OFFLOADING_WORSE_RANKING
+}
+
+//constraints about an App: eg. Service to Service connectivity
+entity AppConstraint {
+	id Long
+    name String
+    category String //label, min_resource, max_resource
+    value String //label value ('edge_server_1'), numeric ('22')
+    valueType String //label, cpu_millicore, mem_mb
+}
+
+//constraints about a Service: eg. allocation on a specific Node
+entity ServiceConstraint {
+	id Long
+    name String
+    category String //min_resource, max_resource
+    value String //label value ('edge_server_1'), numeric ('22')
+    valueType String //label, cpu_millicore, mem_mb
+    priority Integer
+}
+
+relationship OneToMany {
+    Service{appConstraintSourceSet} to AppConstraint{serviceSource}
+    Service{appConstraintDestinationSet} to AppConstraint{serviceDestination}
+}
+
+entity ServiceReport {
+	id Long
+    timestamp Instant
+    group String
+    category String
+    key String
+    value Double
+}
+
+
+entity Sla {
+	id Long
+    name String unique //unique name, for report purposes
+    type String //any additional info 
+    creation Instant
+    expiration Instant
+}
+
+
+
+
+entity Guarantee {
+	id Long
+    name String
+	constraint String maxlength(200) //responseTime < 100
+    thresholdWarning String maxlength(200) //responseTime > 90
+    thresholdMild String maxlength(200) //responseTime > 100
+    thresholdSerious String maxlength(200) //responseTime > 200
+    thresholdSevere String maxlength(200) //responseTime > 1000
+    thresholdCatastrophic String maxlength(200) //responseTime > 10000
+}
+
+entity SlaViolation {
+    id Long
+    timestamp Instant //when it is created
+    violationName String //failed guarantee name
+    severityType SlaViolationType //Warning, Mild, Serious, Severe, Catastrophic
+    description String maxlength(20000) //description about the violation, probably the failed guarantees
+    status String
+}
+
+enum SlaViolationType {
+	Warning,
+    Mild,
+    Serious,
+    Severe,
+    Catastrophic
+}
+
+relationship OneToMany {
+    
+    Infrastructure{projectSet} to Project{infrastructure}
+    ServiceProvider{projectSet} to Project{serviceProvider}
+    
+	InfrastructureProvider{slaSet} to Sla{infrastructureProvider}
+    InfrastructureProvider{infrastructureSet} to Infrastructure{infrastructureProvider}
+    ServiceProvider{slaSet} to Sla{serviceProvider}
+    ServiceProvider{benchmarkSet} to Benchmark{serviceProvider}
+    
+    Sla{slaViolationSet} to SlaViolation{sla}
+    Sla{guaranteeSet} to Guarantee{sla}
+	Service{serviceReportSet} to ServiceReport{service}
+    Service{serviceConstraintSet} to ServiceConstraint{service}
+    Service{slaSet} to Sla{service}
+}
+
+relationship OneToOne {
+    ServiceOptimisation{service} to Service{serviceOptimisation}
+}
+
+// Set pagination options
+paginate all with pagination
+
+// Set service options to all except few
+service all with serviceImpl 
+

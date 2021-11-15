@@ -1,0 +1,40 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="catalogApp">
+            <h2><span>Catalog App</span> {{ catalogApp.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ catalogApp.name }}</span>
+                </dd>
+                <dt><span>App Descriptor</span></dt>
+                <dd>
+                    <textarea disabled=true rows="20" cols="80">{{ catalogApp.appDescriptor }}</textarea>
+                </dd>
+                <dt><span>Service Provider</span></dt>
+                <dd>
+                    <div *ngIf="catalogApp.serviceProvider">
+                        <a [routerLink]="['/service-provider', catalogApp.serviceProvider?.id, 'view']">{{ catalogApp.serviceProvider?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/catalog-app', catalogApp.id, 'edit']" hidden=true
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

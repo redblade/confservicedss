@@ -1,0 +1,72 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-critical-service-heading">Create or edit a Critical Service</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_timestampCreated">Timestamp Created</label>
+                    <div class="d-flex">
+                        <input id="field_timestampCreated" type="datetime-local" class="form-control" name="timestampCreated" formControlName="timestampCreated" placeholder="YYYY-MM-DD HH:mm"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_timestampProcessed">Timestamp Processed</label>
+                    <div class="d-flex">
+                        <input id="field_timestampProcessed" type="datetime-local" class="form-control" name="timestampProcessed" formControlName="timestampProcessed" placeholder="YYYY-MM-DD HH:mm"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_actionTaken">Action Taken</label>
+                    <input type="text" class="form-control" name="actionTaken" id="field_actionTaken"
+                           formControlName="actionTaken"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_score">Score</label>
+                    <input type="number" class="form-control" name="score" id="field_score"
+                           formControlName="score"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_details">Details</label>
+                    <input type="text" class="form-control" name="details" id="field_details"
+                           formControlName="details"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_monitoringPeriodSec">Monitoring Period Sec</label>
+                    <input type="number" class="form-control" name="monitoringPeriodSec" id="field_monitoringPeriodSec"
+                           formControlName="monitoringPeriodSec"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_service">Service</label>
+                    <select class="form-control" id="field_service" name="service" formControlName="service">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="serviceOption.id === editForm.get('service')!.value?.id ? editForm.get('service')!.value : serviceOption" *ngFor="let serviceOption of services; trackBy: trackById">{{ serviceOption.id }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

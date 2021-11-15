@@ -1,0 +1,103 @@
+<div>
+    <h2 id="page-heading">
+        <span>Projects</span>
+
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-project" [routerLink]="['/project/new']" >
+            <fa-icon icon="plus"></fa-icon>
+            <span>
+            Create a new Project
+            </span>
+        </button>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="projects?.length === 0">
+        <span>No projects found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="projects && projects.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="name"><span>Name</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="group"><span>Group</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="properties"><span>Properties</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="quotaCpuMillicore"><span>Quota Cpu (millicore)</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="quotaMemMB"><span>Quota Mem (MB)</span> <fa-icon icon="sort"></fa-icon></th>
+                    <div hidden>
+                    <th scope="col"  jhiSortBy="quotaDiskGB"><span>Quota Disk (GB)</span> <fa-icon icon="sort"></fa-icon></th>
+                    </div>
+                    <th scope="col"  jhiSortBy="credentials"><span>Credentials</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="enableBenchmark"><span>Enable Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="privateBenchmark"><span>Private Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="infrastructure.id"><span>Infrastructure</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="serviceProvider.id"><span>Service Provider</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let project of projects ;trackBy: trackId">
+                    <td><a [routerLink]="['/project', project.id, 'view']">{{ project.id }}</a></td>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.group }}</td>
+                    <td>{{ project.properties }}</td>
+                    <td>{{ project.quotaCpuMillicore }}</td>
+                    <td>{{ project.quotaMemMB }}</td>
+                    <div hidden>
+                    <td>{{ project.quotaDiskGB }}</td>
+                    </div>
+                    <td>hidden</td>
+                    <td>{{ project.enableBenchmark }}</td>
+                    <td>{{ project.privateBenchmark }}</td>
+                    <td>
+                        <div *ngIf="project.infrastructure">
+                            <a [routerLink]="['/infrastructure', project.infrastructure?.id, 'view']" >{{ project.infrastructure?.name }}</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div *ngIf="project.serviceProvider">
+                            <a [routerLink]="['/service-provider', project.serviceProvider?.id, 'view']" >{{ project.serviceProvider?.name }}</a>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="btn-group">
+                            <button type="submit"
+                                    [routerLink]="['/project', project.id, 'view']"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon icon="eye"></fa-icon>
+                                <span class="d-none d-md-inline">View</span>
+                            </button>
+
+                            <button type="submit"
+                                    [routerLink]="['/project', project.id, 'edit']" 
+                                    class="btn btn-primary btn-sm">
+                                <fa-icon icon="pencil-alt"></fa-icon>
+                                <span class="d-none d-md-inline">Edit</span>
+                            </button>
+
+                            <button type="submit" (click)="delete(project)"
+                                    class="btn btn-danger btn-sm">
+                                <fa-icon icon="times"></fa-icon>
+                                <span class="d-none d-md-inline">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="projects && projects.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>

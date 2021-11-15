@@ -1,0 +1,104 @@
+INSTALL
+from Helm
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --version 16.12.1
+
+from prometheus-operator
+git clone https://github.com/prometheus-operator/kube-prometheus.git
+cd kube-prometheus
+kubectl create -f manifests/setup
+until kubectl get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done
+kubectl create -f manifests/
+
+manually Prometheus , Kube-state-metrics , AlertManager , Grafana
+https://devopscube.com/setup-prometheus-monitoring-on-kubernetes/
+https://devopscube.com/setup-kube-state-metrics/
+https://devopscube.com/alert-manager-kubernetes-guide/
+https://devopscube.com/setup-grafana-kubernetes/
+
+git clone https://github.com/bibinwilson/kubernetes-prometheus
+k apply -f kubernetes-prometheus
+git clone https://github.com/devopscube/kube-state-metrics-configs.git
+kubectl apply -f kube-state-metrics-configs/
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+(k edit deploy metrics-server -n kube-system + "- --kubelet-insecure-tls" )
+git clone https://github.com/bibinwilson/kubernetes-alert-manager.git
+k apply -f kubernetes-alert-manager
+git clone https://github.com/bibinwilson/kubernetes-grafana.git
+k apply -f kubernetes-grafana
+
+
+last steps:
+A) enable Prometheus lifecycle management via API:
+   - to enable lifecycle management with a new parameter: --web.enable-lifecycle
+   - do a POST call, eg. curl -X POST http://localhost:30000/-/reload
+B) update alertmanager image version to 0.22.0
+
+
+prometheus-service http://localhost:30000/
+alertmanager       http://localhost:31000/
+grafana            http://localhost:32000/
+
+
+
+test query -> UI
+http://ENDPOINT
+
+test query -> JSON
+http://ENDPOINT/api/v1/query?query=myquery
+
+
+ENDPOINTs:
+i2CAT
+prometheus: http://172.16.10.10:30090
+grafana:    http://172.16.10.10:30000
+
+ENG
+prometheus: http://192.168.111.52:30754
+grafana:    http://192.168.111.52:32395  
+
+
+Optional steps
+
+1) cpu test queries:
+
+cpu:
+per infra->node+pod
+sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{node="pledger-kubenode1-cloud"}) by (pod)
+sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{node="kmaster"}) by (pod)
+
+per infra->namespace+pod
+sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace="pledger-uc2-slice"}) by (pod)
+sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace="uc2"}) by (pod)
+
+per infra->node
+sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate) by (node)
+
+per infra->pod
+sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate) by (pod)
+
+per infra
+sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate)
+
+2) memory test queries:
+
+memory:
+per infra->node+pod
+sum(container_memory_working_set_bytes{node="pledger-kubenode1-cloud"}) by (pod)
+sum(container_memory_working_set_bytes{node="kmaster"}) by (pod)
+
+per infra->namespace+pod
+sum(container_memory_working_set_bytes{namespace="pledger-uc2-slice"}) by (pod)
+sum(container_memory_working_set_bytes{namespace="uc2"}) by (pod)
+
+per infra->node
+sum(container_memory_working_set_bytes) by (node)
+
+per infra->pod
+sum(container_memory_working_set_bytes) by (pod)
+
+per infra
+sum(container_memory_working_set_bytes)
+
+

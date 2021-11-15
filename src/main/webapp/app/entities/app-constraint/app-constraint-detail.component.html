@@ -1,0 +1,54 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="appConstraint">
+            <h2><span>App Constraint</span> {{ appConstraint.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ appConstraint.name }}</span>
+                </dd>
+                <dt><span>Category</span></dt>
+                <dd>
+                    <span>{{ appConstraint.category }}</span>
+                </dd>
+                <dt><span>Value</span></dt>
+                <dd>
+                    <span>{{ appConstraint.value }}</span>
+                </dd>
+                <dt><span>Value Type</span></dt>
+                <dd>
+                    <span>{{ appConstraint.valueType }}</span>
+                </dd>
+                <dt><span>Service Source</span></dt>
+                <dd>
+                    <div *ngIf="appConstraint.serviceSource">
+                        <a [routerLink]="['/service', appConstraint.serviceSource?.id, 'view']">{{ appConstraint.serviceSource?.name }}</a>
+                    </div>
+                </dd>
+                <dt><span>Service Destination</span></dt>
+                <dd>
+                    <div *ngIf="appConstraint.serviceDestination">
+                        <a [routerLink]="['/service', appConstraint.serviceDestination?.id, 'view']">{{ appConstraint.serviceDestination?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/app-constraint', appConstraint.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

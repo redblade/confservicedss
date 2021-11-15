@@ -1,0 +1,60 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="sla">
+            <h2><span>SLA</span> {{ sla.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ sla.name }}</span>
+                </dd>
+                <dt><span>DSS Resource management</span></dt>
+                <dd>
+                    <span>{{ sla.type }}</span>
+                </dd>
+                <dt hidden="true"><span>Creation</span></dt>
+                <dd hidden="true">
+                    <span>{{ sla.creation }}</span>
+                </dd>
+                <dt hidden="true"><span>Expiration</span></dt>
+                <dd hidden="true">
+                    <span>{{ sla.expiration }}</span>
+                </dd>
+                <dt><span>Infrastructure Provider</span></dt>
+                <dd>
+                    <div *ngIf="sla.infrastructureProvider">
+                        <a [routerLink]="['/infrastructure-provider', sla.infrastructureProvider?.id, 'view']">{{ sla.infrastructureProvider?.name }}</a>
+                    </div>
+                </dd>
+                <dt><span>Service Provider</span></dt>
+                <dd>
+                    <div *ngIf="sla.serviceProvider">
+                        <a [routerLink]="['/service-provider', sla.serviceProvider?.id, 'view']">{{ sla.serviceProvider?.name }}</a>
+                    </div>
+                </dd>
+                <dt><span>Service</span></dt>
+                <dd>
+                    <div *ngIf="sla.service">
+                        <a [routerLink]="['/service', sla.service?.id, 'view']">{{ sla.service?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/sla', sla.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

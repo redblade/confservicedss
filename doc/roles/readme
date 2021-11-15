@@ -1,0 +1,25 @@
+APP roles
+ROLE_SP
+ROLE_IP
+ROLE_ADMIN
+
+UC roles
+ROLE_HOLO, ROLE_I2CAT, ROLE_FILL
+
+JHIPSTER roles
+ROLE_ADMIN, ROLE_USER (?)
+
+ROLE_ADMIN:
+CRUD serviceProvider, infrastructureProvider
+
+ROLE_SP
+R serviceProvider, infrastructureProvider
+R nodeReport, infrastructureReport (only those related to the Projects)
+CRUD project
+
+ROLE_IP
+R serviceProvider, infrastructureProvider
+CRUD infrastructure, node
+R nodeReport, infrastructureReport
+
+

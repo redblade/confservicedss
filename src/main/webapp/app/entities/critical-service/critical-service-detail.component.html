@@ -1,0 +1,56 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="criticalService">
+            <h2><span>Critical Service</span> {{ criticalService.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Timestamp Created</span></dt>
+                <dd>
+                    <span>{{ criticalService.timestampCreated }}</span>
+                </dd>
+                <dt><span>Timestamp Processed</span></dt>
+                <dd>
+                    <span>{{ criticalService.timestampProcessed }}</span>
+                </dd>
+                <dt><span>Action Taken</span></dt>
+                <dd>
+                    <span>{{ criticalService.actionTaken }}</span>
+                </dd>
+                <dt><span>Score</span></dt>
+                <dd>
+                    <span>{{ criticalService.score }}</span>
+                </dd>
+                <dt><span>Details</span></dt>
+                <dd>
+                    <textarea disabled=true rows="10" cols="80">{{ criticalService.details }}</textarea>
+                </dd>
+                <dt><span>Monitoring Period Sec</span></dt>
+                <dd>
+                    <span>{{ criticalService.monitoringPeriodSec }}</span>
+                </dd>
+                <dt><span>Service</span></dt>
+                <dd>
+                    <div *ngIf="criticalService.service">
+                        <a [routerLink]="['/service', criticalService.service?.id, 'view']">{{ criticalService.service?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button hidden="true" type="button"
+                    [routerLink]="['/critical-service', criticalService.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

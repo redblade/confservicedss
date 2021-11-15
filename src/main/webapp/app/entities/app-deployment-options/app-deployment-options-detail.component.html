@@ -1,0 +1,36 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="appDeploymentOptions">
+            <h2><span>App Deployment Options</span> {{ appDeploymentOptions.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Ranked options (lower values are better)</span></dt>
+                <dd>
+                    <textarea rows="20" cols="80" disabled="true">{{ appDeploymentOptions.options }}</textarea>
+                </dd>
+                <dt><span>App</span></dt>
+                <dd>
+                    <div *ngIf="appDeploymentOptions.app">
+                        <a [routerLink]="['/app', appDeploymentOptions.app?.id, 'view']">{{ appDeploymentOptions.app?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button hidden="true" type="button"
+                    [routerLink]="['/app-deployment-options', appDeploymentOptions.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

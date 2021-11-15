@@ -1,0 +1,6 @@
+https://github.com/kubernetes-sigs/node-feature-discovery
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/v0.8.2/nfd-master.yaml.template
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/v0.8.2/nfd-worker-daemonset.yaml.template
+kubectl -n node-feature-discovery get all
+

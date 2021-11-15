@@ -1,0 +1,238 @@
+@startuml
+	!pragma syntax class
+	class Event <<Option {Service,Paginate}>> {
+		Long id
+		Instant timestamp
+		String severity
+		String category
+		String details
+	}
+	class ServiceOptimisation <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String optimisation
+		String parameters
+	}
+	ServiceProvider  "eventSet 0..1 " --o "serviceProvider 0..* "  Event
+	class ServiceProvider <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String organisation
+		String preferences
+	}
+	class InfrastructureProvider <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String organisation
+	}
+	class Infrastructure <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String type
+		String endpoint
+		String credentials
+		String monitoringPlugin
+		String properties
+		String totalResources
+	}
+	class InfrastructureReport <<Option {Service,Paginate}>> {
+		Long id
+		Instant timestamp
+		String group
+		String category
+		String key
+		Double value
+	}
+	class Node <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String ipaddress
+		String properties
+		String features
+		String totalResources
+	}
+	class NodeReport <<Option {Service,Paginate}>> {
+		Long id
+		Instant timestamp
+		String category
+		String key
+		Double value
+	}
+	class Benchmark <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String category
+	}
+	class BenchmarkReport <<Option {Service,Paginate}>> {
+		Long id
+		Instant time
+		String metric
+		String tool
+		Double mean
+		Integer interval
+		Double stabilityIndex
+	}
+	Infrastructure  "nodeSet 0..1 " --o "infrastructure 0..* "  Node
+	Infrastructure  "benchmarkSet 0..1 " --o "infrastructure 0..* "  Benchmark
+	Node  "benchmarkReportSet 0..1 " --o "node 0..* "  BenchmarkReport
+	Node  "nodeReportSet 0..1 " --o "node 0..* "  NodeReport
+	Node  "nodeReportDestinationSet 0..1 " --o "nodeDestination 0..* "  NodeReport
+	Infrastructure  "infrastructureReportSet 0..1 " --o "infrastructure 0..* "  InfrastructureReport
+	Benchmark  "benchmarkReportSet 0..1 " --o "benchmark 0..* "  BenchmarkReport
+	class Project <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String group
+		String properties
+		Integer quotaCpuMillicore
+		Integer quotaMemMB
+		Integer quotaDiskGB
+		String credentials
+		Boolean enableBenchmark
+		Boolean privateBenchmark
+	}
+	class CatalogApp <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String appDescriptor
+	}
+	ServiceProvider  "catalogAppSet 0..1 " --o "serviceProvider 0..* "  CatalogApp
+	ServiceProvider  "appSet 0..1 " --o "serviceProvider 0..* "  App
+	CatalogApp  "appSet 0..1 " --o "catalogApp 0..* "  App
+	class App <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		ManagementType managementType
+		ExecStatus status
+		String appDescriptor
+	}
+	App ..> ManagementType
+	App ..> ExecStatus
+	class Service <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String profile
+		Integer priority
+		String initialConfiguration
+		String runtimeConfiguration
+		DeployType deployType
+		String deployDescriptor
+		ExecStatus status
+	}
+	Service ..> DeployType
+	Service ..> ExecStatus
+	class CriticalService <<Option {Service,Paginate}>> {
+		Long id
+		Instant timestampCreated
+		Instant timestampProcessed
+		String actionTaken
+		Long score
+		String details
+		Integer monitoringPeriodSec
+	}
+	class SteadyService <<Option {Service,Paginate}>> {
+		Long id
+		Instant timestampCreated
+		Instant timestampProcessed
+		String actionTaken
+		Long score
+		String details
+		Integer monitoringPeriodSec
+	}
+	App  "serviceSet 0..1 " --o "app 0..* "  Service
+	Service  "criticalServiceSet 0..1 " --o "service 0..* "  CriticalService
+	Service  "steadyServiceSet 0..1 " --o "service 0..* "  SteadyService
+	enum ManagementType {
+		MANAGED, 
+		DELEGATED 
+	}
+	enum DeployType {
+		KUBERNETES, 
+		DOCKER, 
+		TOSCA, 
+		CUSTOM 
+	}
+	enum ExecStatus {
+		RUNNING, 
+		STOPPED, 
+		ERROR, 
+		STARTING, 
+		STOPPING, 
+		FORCE_STOP, 
+		SCALING_MORE_RESOURCES, 
+		SCALING_LESS_RESOURCES, 
+		OFFLOADING_BETTER_RANKING, 
+		OFFLOADING_WORSE_RANKING 
+	}
+	class AppConstraint <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String category
+		String value
+		String valueType
+	}
+	class ServiceConstraint <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String category
+		String value
+		String valueType
+		Integer priority
+	}
+	Service  "appConstraintSourceSet 0..1 " --o "serviceSource 0..* "  AppConstraint
+	Service  "appConstraintDestinationSet 0..1 " --o "serviceDestination 0..* "  AppConstraint
+	class ServiceReport <<Option {Service,Paginate}>> {
+		Long id
+		Instant timestamp
+		String group
+		String category
+		String key
+		Double value
+	}
+	class Sla <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String type
+		Instant creation
+		Instant expiration
+	}
+	class Guarantee <<Option {Service,Paginate}>> {
+		Long id
+		String name
+		String constraint
+		String thresholdWarning
+		String thresholdMild
+		String thresholdSerious
+		String thresholdSevere
+		String thresholdCatastrophic
+	}
+	class SlaViolation <<Option {Service,Paginate}>> {
+		Long id
+		Instant timestamp
+		String violationName
+		SlaViolationType severityType
+		String description
+		String status
+	}
+	SlaViolation ..> SlaViolationType
+	enum SlaViolationType {
+		Warning, 
+		Mild, 
+		Serious, 
+		Severe, 
+		Catastrophic 
+	}
+	Infrastructure  "projectSet 0..1 " --o "infrastructure 0..* "  Project
+	ServiceProvider  "projectSet 0..1 " --o "serviceProvider 0..* "  Project
+	InfrastructureProvider  "slaSet 0..1 " --o "infrastructureProvider 0..* "  Sla
+	InfrastructureProvider  "infrastructureSet 0..1 " --o "infrastructureProvider 0..* "  Infrastructure
+	ServiceProvider  "slaSet 0..1 " --o "serviceProvider 0..* "  Sla
+	ServiceProvider  "benchmarkSet 0..1 " --o "serviceProvider 0..* "  Benchmark
+	Sla  "slaViolationSet 0..1 " --o "sla 0..* "  SlaViolation
+	Sla  "guaranteeSet 0..1 " --o "sla 0..* "  Guarantee
+	Service  "serviceReportSet 0..1 " --o "service 0..* "  ServiceReport
+	Service  "serviceConstraintSet 0..1 " --o "service 0..* "  ServiceConstraint
+	Service  "slaSet 0..1 " --o "service 0..* "  Sla
+	ServiceOptimisation  "service 0..1 " -- "serviceOptimisation 0..1 "  Service
+@enduml
+

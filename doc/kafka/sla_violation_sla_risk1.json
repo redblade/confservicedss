@@ -1,0 +1,16 @@
+{
+  "sla_id": "1",
+  "infrastructure_id": "2",
+  "guarantee_id": "1",
+  "datetime": "2021-07-23T17:27:06Z",
+  "importance_name": "Serious",
+  "service_id": "3",
+  "description": "This is a guarantee violation for risk-detector on I2CAT infrastructure",
+  "values": [
+    {
+      "key": "scrape_duration_seconds{10.244.0.8:3000}",
+      "value": "2.8476827",
+      "datetime": "2021-07-23T17:27:06Z"
+    }
+  ]
+}

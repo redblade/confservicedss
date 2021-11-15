@@ -1,0 +1,41 @@
+---
+app_name: basic-analytics
+
+---
+service_name: basic-analytics
+service_type: DOCKER
+service_descriptor:
+version: "3.9"
+services:
+  basic-analytics:
+    image: nginx:1.19.10
+    ports:
+      - "80"
+    deploy:
+      resources:
+        limits:
+          cpus: PLACEHOLDER_CPU_MILLICORE
+          memory: PLACEHOLDER_MEMORY_MB
+        reservations:
+          cpus: PLACEHOLDER_CPU_MILLICORE
+          memory: PLACEHOLDER_MEMORY_MB
+
+---
+service_name: basic-analytics-rabbitmq
+service_type: DOCKER
+service_descriptor:
+version: "3.9"
+services:
+  basic-analytics-rabbitmq:
+    image: rabbitmq:3
+    ports:
+      - "5672"
+    deploy:
+      resources:
+        limits:
+          cpus: PLACEHOLDER_CPU_MILLICORE
+          memory: PLACEHOLDER_MEMORY_MB
+        reservations:
+          cpus: PLACEHOLDER_CPU_MILLICORE
+          memory: PLACEHOLDER_MEMORY_MB
+

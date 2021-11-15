@@ -1,0 +1,96 @@
+<div>
+    <h2 id="page-heading">
+        <span>Apps</span>
+
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-app" [routerLink]="['/app/new']">
+            <fa-icon icon="plus"></fa-icon>
+            <span>
+            Create a new App
+            </span>
+        </button>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="apps?.length === 0">
+        <span>No apps found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="apps && apps.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="name"><span>Name</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="managementType"><span>Management Type</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="status"><span>Status</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="appDescriptor"><span>App Descriptor</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="serviceProvider.id"><span>Service Provider</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th hidden="true" scope="col"  jhiSortBy="catalogApp.id"><span>Catalog App</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let app of apps ;trackBy: trackId">
+                    <td><a [routerLink]="['/app', app.id, 'view']">{{ app.id }}</a></td>
+                    <td>{{ app.name }}</td>
+                    <td>{{ app.managementType }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>click View</td>
+                    <td>
+                        <div *ngIf="app.serviceProvider">
+                            <a [routerLink]="['/service-provider', app.serviceProvider?.id, 'view']" >{{ app.serviceProvider?.name }}</a>
+                        </div>
+                    </td>
+                    <td hidden="true" >
+                        <div *ngIf="app.catalogApp">
+                            <a [routerLink]="['/catalog-app', app.catalogApp?.id, 'view']" >{{ app.catalogApp?.name }}</a>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="btn-group">
+                            <button type="submit"
+                                    [routerLink]="['/app', app.id, 'manage']" 
+                                    class="btn btn-primary btn-sm">
+                                <fa-icon icon="asterisk"></fa-icon>
+                                <span class="d-none d-md-inline">Manage</span>
+                            </button>
+                            
+                            <button type="submit"
+                                    [routerLink]="['/app', app.id, 'view']"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon icon="eye"></fa-icon>
+                                <span class="d-none d-md-inline">View</span>
+                            </button>
+
+                            <button type="submit"
+                                    [routerLink]="['/app', app.id, 'edit']" 
+                                    class="btn btn-primary btn-sm">
+                                <fa-icon icon="pencil-alt"></fa-icon>
+                                <span class="d-none d-md-inline">Edit</span>
+                            </button>
+
+                            <button type="submit" (click)="delete(app)"
+                                    class="btn btn-danger btn-sm">
+                                <fa-icon icon="times"></fa-icon>
+                                <span class="d-none d-md-inline">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="apps && apps.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>

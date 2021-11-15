@@ -1,0 +1,180 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confservice
+  namespace: core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: confservice
+      version: 'v1'
+  template:
+    metadata:
+      labels:
+        app: confservice
+        version: 'v1'
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - confservice
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      initContainers:
+        - name: test-db
+          image: busybox:latest
+          command:
+            - '/bin/sh'
+            - '-c'
+            - |
+              while true
+              do
+                rt=$(nc -z -w 1 confservice-mysql 3306)
+                if [ $? -eq 0 ]; then
+                  echo "DB is UP"
+                  break
+                fi
+                echo "DB is not yet reachable;sleep for 10s before retry"
+                sleep 10
+              done
+        - name: init-db
+          image: 116.203.2.204:443/plgregistry/confservice:2.4.4bJENKINS_BUILD
+          command:
+            - '/bin/sh'
+            - '-c'
+            - 'java -cp /app/resources/:/app/classes/:/app/libs/* eu.pledgerproject.confservice.InitDB'
+      containers:
+        - name: confservice-app
+          image: 116.203.2.204:443/plgregistry/confservice:2.4.4bJENKINS_BUILD
+          env:
+
+            - name: SPRING_MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: username
+            - name: SPRING_MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: password
+
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret-confservice
+                  key: secret
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://confservice-mysql.core.svc.cluster.local:3306/confservice?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+
+            - name: KAFKA_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: truststore_pwd
+            - name: KAFKA_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: keystore_pwd
+            - name: KAFKA_KEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secrets
+                  key: key_pwd
+            - name: KAFKA_TRUSTSTORE_LOCATION
+              value: /var/kafka_truststore/kafka.client.truststore.jks
+            - name: KAFKA_KEYSTORE_LOCATION
+              value: /var/kafka_keystore/kafka.client.keystore.jks
+
+            - name: KAFKA_CONSUMER_KEY_DESERIALIZER
+              value: 'org.apache.kafka.common.serialization.StringDeserializer'
+            - name: KAFKA_CONSUMER_VALUE_DESERIALIZER
+              value: 'org.apache.kafka.common.serialization.StringDeserializer'
+            - name: KAFKA_PRODUCER_KEY_SERIALIZER
+              value: 'org.apache.kafka.common.serialization.StringSerializer'
+            - name: KAFKA_PRODUCER_VALUE_SERIALIZER
+              value: 'org.apache.kafka.common.serialization.StringSerializer'
+
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: SSL://static.180.8.203.116.clients.your-server.de:9093,SSL://static.194.8.203.116.clients.your-server.de:9093,SSL://static.240.8.203.116.clients.your-server.de:9093
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: SSL 
+            - name: KAFKA_ENABLED_PROTOCOL
+              value: TLSv1.2 
+            
+
+            - name: KAFKA_CONSUMER_GROUP_ID
+              value: 'confservice'
+            - name: KAFKA_CONSUMER_AUTO_OFFSET_RESET
+              value: 'earliest'
+
+            - name: JAVA_OPTS
+              value: ' -Xmx256m -Xms256m'
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '500m'
+            limits:
+              memory: '1Gi'
+              cpu: '1'
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /management/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /management/health
+              port: http
+            initialDelaySeconds: 120
+         
+          volumeMounts:
+          - mountPath: "/var/kubeconfig_engdhub"
+            name: kubeconfig-engdhub-vol
+            readOnly: true
+          - mountPath: "/var/kubeconfig_eng"
+            name: kubeconfig-eng-vol
+            readOnly: true
+          - mountPath: "/var/kubeconfig_i2cat"
+            name: kubeconfig-i2cat-vol
+            readOnly: true
+          - mountPath: "/var/kafka_truststore"
+            name: kafka-truststore
+            readOnly: true
+          - mountPath: "/var/kafka_keystore"
+            name: kafka-keystore
+            readOnly: true
+      volumes:
+        - name: kubeconfig-engdhub-vol
+          secret:
+            secretName: kubeconfig-engdhub
+        - name: kubeconfig-eng-vol
+          secret:
+            secretName: kubeconfig-eng
+        - name: kubeconfig-i2cat-vol
+          secret:
+            secretName: kubeconfig-i2cat
+        - name: kafka-truststore
+          secret:
+            secretName: kafka-truststore-secret
+        - name: kafka-keystore
+          secret:
+            secretName: kafka-keystore-secret
+

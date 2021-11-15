@@ -1,0 +1,10 @@
+HOWTO recreate the DB with sample data
+
+kubectl exec -it `kubectl get po -n core | grep confservice-mysql | awk '{ print $1}'` -n core -- mysql -u root -p
+
+#use confservice;
+#show tables;
+#drop table db_keep;
+
+kubectl scale deployment confservice --replicas=0
+kubectl scale deployment confservice --replicas=1

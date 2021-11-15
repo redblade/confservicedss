@@ -1,0 +1,28 @@
+
+0.0.3b36: pledgerui_v09 - added support to MetricsServer and Prometheus
+0.0.3b37: pledgerui_v09 - reports with Double values
+0.0.3b42: pledgerui_v10 - resources on Infrastructure and Node as JSON read by K8S client, features on Node read by K8S client
+0.4.0b46: pledgerui_v10 - async connection to Kafka to overcome network issues blocking DB persistence, InitDB InitContainer to initialise DB schema and data
+0.4.0b51: pledgerui_v10 - small fixes on resource consumption, DML changed with benchmark_report, node labels, properties as json
+0.5.0b52: pledgerui_v11 - changed benchmark (now read only), benchmark_report and sla_violation models
+0.5.0b62: pledgerui_v11 - added support to K8S requests/limits and better config data on Infrastructures, enum for AppStatus and Deploy, placeholder for start/stop App, AppReport contains startup times for Pods
+0.6.0b64: pledgerui_v11 - Guarantee model changed
+1.0.0b76: pledgerui_v21 - added Service, ServiceReport, ServiceConstraint + AppDeploymentOptions + GoldPinger reports on NodeReport
+1.1.0b83: pledgerui_v22 - added FlowUI, user filters on SP, role management (SP, IP, Admin, ROAPI), json
+1.2.0b84: pledgerui_v23 - added support to critical services, changed relation SLA now points to Service, not to App anymore
+1.3.0b85: pledgerui_v24 - added support to steady services and events - made Critical and Steady services persistent - Steady and CriticalService are managed but with disabled timers
+1.4.0b94: pledgerui_v25 - removed Recommendation, managed external yaml files for app/service templates, fixed StartupMonitor. Added Grafana. Completed SteadyService and CriticalService. Added Network graph with D3
+1.4.1b99: pledgerui_v25 - fixed roles management, mail credentials stored in K8S secrets, Project credentials are computed at runtime using "monitoring" fields, created Audit events when accessing Project, added limitations in Role assignments 
+1.5.0b106:pledgerui_v25 - changed URLs for new cluster on DHub
+2.0.0b107:pledgerui_v26 - added min limits for scale down and horizontal scaling support, node autodiscovery feature, improved serviceconstraints readability, added category and relation with node to benchmarkreports, added manual scaling H/V  and offloading
+2.0.0b115:pledgerui_v26 - support for K8S affinity, Yaml for K8S and Docker are now easier to read, fix on best node to deploy on based on Benchmarking
+2.1.0b130:pledgerui_v27 - initial support to "delegated" Apps 
+2.2.0b132:pledgerui_v27 - completed support for "delegated" Apps for the E2CO integration
+2.2.1b134:pledgerui_v27 - initial support to AppProfiler msg consumption
+2.3.0b135:pledgerui_v28 - SLA.type used to filter violations, ServiceOptimisation used to choose the algorithm
+2.3.1b137:pledgerui_v28 - initial ECODA algorithm implementation
+2.4.0b138:pledgerui_v29 - improved ECODA algorithm implementation and QuotaMonitoring
+2.4.1b146:pledgerui_v30 - added support to events/logs with severity, service with priority, GMail
+2.4.2b151:pledgerui_v31 - fixed DB scripts for testing + kafka client in Python + changed status management on SLAViolation + initial ECODA resource_latency implemented
+2.4.3b153:pledgerui_v31 - updated DSS scenarios, ECODA resource_latency implemented, renamed Apps
+2.4.4b155:pledgerui_v32 - updated Infrastructure with credentials - removed Penalty entity - 

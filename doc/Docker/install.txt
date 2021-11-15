@@ -1,0 +1,32 @@
+HOWTO install Docker on Ubuntu 18
+
+#install on Ubuntu 18.04
+sudo apt-get update -y
+sudo apt-get install docker.io -y
+sudo systemctl enable docker
+sudo systemctl status docker
+sudo systemctl start docker
+sudo usermod -aG docker $USER
+
+#/etc/docker/daemon.json
+
+{
+"hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"],
+"mtu": 1400,
+"exec-opts": ["native.cgroupdriver=systemd"],
+"log-driver": "json-file",
+"log-opts": {
+  "max-size": "100m"
+},
+"storage-driver": "overlay2"
+}
+
+#/etc/systemd/system/docker.service.d/override.conf 
+[Service]
+ ExecStart=
+ ExecStart=/usr/bin/dockerd
+ DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://172.17.0.1:2375"
+ 
+#restart
+sudo service docker restart
+

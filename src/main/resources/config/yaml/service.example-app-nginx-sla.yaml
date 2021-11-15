@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: example-app-nginx-sla
+  name: example-app-nginx-sla
+  namespace: PLACEHOLDER_NAMESPACE
+spec:
+  replicas: PLACEHOLDER_REPLICAS
+  selector:
+    matchLabels:
+      app: example-app-nginx-sla
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: example-app-nginx-sla
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - PLACEHOLDER_HOSTNAME
+      containers:
+      - image: etiennetremel/nginx-prometheus
+        name: nginx
+        resources:
+          limits:
+            cpu: PLACEHOLDER_CPU_MILLICOREm
+            memory: PLACEHOLDER_MEMORY_MBMi
+          requests:
+            cpu: PLACEHOLDER_CPU_MILLICOREm
+            memory: PLACEHOLDER_MEMORY_MBMi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: example-app-nginx-sla
+  name: example-app-nginx-sla
+  namespace: PLACEHOLDER_NAMESPACE
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+    nodePort: 30180
+    name: http
+  - port: 9113
+    protocol: TCP
+    targetPort: 9101
+    nodePort: 30181
+    name: metrics
+  selector:
+    app: example-app-nginx-sla
+  sessionAffinity: None
+  type: NodePort
+  
+

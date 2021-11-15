@@ -1,0 +1,16 @@
+Kafka installed on Ubuntu with
+sudo apt install python3-pip -y
+
+Kafka installed on MacOSX with
+https://medium.com/@Ankitthakur/apache-kafka-installation-on-mac-using-homebrew-a367cdefd273
+
+and bugfix with
+https://stackoverflow.com/questions/59481878/unable-to-start-kafka-with-zookeeper-kafka-common-inconsistentclusteridexceptio
+
+LAUNCH with
+./usr/local/bin/kafka_start.sh
+
+the scripts, basically launches:
+zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties & kafka-server-start /usr/local/etc/kafka/server.properties
+
+in case or errors, remove /usr/local/var/lib/kafka-logs/meta.properties 

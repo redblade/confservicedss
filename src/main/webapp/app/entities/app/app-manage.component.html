@@ -1,0 +1,78 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="manageForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="manageForm">
+            <h2 id="jhi-app-heading">Manage an App</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!manageForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_name">Name</label>
+                    <input type="text" class="form-control" name="name" id="field_name" readonly="readonly"
+                           formControlName="name"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_managementType">Management Type</label>
+                    <input type="text" class="form-control" name="managementType" id="field_managementType" readonly
+                           formControlName="managementType"/>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-control-label" for="field_status">Status</label>
+                    <input type="text" class="form-control" name="status" id="field_name" readonly
+                           formControlName="status"/>
+                </div>
+
+                <div class="form-group" >
+                    <label class="form-control-label" for="field_status">Action</label>
+                    <select class="form-control" name="status" formControlName="status" id="field_status">
+                        <option value="STARTING" [hidden]="manageForm.get('status')?.value != 'STOPPED' " >START ...</option>
+                        <option value="STOPPING" [hidden]="manageForm.get('status')?.value != 'RUNNING' " >STOP ...</option>
+						<option value="FORCE_STOP" >FORCE_STOP ...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" [hidden]="!manageForm.get('catalogApp')!.value?.id">
+                	<label [hidden]="manageForm.get('id')!.value" class="form-control-label" >CatalogApp selected: <b>{{ manageForm.get('catalogApp')!.value?.name}}</b></label>
+                </div>
+
+                <div class="form-group" [hidden]="manageForm.get('catalogApp')!.value?.id">
+                    <label class="form-control-label" for="field_appDescriptor">App Descriptor</label>
+                    <textarea type="text" class="form-control" name="appDescriptor" id="field_appDescriptor"
+                           formControlName="appDescriptor"></textarea>
+                </div>
+
+                <div hidden=true class="form-group" >
+                    <label class="form-control-label" for="field_serviceProvider">Service Provider</label>
+                    <select class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider" required>
+                        <option [ngValue]="serviceProviderOption.id === manageForm.get('serviceProvider')!.value?.id ? manageForm.get('serviceProvider')!.value : serviceProviderOption" *ngFor="let serviceProviderOption of serviceproviders; trackBy: trackById">{{ serviceProviderOption.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group" [hidden]="manageForm.get('catalogApp')!.value?.id">
+                    <label class="form-control-label" for="field_catalogApp">Catalog App to copy descriptors from</label>
+                    <select class="form-control" id="field_catalogApp" name="catalogApp" formControlName="catalogApp" >
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="catalogAppOption.id === manageForm.get('catalogApp')!.value?.id ? manageForm.get('catalogApp')!.value : catalogAppOption" *ngFor="let catalogAppOption of catalogapps; trackBy: trackById" >{{ catalogAppOption.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="manageForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

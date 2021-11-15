@@ -1,0 +1,153 @@
+{
+  "nodes": [
+    {
+      "id": "kmaster",
+      "group": 1
+    },
+    {
+      "id": "kworker1",
+      "group": 1
+    },
+    {
+      "id": "kworker2",
+      "group": 1
+    },
+    {
+      "id": "kworker3",
+      "group": 1
+    },
+    {
+      "id": "pledger-kubemaster-cloud",
+      "group": 2
+    },
+    {
+      "id": "pledger-kubenode1-cloud",
+      "group": 2
+    },
+    {
+      "id": "pledger-kubenode2-cloud",
+      "group": 2
+    },
+    {
+      "id": "laptop@HOLO",
+      "group": 3
+    },
+    {
+      "id": "server@FILL",
+      "group": 4
+    },
+    {
+      "id": "ENG_k8s",
+      "group": -1
+    },
+    {
+      "id": "I2CAT_k8s",
+      "group": -1
+    },
+    {
+      "id": "HOLO_isar",
+      "group": -1
+    },
+    {
+      "id": "FILL_docker",
+      "group": -1
+    }
+  ],
+  "links": [
+    {
+      "source": "ENG_k8s",
+      "target": "I2CAT_k8s",
+      "value": 30
+    },
+    {
+      "source": "HOLO_isar",
+      "target": "ENG_k8s",
+      "value": 30
+    },
+    {
+      "source": "HOLO_isar",
+      "target": "I2CAT_k8s",
+      "value": 30
+    },
+    {
+      "source": "FILL_docker",
+      "target": "ENG_k8s",
+      "value": 30
+    },
+    {
+      "source": "FILL_docker",
+      "target": "I2CAT_k8s",
+      "value": 30
+    },
+    {
+      "source": "kmaster",
+      "target": "ENG_k8s",
+      "value": 1
+    },
+    {
+      "source": "kworker1",
+      "target": "ENG_k8s",
+      "value": 1
+    },
+    {
+      "source": "kworker2",
+      "target": "ENG_k8s",
+      "value": 1
+    },
+    {
+      "source": "kworker3",
+      "target": "ENG_k8s",
+      "value": 1
+    },
+    {
+      "source": "pledger-kubemaster-cloud",
+      "target": "I2CAT_k8s",
+      "value": 1
+    },
+    {
+      "source": "pledger-kubenode1-cloud",
+      "target": "I2CAT_k8s",
+      "value": 1
+    },
+    {
+      "source": "pledger-kubenode2-cloud",
+      "target": "I2CAT_k8s",
+      "value": 1
+    },
+    {
+      "source": "laptop@HOLO",
+      "target": "HOLO_isar",
+      "value": 1
+    },
+    {
+      "source": "server@FILL",
+      "target": "FILL_docker",
+      "value": 1
+    },
+    {
+      "source": "pledger-kubenode1-cloud",
+      "target": "I2CAT_k8s",
+      "value": 1
+    },
+    {
+      "source": "laptop@HOLO",
+      "target": "HOLO_isar",
+      "value": 1
+    },
+    {
+      "source": "laptop@HOLO",
+      "target": "HOLO_isar",
+      "value": 1
+    },
+    {
+      "source": "server@FILL",
+      "target": "FILL_docker",
+      "value": 1
+    },
+    {
+      "source": "server@FILL",
+      "target": "FILL_docker",
+      "value": 1
+    }
+  ]
+}

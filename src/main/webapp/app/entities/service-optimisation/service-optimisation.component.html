@@ -1,0 +1,81 @@
+<div>
+    <h2 id="page-heading">
+        <span>Service Optimisations</span>
+
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-service-optimisation" [routerLink]="['/service-optimisation/new']">
+            <fa-icon icon="plus"></fa-icon>
+            <span>
+            Create a new Service Optimisation
+            </span>
+        </button>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="serviceOptimisations?.length === 0">
+        <span>No serviceOptimisations found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="serviceOptimisations && serviceOptimisations.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="name"><span>Name</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="optimisation"><span>Optimisation</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="parameters"><span>Parameters</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="service.id"><span>Service</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let serviceOptimisation of serviceOptimisations ;trackBy: trackId">
+                    <td><a [routerLink]="['/service-optimisation', serviceOptimisation.id, 'view']">{{ serviceOptimisation.id }}</a></td>
+                    <td>{{ serviceOptimisation.name }}</td>
+                    <td>{{ serviceOptimisation.optimisation }}</td>
+                    <td>{{ serviceOptimisation.parameters }}</td>
+                    <td>
+                        <div *ngIf="serviceOptimisation.service">
+                            <a [routerLink]="['/service', serviceOptimisation.service?.id, 'view']" >{{ serviceOptimisation.service?.name }}</a>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="btn-group">
+                            <button type="submit"
+                                    [routerLink]="['/service-optimisation', serviceOptimisation.id, 'view']"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon icon="eye"></fa-icon>
+                                <span class="d-none d-md-inline">View</span>
+                            </button>
+
+                            <button type="submit"
+                                    [routerLink]="['/service-optimisation', serviceOptimisation.id, 'edit']"
+                                    class="btn btn-primary btn-sm">
+                                <fa-icon icon="pencil-alt"></fa-icon>
+                                <span class="d-none d-md-inline">Edit</span>
+                            </button>
+
+                            <button type="submit" (click)="delete(serviceOptimisation)"
+                                    class="btn btn-danger btn-sm">
+                                <fa-icon icon="times"></fa-icon>
+                                <span class="d-none d-md-inline">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="serviceOptimisations && serviceOptimisations.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>

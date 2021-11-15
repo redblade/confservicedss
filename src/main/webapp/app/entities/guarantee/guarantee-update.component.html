@@ -1,0 +1,120 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-guarantee-heading">Create or edit a Guarantee</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_name">Name</label>
+                    <input required type="text" class="form-control" name="name" list="staticName" id="field_name"
+                           formControlName="name"/>
+                           <datalist id="staticName">
+					        <option>responseTime</option>
+					        <option>latency</option>
+					       </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_constraint">Constraint</label>
+                    <input type="text" class="form-control" name="constraint" list="staticConstraint" id="field_constraint"
+                           formControlName="constraint"/>
+                           <datalist id="staticConstraint">
+					        <option>responseTime &lt;= 200</option>
+					        <option>latency &lt;= 20</option>
+					       </datalist>
+                    <div *ngIf="editForm.get('constraint')!.invalid && (editForm.get('constraint')!.dirty || editForm.get('constraint')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('constraint')?.errors?.maxlength">
+                        This field cannot be longer than 200 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_thresholdWarning">Threshold Warning</label>
+                    <input type="text" class="form-control" name="thresholdWarning" id="field_thresholdWarning"
+                           formControlName="thresholdWarning"/>
+                    <div *ngIf="editForm.get('thresholdWarning')!.invalid && (editForm.get('thresholdWarning')!.dirty || editForm.get('thresholdWarning')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('thresholdWarning')?.errors?.maxlength">
+                        This field cannot be longer than 200 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_thresholdMild">Threshold Mild</label>
+                    <input type="text" class="form-control" name="thresholdMild" id="field_thresholdMild"
+                           formControlName="thresholdMild"/>
+                    <div *ngIf="editForm.get('thresholdMild')!.invalid && (editForm.get('thresholdMild')!.dirty || editForm.get('thresholdMild')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('thresholdMild')?.errors?.maxlength">
+                        This field cannot be longer than 200 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_thresholdSerious">Threshold Serious</label>
+                    <input type="text" class="form-control" name="thresholdSerious" id="field_thresholdSerious"
+                           formControlName="thresholdSerious"/>
+                    <div *ngIf="editForm.get('thresholdSerious')!.invalid && (editForm.get('thresholdSerious')!.dirty || editForm.get('thresholdSerious')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('thresholdSerious')?.errors?.maxlength">
+                        This field cannot be longer than 200 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_thresholdSevere">Threshold Severe</label>
+                    <input type="text" class="form-control" name="thresholdSevere" id="field_thresholdSevere"
+                           formControlName="thresholdSevere"/>
+                    <div *ngIf="editForm.get('thresholdSevere')!.invalid && (editForm.get('thresholdSevere')!.dirty || editForm.get('thresholdSevere')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('thresholdSevere')?.errors?.maxlength">
+                        This field cannot be longer than 200 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_thresholdCatastrophic">Threshold Catastrophic</label>
+                    <input type="text" class="form-control" name="thresholdCatastrophic" id="field_thresholdCatastrophic"
+                           formControlName="thresholdCatastrophic"/>
+                    <div *ngIf="editForm.get('thresholdCatastrophic')!.invalid && (editForm.get('thresholdCatastrophic')!.dirty || editForm.get('thresholdCatastrophic')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('thresholdCatastrophic')?.errors?.maxlength">
+                        This field cannot be longer than 200 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_sla">SLA</label>
+                    <select class="form-control" id="field_sla" name="sla" formControlName="sla">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="slaOption.id === editForm.get('sla')!.value?.id ? editForm.get('sla')!.value : slaOption" *ngFor="let slaOption of slas; trackBy: trackById">{{ slaOption.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

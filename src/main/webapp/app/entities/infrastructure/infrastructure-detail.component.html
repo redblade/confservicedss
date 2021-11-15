@@ -1,0 +1,60 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="infrastructure">
+            <h2><span>Infrastructure</span> {{ infrastructure.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ infrastructure.name }}</span>
+                </dd>
+                <dt><span>Type</span></dt>
+                <dd>
+                    <span>{{ infrastructure.type }}</span>
+                </dd>
+                <dt><span>Endpoint</span></dt>
+                <dd>
+                    <span>{{ infrastructure.endpoint }}</span>
+                </dd>
+                <dt><span>Credentials</span></dt>
+                <dd>
+                    <span>hidden</span>
+                </dd>
+                <dt><span>Monitoring Plugin</span></dt>
+                <dd>
+                    <span>{{ infrastructure.monitoringPlugin }}</span>
+                </dd>
+                <dt><span>Properties</span></dt>
+                <dd>
+                    <span>{{ infrastructure.properties }}</span>
+                </dd>
+                <dt><span>Total Resources</span></dt>
+                <dd>
+                    <span>{{ infrastructure.totalResources }}</span>
+                </dd>
+                <dt><span>Infrastructure Provider</span></dt>
+                <dd>
+                    <div *ngIf="infrastructure.infrastructureProvider">
+                        <a [routerLink]="['/infrastructure-provider', infrastructure.infrastructureProvider?.id, 'view']">{{ infrastructure.infrastructureProvider?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button" *jhiHasAnyAuthority="['ROLE_IP']"
+                    [routerLink]="['/infrastructure', infrastructure.id, 'edit']" 
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

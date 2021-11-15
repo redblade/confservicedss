@@ -1,0 +1,87 @@
+<div>
+    <h2 id="page-heading">
+        <span>Steady Services</span>
+
+        <button hidden="true" id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-steady-service" [routerLink]="['/steady-service/new']">
+            <fa-icon icon="plus"></fa-icon>
+            <span>
+            Create a new Steady Service
+            </span>
+        </button>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="steadyServices?.length === 0">
+        <span>No steadyServices found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="steadyServices && steadyServices.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="timestampCreated"><span>Timestamp Created</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="timestampProcessed"><span>Timestamp Processed</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="actionTaken"><span>Action Taken</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="score"><span>Score</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="details"><span>Details</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="monitoringPeriodSec"><span>Monitoring Period Sec</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="service.id"><span>Service</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let steadyService of steadyServices ;trackBy: trackId">
+                    <td><a [routerLink]="['/steady-service', steadyService.id, 'view']">{{ steadyService.id }}</a></td>
+                    <td>{{ steadyService.timestampCreated | date:'medium' }}</td>
+                    <td>{{ steadyService.timestampProcessed | date:'medium' }}</td>
+                    <td>{{ steadyService.actionTaken }}</td>
+                    <td>{{ steadyService.score }}</td>
+                    <td>click View</td>
+                    <td>{{ steadyService.monitoringPeriodSec }}</td>
+                    <td>
+                        <div *ngIf="steadyService.service">
+                            <a [routerLink]="['/service', steadyService.service?.id, 'view']" >{{ steadyService.service?.name }}</a>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="btn-group">
+                            <button type="submit"
+                                    [routerLink]="['/steady-service', steadyService.id, 'view']"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon icon="eye"></fa-icon>
+                                <span class="d-none d-md-inline">View</span>
+                            </button>
+
+                            <button hidden="true" type="submit"
+                                    [routerLink]="['/steady-service', steadyService.id, 'edit']"
+                                    class="btn btn-primary btn-sm">
+                                <fa-icon icon="pencil-alt"></fa-icon>
+                                <span class="d-none d-md-inline">Edit</span>
+                            </button>
+
+                            <button hidden="true" type="submit" (click)="delete(steadyService)"
+                                    class="btn btn-danger btn-sm">
+                                <fa-icon icon="times"></fa-icon>
+                                <span class="d-none d-md-inline">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="steadyServices && steadyServices.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>

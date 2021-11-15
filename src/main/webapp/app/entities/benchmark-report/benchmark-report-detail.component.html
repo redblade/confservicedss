@@ -1,0 +1,62 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="benchmarkReport">
+            <h2><span>Benchmark Report</span> {{ benchmarkReport.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Time</span></dt>
+                <dd>
+                    <span>{{ benchmarkReport.time }}</span>
+                </dd>
+                <dt><span>Metric</span></dt>
+                <dd>
+                    <span>{{ benchmarkReport.metric }}</span>
+                </dd>
+                <dt><span>Tool</span></dt>
+                <dd>
+                    <span>{{ benchmarkReport.tool }}</span>
+                </dd>
+                <dt><span>Mean</span></dt>
+                <dd>
+                    <span>{{ benchmarkReport.mean }}</span>
+                </dd>
+                <dt><span>Interval</span></dt>
+                <dd>
+                    <span>{{ benchmarkReport.interval }}</span>
+                </dd>
+                <dt><span>Stability Index</span></dt>
+                <dd>
+                    <span>{{ benchmarkReport.stabilityIndex }}</span>
+                </dd>
+                <dt><span>Node</span></dt>
+                <dd>
+                    <div *ngIf="benchmarkReport.node">
+                        <a [routerLink]="['/node', benchmarkReport.node?.id, 'view']">{{ benchmarkReport.node?.name }}</a>
+                    </div>
+                </dd>
+                <dt><span>Benchmark</span></dt>
+                <dd>
+                    <div *ngIf="benchmarkReport.benchmark">
+                        <a [routerLink]="['/benchmark', benchmarkReport.benchmark?.id, 'view']">{{ benchmarkReport.benchmark?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/benchmark-report', benchmarkReport.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

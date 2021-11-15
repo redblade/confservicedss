@@ -1,0 +1,12 @@
+1)
+edit prometheus grafana service and add 
+NodePort: 31255
+
+2)
+add datasource 
+host: confservice-mysql.core
+database: confservice
+user: root
+
+3)
+import dashboard

@@ -1,0 +1,52 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="serviceConstraint">
+            <h2><span>Service Constraint</span> {{ serviceConstraint.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Name</span></dt>
+                <dd>
+                    <span>{{ serviceConstraint.name }}</span>
+                </dd>
+                <dt><span>Category</span></dt>
+                <dd>
+                    <span>{{ serviceConstraint.category }}</span>
+                </dd>
+                <dt><span>Value</span></dt>
+                <dd>
+                    <span>{{ serviceConstraint.value }}</span>
+                </dd>
+                <dt><span>Value Type</span></dt>
+                <dd>
+                    <span>{{ serviceConstraint.valueType }}</span>
+                </dd>
+                <dt><span>Priority</span></dt>
+                <dd>
+                    <span>{{ serviceConstraint.priority }}</span>
+                </dd>
+                <dt><span>Service</span></dt>
+                <dd>
+                    <div *ngIf="serviceConstraint.service">
+                        <a [routerLink]="['/service', serviceConstraint.service?.id, 'view']">{{ serviceConstraint.service?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/service-constraint', serviceConstraint.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,84 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-node-heading">Create or edit a Node</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_name">Name</label>
+                    <input required type="text" class="form-control" name="name" id="field_name"
+                           formControlName="name"/>
+                    <div *ngIf="editForm.get('name')!.invalid && (editForm.get('name')!.dirty || editForm.get('name')!.touched)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_ipaddress">Ipaddress</label>
+                    <input required type="text" class="form-control" name="ipaddress" id="field_ipaddress"
+                           formControlName="ipaddress"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_properties">Properties (eg. &#123;&#39;node_type&#39;: &#39;cloud&#39;, &#39;node_master&#39;: &#39;true&#39;&#125; or &#123;&#39;node_type&#39;: &#39;edge&#39;, &#39;node_master&#39;: &#39;false&#39;, &#39;location&#39;: &#39;my_site&#39;&#125;)</label>
+                    <textarea required class="form-control" name="properties" id="field_properties"
+                           formControlName="properties"></textarea>
+                    <div *ngIf="editForm.get('properties')!.invalid && (editForm.get('properties')!.dirty || editForm.get('properties')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('properties')?.errors?.maxlength">
+                        This field cannot be longer than 20000 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_features">Features (automatically computed)</label>
+                    <textarea readonly=true class="form-control" name="features" id="field_features"
+                           formControlName="features"></textarea>
+                    <div *ngIf="editForm.get('features')!.invalid && (editForm.get('features')!.dirty || editForm.get('features')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('features')?.errors?.maxlength">
+                        This field cannot be longer than 20000 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_totalResources">Total Resources (automatically computed, can be manually changed afterwards)</label>
+                    <input type="textarea" [readonly]="!editForm.get('totalResources')!.value" class="form-control" name="totalResources" id="field_totalResources"
+                           formControlName="totalResources"/>
+                    <div *ngIf="editForm.get('totalResources')!.invalid && (editForm.get('totalResources')!.dirty || editForm.get('totalResources')!.touched)">
+                        <small class="form-text text-danger"
+                               *ngIf="editForm.get('totalResources')?.errors?.maxlength">
+                        This field cannot be longer than 2000 characters.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_infrastructure">Infrastructure</label>
+                    <select class="form-control" id="field_infrastructure" name="infrastructure" formControlName="infrastructure">
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="infrastructureOption.id === editForm.get('infrastructure')!.value?.id ? editForm.get('infrastructure')!.value : infrastructureOption" *ngFor="let infrastructureOption of infrastructures; trackBy: trackById">{{ infrastructureOption.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,48 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="event">
+            <h2><span>Event</span> {{ event.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Timestamp</span></dt>
+                <dd>
+                    <span>{{ event.timestamp }}</span>
+                </dd>
+                <dt><span>Severity</span></dt>
+                <dd>
+                    <span>{{ event.severity }}</span>
+                </dd>
+                <dt><span>Category</span></dt>
+                <dd>
+                    <span>{{ event.category }}</span>
+                </dd>
+                <dt><span>Details</span></dt>
+                <dd>
+                    <span>{{ event.details }}</span>
+                </dd>
+                <dt><span>Service Provider</span></dt>
+                <dd>
+                    <div *ngIf="event.serviceProvider">
+                        <a [routerLink]="['/service-provider', event.serviceProvider?.id, 'view']">{{ event.serviceProvider?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+
+            <button hidden="true" type="button"
+                    [routerLink]="['/event', event.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+            </button>
+        </div>
+    </div>
+</div>
