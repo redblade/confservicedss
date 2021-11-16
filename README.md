@@ -109,7 +109,14 @@ To run your ConfServiceDSS from a Docker image, use env variables (eg. in a file
 docker run --env-file doc/jhipster/confservicedss.env -p8080:8080 confservicedss
 ```
 
-Once ConfServiceDSS is first started, load the basic configuration data (like [this](src/main/resources/config/sql/dump_base.sql)), then navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
+Once ConfServiceDSS is started the first time, load the basic configuration data (eg. config/sql/dump_base.sql in src/main/resources).
+
+```
+cd src/main/resources
+mysql -h localhost -D confservice -u root -proot < config/sql/dump_base.sql
+```
+
+Then, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
 
 ###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.
 

@@ -26,3 +26,6 @@
 2.4.2b151:pledgerui_v31 - fixed DB scripts for testing + kafka client in Python + changed status management on SLAViolation + initial ECODA resource_latency implemented
 2.4.3b153:pledgerui_v31 - updated DSS scenarios, ECODA resource_latency implemented, renamed Apps
 2.4.4b155:pledgerui_v32 - updated Infrastructure with credentials - removed Penalty entity - 
+
+From here, Jenkins build number was resetted, so bXXX restarted from 1
+2.4.4b8:pledgerui_v32   - fixed Mail properties and README
