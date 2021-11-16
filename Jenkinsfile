@@ -45,6 +45,11 @@ node {
         }
     }
     
-
+    
+    stage('apply Kubernetes deployment') {
+        withKubeConfig([credentialsId: 'Jenkins_ServiceAccount' , serverUrl: 'https://192.168.70.5:6443/', namespace:'core']) {
+            sh "cat ./custom_configuration/confservice-deployment.yml | sed 's/JENKINS_BUILD/$MYBUILD_ID/g' | kubectl apply -f -"
+        }
+    }
     
 }
