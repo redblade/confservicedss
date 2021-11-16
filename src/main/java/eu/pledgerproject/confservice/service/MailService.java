@@ -72,8 +72,13 @@ public class MailService {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         String username = System.getenv("SPRING_MAIL_USERNAME");
         String password = System.getenv("SPRING_MAIL_PASSWORD");
+        String host = System.getenv("SPRING_MAIL_HOST");
+        int port = Integer.parseInt(System.getenv("SPRING_MAIL_PORT"));
+
         ((JavaMailSenderImpl)javaMailSender).setUsername(username);
         ((JavaMailSenderImpl)javaMailSender).setPassword(password);
+        ((JavaMailSenderImpl)javaMailSender).setHost(host);
+        ((JavaMailSenderImpl)javaMailSender).setPort(port);
         
         log.info("MailService is using username " + ((JavaMailSenderImpl)javaMailSender).getUsername());
 
@@ -100,7 +105,7 @@ public class MailService {
         Locale locale = Locale.forLanguageTag(user.getLangKey());
         Context context = new Context(locale);
         context.setVariable(USER, user);
-        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        context.setVariable(BASE_URL, System.getenv().get("SPRING_MAIL_BASEURL"));//jHipsterProperties.getMail().getBaseUrl());
         String content = templateEngine.process(templateName, context);
         String subject = messageSource.getMessage(titleKey, null, locale);
         sendEmail(user.getEmail(), subject, content, false, true);

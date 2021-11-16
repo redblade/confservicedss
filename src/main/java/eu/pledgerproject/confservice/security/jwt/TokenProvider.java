@@ -2,6 +2,7 @@ package eu.pledgerproject.confservice.security.jwt;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -93,8 +94,9 @@ public class TokenProvider {
             .build()
             .parseClaimsJws(token)
             .getBody();
-
         Collection<? extends GrantedAuthority> authorities =
+        	claims.get(AUTHORITIES_KEY).toString().trim().length() == 0 ?
+        	new ArrayList<SimpleGrantedAuthority>():		
             Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());

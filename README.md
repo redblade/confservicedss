@@ -28,7 +28,7 @@ Then, before you run the project, you need a [Kafka](https://kafka.apache.org/) 
 - benchmarking
 - app_profiler
 
-Moreover, Kafka environment variables need to be set, for example:
+Environment variables for Kafka need to be set, if needed also Mail, for example:
 
 ```
 export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
@@ -36,6 +36,9 @@ export KAFKA_CONSUMER_KEY_DESERIALIZER=org.apache.kafka.common.serialization.Str
 export KAFKA_CONSUMER_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.JsonDeserializer
 export KAFKA_PRODUCER_KEY_SERIALIZER=org.apache.kafka.common.serialization.StringSerializer 
 export KAFKA_PRODUCER_VALUE_SERIALIZER=org.springframework.kafka.support.serializer.JsonSerializer
+export SPRING_MAIL_BASEURL=mybaseurl
+export SPRING_MAIL_HOST=mymail
+export SPRING_MAIL_PORT=myport
 export SPRING_MAIL_USERNAME=myuser
 export SPRING_MAIL_PASSWORD=mypass
 
@@ -57,8 +60,6 @@ export SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/confservice
 export SPRING_DATASOURCE_USERNAME=root
 export SPRING_DATASOURCE_PASSWORD=root
 ```
-
-Once ConfServiceDSS is started, the required tables will be created and filled with the initial configuration. The "db_keep" control table will be created too; if dropped, ConfServiceDSS recreates the initial configuration after starting.
 
 
 ### Packaging and launching as jar
@@ -83,9 +84,6 @@ java -jar target/*.jar -Pprod
 
 ```
 
-Then navigate to [http://localhost:8080](http://localhost:8080) in your browser and login with root/test
-
-
 ### Packaging and launching as a container
 
 To package your ConfServiceDSS as a local Docker image, run:
@@ -105,24 +103,14 @@ mvn package -Pprod jib:dockerBuild -DskipTests=true -Djib.allowInsecureRegistrie
 
 ```
 
-To run your ConfServiceDSS from a Docker image, run (adding the environment variables above with "-e" BEFORE the "-p" option):
+To run your ConfServiceDSS from a Docker image, use env variables (eg. in a file like [this](doc/jhipster/confservicedss.env)) and run
 
 ```
-
-docker run -it -e AAA=BBB..  -p8080:8080 confservicedss
-
-
-```
-or environment variables can be placed in a file (like [this](doc/jhipster/confservicedss.env)) and run
-
-```
-docker run -it --env-file doc/jhipster/confservicedss.env -p8080:8080 confservicedss
+docker run --env-file doc/jhipster/confservicedss.env -p8080:8080 confservicedss
 ```
 
-Then navigate to [http://localhost:8080](http://localhost:8080) in your browser and login with root/test
+Once ConfServiceDSS is first started, load the basic configuration data (like [this](src/main/resources/config/sql/dump_base.sql)), then navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
 
-
-
-######This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.
+###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.
 
 

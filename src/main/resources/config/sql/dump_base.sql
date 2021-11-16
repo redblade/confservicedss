@@ -1,4 +1,4 @@
-
+use confservice;
 
 --
 -- Dumping data for table `jhi_authority`
