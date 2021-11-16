@@ -124,6 +124,19 @@ public class GuaranteeResource {
      * @param id the id of the guarantee to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the guarantee, or with status {@code 404 (Not Found)}.
      */
+    @GetMapping("/guarantees/sla/{id}")
+    public ResponseEntity<List<Guarantee>> getGuaranteeBySLA(@PathVariable Long id) {
+        log.debug("REST request to get a List of Guarantees by SLA id");
+        List<Guarantee> result = guaranteeService.findBySLA(id);
+        return ResponseEntity.ok().body(result);
+    }
+    
+    /**
+     * {@code GET  /guarantees/:id} : get the "id" guarantee.
+     *
+     * @param id the id of the guarantee to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the guarantee, or with status {@code 404 (Not Found)}.
+     */
     @GetMapping("/guarantees/{id}")
     public ResponseEntity<Guarantee> getGuarantee(@PathVariable Long id) {
         log.debug("REST request to get Guarantee : {}", id);

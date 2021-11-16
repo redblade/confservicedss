@@ -47,14 +47,14 @@ spec:
                 sleep 10
               done
         - name: init-db
-          image: 116.203.2.204:443/plgregistry/confservice:2.4.4bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.4.4bJENKINS_BUILD
           command:
             - '/bin/sh'
             - '-c'
             - 'java -cp /app/resources/:/app/classes/:/app/libs/* eu.pledgerproject.confservice.InitDB'
       containers:
         - name: confservice-app
-          image: 116.203.2.204:443/plgregistry/confservice:2.4.4bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.4.4bJENKINS_BUILD
           env:
             - name: SPRING_MAIL_BASEURL
               value: http://192.168.70.13:30288

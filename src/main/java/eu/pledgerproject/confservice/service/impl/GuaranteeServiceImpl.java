@@ -1,6 +1,7 @@
 package eu.pledgerproject.confservice.service.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -95,6 +96,14 @@ public class GuaranteeServiceImpl implements GuaranteeService {
         else {
         	return "";
         }
+    }
+    
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Guarantee> findBySLA(Long id) {
+        log.debug("Request to get all Guarantee by SLA: {}", id);
+        return guaranteeRepository.findAllBySLA(id);
     }
 
     @Override

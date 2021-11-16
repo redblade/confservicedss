@@ -96,11 +96,11 @@ public class InitDB {
 	}
 	
 	private static String loadFilesInScript(String sql) throws java.io.IOException {
-		while(sql.contains("LOAD_FILE")) {
-			int indexSplit = sql.indexOf("LOAD_FILE");
+		while(sql.contains("LOAD_FILE_YAML")) {
+			int indexSplit = sql.indexOf("LOAD_FILE_YAML");
 			String preSQL = sql.substring(0, indexSplit);
 			String postSQL = sql.substring(sql.indexOf(",", indexSplit));
-			String fileToLoad = sql.substring(indexSplit + "LOAD_FILE".length() + "('".length(), sql.indexOf("')", indexSplit));
+			String fileToLoad = sql.substring(indexSplit + "LOAD_FILE_YAML".length() + "('".length(), sql.indexOf("')", indexSplit));
 			String content = StreamUtils.copyToString(new ClassPathResource(fileToLoad).getInputStream(), Charset.defaultCharset());
 			content = content.replace("\n", "\\n");
 			content = content.replace("'", "\'");

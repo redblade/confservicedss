@@ -1,5 +1,6 @@
 package eu.pledgerproject.confservice.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -36,6 +37,14 @@ public interface GuaranteeService {
      * @return the entity.
      */
     Optional<Guarantee> findOne(Long id);
+    
+    /**
+     * Get all the guarantees by SLA id
+     *
+     * @param id the id of the entity.
+     * @return the entity.
+     */
+    List<Guarantee> findBySLA(Long id);
     
     /**
      * Get the "id" guarantee.
