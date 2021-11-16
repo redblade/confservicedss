@@ -4,7 +4,7 @@ kubectl exec -it `kubectl get po -n core | grep confservice-mysql | awk '{ print
 
 #use confservice;
 #show tables;
-#drop table db_keep;
+#drop table db_lock;
 
 kubectl scale deployment confservice --replicas=0
 kubectl scale deployment confservice --replicas=1

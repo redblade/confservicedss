@@ -41,8 +41,9 @@ public class ServiceServiceImpl implements ServiceService {
         log.debug("Request to save Service : {}", service);
         CheckRole.block("ROLE_ROAPI");
 
-        configurationNotifierService.publish(service.getId(), "service", "update");
-        return serviceRepository.save(service);
+        Service result = serviceRepository.save(service);
+        configurationNotifierService.publish(result.getId(), "service", "update");
+        return result;
     }
 
     @Override

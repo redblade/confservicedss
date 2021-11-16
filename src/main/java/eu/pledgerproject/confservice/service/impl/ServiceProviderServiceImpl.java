@@ -47,8 +47,9 @@ public class ServiceProviderServiceImpl implements ServiceProviderService {
         	serviceProvider.setPreferences(SERVICE_PROVIDER_PREFERENCES_TEMPLATE);
         }
 
-        configurationNotifierService.publish(serviceProvider.getId(), "serviceProvider", "update");
-        return serviceProviderRepository.save(serviceProvider);
+        ServiceProvider result = serviceProviderRepository.save(serviceProvider);
+        configurationNotifierService.publish(result.getId(), "serviceProvider", "update");
+        return result;
     }
 
     @Override

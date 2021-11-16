@@ -145,7 +145,7 @@ jhipster:
   mail:
     from: confservicedss@gmail.com
   swagger:
-    default-include-pattern: /api/(app|benchmark|catalog|critical-service|event|guarantees|infrastructure|node|penalt|project|service|sla|steady-service).*
+    default-include-pattern: /api/(app|benchmark|catalog|critical-service|event|guarantees|infrastructure|node|project|service|sla|steady-service).*
     #default-include-pattern: /api/app-constraints.*
     title: confservice API
     description: confservice API documentation

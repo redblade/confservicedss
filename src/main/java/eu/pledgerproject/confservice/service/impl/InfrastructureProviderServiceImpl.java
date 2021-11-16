@@ -43,8 +43,9 @@ public class InfrastructureProviderServiceImpl implements InfrastructureProvider
         log.debug("Request to save InfrastructureProvider : {}", infrastructureProvider);
         CheckRole.block("ROLE_ROAPI");
 
-        configurationNotifierService.publish(infrastructureProvider.getId(), "infrastructureProvider", "update");
-        return infrastructureProviderRepository.save(infrastructureProvider);
+        InfrastructureProvider result = infrastructureProviderRepository.save(infrastructureProvider);
+        configurationNotifierService.publish(result.getId(), "infrastructureProvider", "update");
+        return result;
     }
 
     @Override

@@ -43,8 +43,9 @@ public class CatalogAppServiceImpl implements CatalogAppService {
         log.debug("Request to save CatalogApp : {}", catalogApp);
         CheckRole.block("ROLE_ROAPI");
 
-        configurationNotifierService.publish(catalogApp.getId(), "catalogApp", "update");
-        return catalogAppRepository.save(catalogApp);
+        CatalogApp result = catalogAppRepository.save(catalogApp);;
+        configurationNotifierService.publish(result.getId(), "catalogApp", "update");
+        return result;
     }
 
     @Override

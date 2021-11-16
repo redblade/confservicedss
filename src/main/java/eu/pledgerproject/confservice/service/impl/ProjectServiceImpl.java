@@ -42,8 +42,9 @@ public class ProjectServiceImpl implements ProjectService {
         log.debug("Request to save Project : {}", project);
         CheckRole.block("ROLE_ROAPI");
 
-        configurationNotifierService.publish(project.getId(), "project", "update");
-        return projectRepository.save(project);
+        Project result = projectRepository.save(project);
+        configurationNotifierService.publish(result.getId(), "project", "update");
+        return result;
     }
 
     @Override

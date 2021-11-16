@@ -41,8 +41,9 @@ public class AppConstraintServiceImpl implements AppConstraintService {
     public AppConstraint save(AppConstraint appConstraint) {
         log.debug("Request to save AppConstraint : {}", appConstraint);
         CheckRole.block("ROLE_ROAPI");
-        configurationNotifierService.publish(appConstraint.getId(), "appConstraint", "update");
-        return appConstraintRepository.save(appConstraint);
+        AppConstraint result = appConstraintRepository.save(appConstraint);
+        configurationNotifierService.publish(result.getId(), "appConstraint", "update");
+        return result;
     }
 
     @Override

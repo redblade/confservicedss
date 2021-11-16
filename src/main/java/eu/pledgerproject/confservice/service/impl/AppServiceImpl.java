@@ -110,8 +110,9 @@ public class AppServiceImpl implements AppService {
         		createServices(app);
         	}
         }
-        configurationNotifierService.publish(app.getId(), "app", "update");
-        return appRepository.save(app);
+        App result = appRepository.save(app);
+        configurationNotifierService.publish(result.getId(), "app", "update");
+        return result;
     }
 
     @Override

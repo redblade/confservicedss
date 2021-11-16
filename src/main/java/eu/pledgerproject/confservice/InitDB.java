@@ -26,24 +26,24 @@ public class InitDB {
 		
 		DataSource datasource = getDataSource();
 		
-		boolean isDbToBeDropped = true;
+		boolean isDbLocked = false;
 		try {
 			try(Connection connDrop = getDataSource().getConnection()){
 				try{
-					String updateTimestamp = "update db_keep set id=0";
+					String updateTimestamp = "update db_lock set id=0";
 					connDrop.createStatement().executeUpdate(updateTimestamp);
-					isDbToBeDropped = false;
+					isDbLocked = true;
 				}catch(Exception e) {
 				}
 				
 			}
-			System.out.println("1/4-CHECK done, DB to be dropped: " + isDbToBeDropped);
+			System.out.println("1/4-CHECK done, DB is locked: " + isDbLocked);
 		}catch(Exception e){
 			System.out.println("1/4-CHECK failed " + e.getMessage());
 			throw e;
 		}
 		
-		if(isDbToBeDropped) {
+		if(!isDbLocked) {
 			try {
 				try(Connection connDrop = getDataSource().getConnection()){
 	
@@ -82,7 +82,7 @@ public class InitDB {
 
 				rdp.addScript(new ByteArrayResource(dump.getBytes())); 
 	    		rdp.populate(connLoad);
-				String createVersionTable = "CREATE TABLE confservice.db_keep (id INT);";
+				String createVersionTable = "CREATE TABLE confservice.db_lock (id INT);";
 
 				connLoad.createStatement().executeUpdate(createVersionTable);
 				System.out.println("4/4-LOAD done");

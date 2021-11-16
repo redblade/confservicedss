@@ -42,8 +42,9 @@ public class SlaServiceImpl implements SlaService {
         log.debug("Request to save Sla : {}", sla);
         CheckRole.block("ROLE_ROAPI");
 
-        configurationNotifierService.publish(sla.getId(), "sla", "update");
-        return slaRepository.save(sla);
+        Sla result = slaRepository.save(sla);
+        configurationNotifierService.publish(result.getId(), "sla", "update");
+        return result;
     }
 
     @Override

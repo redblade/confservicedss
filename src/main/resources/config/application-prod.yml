@@ -54,6 +54,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5Dialect
+        hbm2ddl:
+          auto: update
   # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
   #liquibase:
   #  contexts: prod

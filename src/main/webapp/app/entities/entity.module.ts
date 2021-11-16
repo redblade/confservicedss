@@ -79,10 +79,6 @@ import { RouterModule } from '@angular/router';
         loadChildren: () => import('./service-report/service-report.module').then(m => m.ConfserviceServiceReportModule),
       },
       {
-        path: 'penalty',
-        loadChildren: () => import('./penalty/penalty.module').then(m => m.ConfservicePenaltyModule),
-      },
-      {
         path: 'app-deployment-options',
         loadChildren: () =>
           import('./app-deployment-options/app-deployment-options.module').then(m => m.ConfserviceAppDeploymentOptionsModule),

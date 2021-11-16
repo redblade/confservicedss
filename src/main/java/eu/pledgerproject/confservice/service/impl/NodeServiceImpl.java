@@ -43,8 +43,9 @@ public class NodeServiceImpl implements NodeService {
         log.debug("Request to save Node : {}", node);
         CheckRole.block("ROLE_ROAPI");
 
-        configurationNotifierService.publish(node.getId(), "node", "update");
-        return nodeRepository.save(node);
+        Node result = nodeRepository.save(node);
+        configurationNotifierService.publish(result.getId(), "node", "update");
+        return result;
     }
 
     @Override

@@ -55,8 +55,9 @@ public class GuaranteeServiceImpl implements GuaranteeService {
         log.debug("Request to save Guarantee : {}", guarantee);
         CheckRole.block("ROLE_ROAPI");
 
-        configurationNotifierService.publish(guarantee.getId(), "guarantee", "update");
+        
         Guarantee result = guaranteeRepository.save(guarantee);
+        configurationNotifierService.publish(result.getId(), "guarantee", "update");
         
         managePrometheusRule(guarantee);
         
