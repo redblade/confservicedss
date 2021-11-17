@@ -56,6 +56,8 @@ spec:
         - name: confservice-app
           image: 116.203.2.204:443/plgregistry/confservicedss:2.4.4bJENKINS_BUILD
           env:
+            - name: SPRING_MAIL_FROM
+              value: confservicedss@gmail.com
             - name: SPRING_MAIL_BASEURL
               value: http://192.168.70.13:30288
             - name: SPRING_MAIL_HOST

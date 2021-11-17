@@ -22,7 +22,6 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import eu.pledgerproject.confservice.domain.Event;
 import eu.pledgerproject.confservice.domain.User;
 import eu.pledgerproject.confservice.repository.EventRepository;
-import io.github.jhipster.config.JHipsterProperties;
 
 /**
  * Service for sending emails.
@@ -38,16 +37,14 @@ public class MailService {
 
     private static final String BASE_URL = "baseUrl";
 
-    private final JHipsterProperties jHipsterProperties;
     private final JavaMailSender javaMailSender;
     private final MessageSource messageSource;
     private final SpringTemplateEngine templateEngine;
     private final EventRepository eventRepository;
 
 
-    public MailService(JHipsterProperties jHipsterProperties, JavaMailSender javaMailSender, MessageSource messageSource, SpringTemplateEngine templateEngine, EventRepository eventRepository) {
+    public MailService(JavaMailSender javaMailSender, MessageSource messageSource, SpringTemplateEngine templateEngine, EventRepository eventRepository) {
 
-        this.jHipsterProperties = jHipsterProperties;
         this.javaMailSender = javaMailSender;
         this.messageSource = messageSource;
         this.templateEngine = templateEngine;
@@ -70,6 +67,7 @@ public class MailService {
 
         // Prepare message using a Spring helper
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        String mailFrom = System.getenv("SPRING_MAIL_FROM");
         String username = System.getenv("SPRING_MAIL_USERNAME");
         String password = System.getenv("SPRING_MAIL_PASSWORD");
         String host = System.getenv("SPRING_MAIL_HOST");
@@ -85,7 +83,7 @@ public class MailService {
         try {
             MimeMessageHelper message = new MimeMessageHelper(mimeMessage, isMultipart, StandardCharsets.UTF_8.name());
             message.setTo(to);
-            message.setFrom(jHipsterProperties.getMail().getFrom());
+            message.setFrom(mailFrom);
             message.setSubject(subject);
             message.setText(content, isHtml);
             javaMailSender.send(mimeMessage);

@@ -89,8 +89,8 @@ UNLOCK TABLES;
 LOCK TABLES `infrastructure` WRITE;
 /*!40000 ALTER TABLE `infrastructure` DISABLE KEYS */;
 INSERT INTO `infrastructure` (`id`, `endpoint`, `name`, `properties`, `infrastructure_provider_id`, `monitoring_plugin`, `type`, `total_resources`) VALUES 
-(1,'https://127.0.0.1:44441','kind cluster1','{\'infrastructure_location\': \'localhost\'}',1,'{\'kubeconfig\': \'/Users/francesco/Documents/pledger-workspace/confservice/doc/kind/kind-kubeconfig1.yaml\',\'monitoring_type\': \'metrics-server\',\'goldpinger_endpoint\': \'http://localhost:30091\'}','K8S','{\'cpu_millicore\': \'4000\',\'memory_mb\': \'4000\'}'),
-(2,'https://127.0.0.1:44442','kind cluster2','{\'infrastructure_location\': \'localhost\'}',1,'{\'kubeconfig\': \'/Users/francesco/Documents/pledger-workspace/confservice/doc/kind/kind-kubeconfig2.yaml\',\'monitoring_type\': \'metrics-server\',\'goldpinger_endpoint\': \'http://localhost:30092\'}','K8S','{\'cpu_millicore\': \'2000\',\'memory_mb\': \'2000\'}');
+(1,'https://localhost:44441','kind cluster1','{\'infrastructure_location\': \'localhost\'}',1,'{\'kubeconfig\': \'/var/tmp/kind-kubeconfig1.yaml\',\'monitoring_type\': \'metrics-server\',\'goldpinger_endpoint\': \'http://localhost:30091\'}','K8S','{\'cpu_millicore\': \'4000\',\'memory_mb\': \'4000\'}'),
+(2,'https://localhost:44442','kind cluster2','{\'infrastructure_location\': \'localhost\'}',1,'{\'kubeconfig\': \'/var/tmp/kind-kubeconfig2.yaml\',\'monitoring_type\': \'metrics-server\',\'goldpinger_endpoint\': \'http://localhost:30092\'}','K8S','{\'cpu_millicore\': \'2000\',\'memory_mb\': \'2000\'}');
 /*!40000 ALTER TABLE `infrastructure` ENABLE KEYS */;
 UNLOCK TABLES;
 

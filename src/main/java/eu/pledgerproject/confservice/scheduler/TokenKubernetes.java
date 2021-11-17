@@ -42,6 +42,7 @@ public class TokenKubernetes {
 			if(kubeconfig != null && kubeconfig.trim().length() > 0) {
 				try(FileReader fileReader = new FileReader(kubeconfig)){
 					client = Config.fromConfig(fileReader);
+					client.setVerifyingSsl(false);
 				}catch(Exception e) {
 					log.error("TokenKubernetes getKubernetesApiClient kubeconfig error - " + e);
 					saveErrorEvent("TokenKubernetes getKubernetesApiClient kubeconfig error - " + e.getClass() + " " + e.getMessage());
@@ -51,6 +52,7 @@ public class TokenKubernetes {
 				
 				try {
 					client = Config.fromToken(infrastructure.getEndpoint(), infrastructure.getCredentials());
+					client.setVerifyingSsl(false);
 				}catch(Exception e) {
 					log.error("TokenKubernetes getKubernetesApiClient token error - " + e);
 					saveErrorEvent("TokenKubernetes getKubernetesApiClient token error - " + e.getClass() + " " + e.getMessage());
