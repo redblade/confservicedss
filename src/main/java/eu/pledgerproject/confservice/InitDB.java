@@ -3,18 +3,14 @@ package eu.pledgerproject.confservice;
 import java.io.FileInputStream;
 import java.nio.charset.Charset;
 import java.sql.Connection;
-import java.util.Properties;
+import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.hibernate.SessionFactory;
-import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
-import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.util.StreamUtils;
 
 
@@ -22,76 +18,93 @@ public class InitDB {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("InitDB started");
-		String dml = args.length > 0 ? args[0] : null;
 		
-		DataSource datasource = getDataSource();
+		String host = "localhost";
+		String port = "3306";
+		String user = "root";
+		String pass = "root";
+		String dumpFile = null;
 		
-		boolean isDbLocked = false;
-		try {
-			try(Connection connDrop = getDataSource().getConnection()){
-				try{
-					String updateTimestamp = "update db_lock set id=0";
-					connDrop.createStatement().executeUpdate(updateTimestamp);
-					isDbLocked = true;
-				}catch(Exception e) {
-				}
-				
+		if(args.length == 0) {
+			dumpFile = "config/sql/dump_base.sql";
+		}
+		
+		else if(args.length == 1) {
+			dumpFile = args[0];
+		}
+		
+		else if(args.length == 5) {
+			host = args[0];
+			port = args[1];
+			user = args[2];
+			pass = args[3];
+			dumpFile = args[4];
+		}
+		
+		boolean isDBLocked = false;
+		try(Connection connCheck = getDataSource(host, port, user, pass).getConnection()){
+			try(Statement stat = connCheck.createStatement()){
+				String updateTimestamp = "update db_lock set id=0;";
+				stat.executeUpdate(updateTimestamp);
+				isDBLocked = true;
+				//if the table is found, then the DB is considered as locked and is not overridden
+			}catch(Exception e) {
+				//if the table is not found, then the DB is considered as NOT locked
 			}
-			System.out.println("1/4-CHECK done, DB is locked: " + isDbLocked);
+			
+			System.out.println("1/4-CHECK done, DB is " + (isDBLocked ? "locked, the DB data will not be changed, please drop db_lock first" : "unlocked, the DB data will be changed"));
 		}catch(Exception e){
 			System.out.println("1/4-CHECK failed " + e.getMessage());
 			throw e;
 		}
 		
-		if(!isDbLocked) {
-			try {
-				try(Connection connDrop = getDataSource().getConnection()){
-	
-					ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();    
-		    		rdp.addScript(new ClassPathResource("config/sql/mysql_drop_all.sql")); 
-		    		rdp.populate(connDrop);
-				}
-				System.out.println("2/4-DROP done");
-			}catch(Exception e){
-				System.out.println("2/4-DROP failed " + e.getMessage());
-				throw e;
-			}
-			
-			LocalSessionFactoryBean localSessionFactoryBean = getLocalSessionFactoryBean(datasource);
-			localSessionFactoryBean.afterPropertiesSet();
-	        try (SessionFactory sessionFactory = localSessionFactoryBean.getObject()){
-	            sessionFactory.createEntityManager().close();
-	            System.out.println("3/4-CREATE done");
-	        }catch(Exception e) {
-	        	System.out.println("3/4-CREATE failed " + e.getMessage());
-	        	throw e;
-	        }
-	        
-	        
-	        try(Connection connLoad = getDataSource().getConnection()){
+		if(!isDBLocked) {
+
+			try(Connection connClean = getDataSource(host, port, user, pass).getConnection()){
 				ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
 				
-				String dump = 
-					dml == null ? 
-							StreamUtils.copyToString(new ClassPathResource("config/sql/dump.sql").getInputStream(), Charset.defaultCharset()) 
-							:
-							StreamUtils.copyToString(new FileInputStream(dml), Charset.defaultCharset())
-					;
+				String script = StreamUtils.copyToString(new ClassPathResource("config/sql/mysql_clean_all.sql").getInputStream(), Charset.defaultCharset()); 
 				
-				dump = loadFilesInScript(dump);
-
-				rdp.addScript(new ByteArrayResource(dump.getBytes())); 
-	    		rdp.populate(connLoad);
-				String createVersionTable = "CREATE TABLE confservice.db_lock (id INT);";
-
-				connLoad.createStatement().executeUpdate(createVersionTable);
-				System.out.println("4/4-LOAD done");
+				rdp.addScript(new ByteArrayResource(script.getBytes())); 
+	    		rdp.populate(connClean);
+				System.out.println("2/4-CLEAN done");
 	        }catch(Exception e) {
-	        	System.out.println("4/4-LOAD failed " + e.getMessage());
+	        	System.out.println("2/4-CLEAN " + e.getMessage());
+	        	throw e;
+	        }
+			
+			try(Connection connLoad = getDataSource(host, port, user, pass).getConnection()){
+				ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
+
+				try (FileInputStream fis = new FileInputStream(dumpFile)){
+					String dumpSQL = StreamUtils.copyToString(fis, Charset.defaultCharset()); 
+					dumpSQL = loadFilesInScript(dumpSQL);
+	
+					rdp.addScript(new ByteArrayResource(dumpSQL.getBytes())); 
+		    		rdp.populate(connLoad);
+					System.out.println("3/4-LOAD done");
+				}catch(Exception e) {
+					throw e;
+				}
+	        }catch(Exception e) {
+	        	System.out.println("3/4-LOAD failed " + e.getMessage());
 	        	throw e;
 	        }
 	        
+			try(Connection connUnlock = getDataSource(host, port, user, pass).getConnection()){
+				try(Statement stat = connUnlock.createStatement()){
+					String updateTimestamp = "create table db_lock(id INT);";
+					stat.executeUpdate(updateTimestamp);
+				}
+				
+				System.out.println("4/4-LOCK done");
+			}catch(Exception e){
+				System.out.println("4/4-LOCK failed " + e.getMessage());
+				throw e;
+			}
+	        
 		}
+		
 		System.out.println("InitDB done");
 	}
 	
@@ -110,37 +123,15 @@ public class InitDB {
 		return sql;
 	}
 	
-    private static LocalSessionFactoryBean getLocalSessionFactoryBean(DataSource dataSource) {
-        final LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource);
-        sessionFactory.setPackagesToScan(new String[] { "eu.pledgerproject.confservice.domain" });
-        sessionFactory.setPhysicalNamingStrategy(new SpringPhysicalNamingStrategy());
-        sessionFactory.setImplicitNamingStrategy(new SpringImplicitNamingStrategy());
-        sessionFactory.setHibernateProperties(getHibernateProperties());
-
-        return sessionFactory;
-    }
-	
-    private static DataSource getDataSource() {
+    private static DataSource getDataSource(String host, String port, String user, String pass) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://confservice-mysql:3306/confservice?serverTimezone=UTC");
-        dataSource.setUsername("root");
-        dataSource.setPassword("root");
+        dataSource.setUrl("jdbc:mysql://"+host+":"+port+"/confservice?serverTimezone=UTC");
+        dataSource.setUsername(user);
+        dataSource.setPassword(pass);
 
         return dataSource;
     }
     
-    private static Properties getHibernateProperties() {
-        return new Properties() {
-			private static final long serialVersionUID = 1L;
-
-			{
-                this.put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-                this.put("hibernate.hbm2ddl.auto", "create");
-            }
-        };
-
-    }
 	
 }

@@ -22,14 +22,13 @@ SLA are of three types:
 SLA Violations can be sent over Kafka using
 ./send_dev_kafka.sh -t sla_violation -f <my-file>
 
-####DSS Scenario Group#1: vertical scaling with optimisation of type 'resource'
+### DSS Scenario group#1, optimisation of type 'resource', scaling based on SLA violations received
 
-initial configuration
-start example-app-ve
+initial configuration: App example-app-ve running
 
-***scenario#1.1*** - scaling UP for high resource usage with violation of SLAs of type 'active'
+<u>***scenario#1.1***</u> - scaling UP because of high resource usage when SLA violations of type 'active' are received
 
-simulate high CPU usage with 'stress'
+a) simulate high CPU usage with 'stress'
 
 ```
 APPNAME=example-app-ve
@@ -37,18 +36,19 @@ kubectl --kubeconfig kind-kubeconfig1.yaml exec -it `kubectl --kubeconfig kind-k
 stress --cpu 8
 ```
 
-send a SLA violation about resources (sla_violation_sla_ve.json)
+b) send a SLA violation about resources (sla_violation_sla_ve.json)
 
 result: example-app-ve is scaled UP with +10% resources
 
-***scenario#1.2*** - scaling DOWN for low resource usage
+<u>***scenario#1.2***</u> - scaling DOWN because of low resource usage after a grace period without SLA violations
 
-simulate low CPU usage (continues from scenario#1.1)
+a) simulate low CPU usage
 
-CPU usage is now low (the container with 'stress' was killed to spawn a new one with increased requests from scenario#1.1)
-after some minutes, example-app-ve is scaled DOWN with -10% resources
+Nothing to do. After scenario#1.1, CPU usage goes to low values as the container with 'stress' running was killed to to spawn a new one with increased requests
 
-***scenario#1.3*** - scaling UP for high resource usage with violation of SLAs of type 'active' WHEN a second violation of SLA of type 'ignore' is received. So, scaling UP is required 
+result: after some minutes, example-app-ve is scaled DOWN with -10% resources
+
+<u>***scenario#1.3***</u> - scaling UP because of high resource usage when SLA violations of type 'active' are received, WHEN a previous SLA violation of type 'ignore' was received. So, scaling UP is required. 
 
 ```
 APPNAME=example-app-ve
@@ -61,7 +61,7 @@ then send a SLA violation about resources (sla_violation_sla_ve.json)
 
 result: example-app-ve is scaled UP with +10% resources
 
-***scenario#1.4*** - skipping scaling UP for high resource usage with violation of SLAs of type 'active' WHEN a second violation of SLAs of type 'suspend' is received. So, scaling UP is NOT required 
+<u>***scenario#1.4***</u> - skipping scaling UP because of high resource usage when SLA violations of type 'active' are received, WHEN a previous SLA violation of type 'suspend' was received. So, scaling UP is NOT required 
 
 ```
 APPNAME=example-app-ve
@@ -72,14 +72,13 @@ stress --cpu 8
 first send a SLA violation about resources (sla_violation_sla_ve_suspend.json)
 then send a SLA violation about resources (sla_violation_sla_ve.json)
 
-result: example-app-ve is scaled UP with +10% resources
+result: example-app-ve is NOT scaled UP
 
-####DSS Scenario Group#2: horizontal scaling with optimisation of type 'resource'
+### DSS Scenario group#2: horizontal scaling with optimisation of type 'resource'
 
-initial configuration
-start example-app-ho
+initial configuration: App example-app-ho running
 
-***scenario#2.1*** - scaling OUT for high resource usage based on violation of SLAs of type 'active'
+<u>***scenario#2.1***</u> - scaling OUT because of high resource usage when SLA violations of type 'active' are received
 
 ```
 APPNAME=example-app-ho
@@ -91,19 +90,18 @@ send a SLA violation about resources (sla_violation_sla_ho.json)
 
 result: example-app-ho is scaled OUT adding a replica
 
-***scenario#2.2*** - scaling IN for low resource usage
+<u>***scenario#2.2***</u> - scaling IN because of low resource usage after a grace period without SLA violations
 
 simulate low CPU usage
 stop the 'stress' tool
 
-result: after some minutes, example-app-ho is scaled IN removing a replica
+result: after some minutes, example-app-ho is scaled IN, removing a replica
 
-####DSS Scenario Group#3: Apps offloading to the cloud when scaling UP and edge resources are not available
+### DSS Scenario group#3: offloading to the cloud
 
-initial configuration
-start example-app-ve (cpu/mem requests are 250, edge node capacity is 300)
+initial configuration: App example-app-ve running (cpu/mem requests are 250, edge node capacity is 300)
 
-***scenario#3.1***
+<u>***scenario#3.1***</u> - offloading to the cloud when scaling UP would be necessary BUT edge resources are not sufficient
 simulate high CPU usage with 'stress'
 
 ```
@@ -115,74 +113,88 @@ send a SLA violation about resources (sla_violation_sla_ve.json)
 
 result#1: example-app-ve is scaled UP and stays on the edge. In fact, request are raised to 250+10%=275 which is still within the edge node capacity (300)
 
-attach to the new POD and simulate high CPU usage with 'stress'
+attach to the new POD and simulate again high CPU usage with 'stress'
 
 ```
 kubectl --kubeconfig kind-kubeconfig1.yaml exec -it `kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 | grep $APPNAME | awk '{ print $1}'` -n testsp1 -- sh
 stress --cpu 8
 ```
-send a SLA violation about resources (sla_violation_sla_ve.json)
+send another SLA violation about resources (sla_violation_sla_ve.json)
 
 result#2: example-app-ve is scaled UP and offloaded to the cloud. In fact, request are raised to 275+10%=302 which is too much for edge node capacity (300)
 
-***scenario#3.2***
+<u>***scenario#3.2***</u> - offloading to the edge when resources are available again
 
 simulate low CPU usage
 
-CPU usage is now low (the container with 'stress' was killed to spawn a new one with increased requests from scenario#1.1)
+Nothing to do. After scenario#3.1, CPU usage goes to low values as the container with 'stress' running was killed to to spawn a new one with increased requests
+
 result: after some minutes, example-app-ve is scaled DOWN with -10% resources, fits the edge node capacity, so is offloaded to the edge
 
-####DSS Scenario Group#4: Apps offloading on edge/cloud according to ECODA algorithm
+### DSS Scenario group#4: Apps offloading on edge/cloud using ECODA optimisation algorithm
+initial configuration: start example-app-bash1, example-app-bash2, example-app-bash3, example-app-bash4
 
-initial configuration
-start, sequentially, example-app-bash1, example-app-bash2, example-app-bash3, example-app-bash4
+see that
 example-app-bash1+example-app-bash2 are instantiated on the edge
 example-app-bash3+example-app-bash4 are instantiated on the cloud
 
 from ServiceReport, wait for startup time to be available
-get the requests and put them in the ECODA spreadsheet
-result: the ECODA edge/cloud offloads are coherent
+get the requests and put them in the ECODA spreadsheet in doc/ECODA
+
+check the nodes where the pods are allocated
 
 ```
 kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
 ```
 
-***scenario#4.1***
+result: the ECODA edge/cloud offloads are coherent
+
+<u>***scenario#4.1***</u>
 
 stop example-app-bash1 (cpu/mem requests go to 0)
 
 result: example-app-bash4 is moved to the cloud 
 
-***scenario#4.2***
+<u>***scenario#4.2***</u>
 
 start example-app-bash1 (cpu/mem requests go to 250)
 
 result: example-app-bash1 is started on the cloud, then is moved to the edge 
 
-***scenario#4.3***
+<u>***scenario#4.3***</u>
 
 change example-app-bash3 priority to 2
 
 result: example-app-bash3 is moved to the edge, then back and is moved to the cloud again
 
-***scenario#4.4***
+<u>***scenario#4.4***</u>
 
 change example-app-bash3 service requests to 100
 
 result: example-app-bash3 is moved to the edge, then back and is moved to the cloud again
 
-####DSS Scenario Group#5: Apps offloading on edge/cloud according to ECODA algorithm plus increase/decrease of resource requests 
+### DSS Scenario group#5: Apps offloading on edge/cloud using ECODA optimisation algorithm plus increase/decrease of resource requests based on SLA Violations
 
-initial configuration
-change ServiceOptimisation on Service example-app-bash1/2/3/4
+initial configuration: start example-app-bash1, example-app-bash2, example-app-bash3, example-app-bash4
 
-start, sequentially, example-app-bash1, example-app-bash2, example-app-bash3, example-app-bash4
-example-app-bash1 AND example-app-bash2 are instantiated on the edge
-example-app-bash3 AND example-app-bash4 are instantiated on the cloud
+see that
+example-app-bash1+example-app-bash2 are instantiated on the edge
+example-app-bash3+example-app-bash4 are instantiated on the cloud
 
-***scenario#5.1***
-on example-app-bash2
-simulate high CPU usage
+from ServiceReport, wait for startup time to be available
+get the requests and put them in the ECODA spreadsheet in doc/ECODA
+
+check the nodes where the pods are allocated
+
+```
+kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
+```
+
+result: the ECODA edge/cloud offloads are coherent
+
+<u>***scenario#5.1***</u>
+
+on example-app-bash2 simulate high CPU usage
 
 ```
 APPNAME=example-app-bash2
@@ -195,8 +207,9 @@ send a SLA violation about resources (sla_violation_bash2.json)
 result: resource requests(300/300) go UP and the app offloaded to the cloud
 
 on the other apps
-result: see resource requests going DOWN
+result#1: see resource requests going DOWN
 
 get the requests and put them in the ECODA spreadsheet
-result: the ECODA edge/cloud offloads are coherent
+
+result#2: the ECODA edge/cloud offloads are coherent
 

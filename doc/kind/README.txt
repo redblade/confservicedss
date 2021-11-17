@@ -7,7 +7,7 @@ install Kind tool https://kind.sigs.k8s.io/docs/user/quick-start/
 load the MySQL dump dump_kind.sql
 cd src/main/resources
 mysql -h localhost -D confservice -u root -proot < config/sql/mysql_clean_all.sql
-mysql -h localhost -D confservice -u root -proot < config/sql/dump_base.sql
+mysql -h localhost -D confservice -u root -proot < config/sql/dump_kind.sql
  
 
 #2) delete Kind cluster
