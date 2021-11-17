@@ -23,13 +23,13 @@ use confservice;
 LOCK TABLES `app` WRITE;
 /*!40000 ALTER TABLE `app` DISABLE KEYS */;
 INSERT INTO `app` (`id`, `app_descriptor`, `name`, `management_type`, `status`, `service_provider_id`, `catalog_app_id`) VALUES
-(5,LOAD_FILE_YAML('config/yaml/app.example-app-ve.yaml'),'example-app-ve','MANAGED','STOPPED',2,5),
-(6,LOAD_FILE_YAML('config/yaml/app.example-app-ho.yaml'),'example-app-ho','MANAGED','STOPPED',3,6),
-(7,LOAD_FILE_YAML('config/yaml/app.example-app-nginx-sla.yaml'),'example-app-nginx-sla','MANAGED','STOPPED',2,7),
-(8,LOAD_FILE_YAML('config/yaml/app.example-app-bash1.yaml'),'example-app-bash1','MANAGED','STOPPED',2,8),
-(9,LOAD_FILE_YAML('config/yaml/app.example-app-bash2.yaml'),'example-app-bash2','MANAGED','STOPPED',2,9),
-(10,LOAD_FILE_YAML('config/yaml/app.example-app-bash3.yaml'),'example-app-bash3','MANAGED','STOPPED',2,10),
-(11,LOAD_FILE_YAML('config/yaml/app.example-app-bash4.yaml'),'example-app-bash4','MANAGED','STOPPED',2,11);
+(5,LOAD_FILE_YAML('yaml/app.example-app-ve.yaml'),'example-app-ve','MANAGED','STOPPED',2,5),
+(6,LOAD_FILE_YAML('yaml/app.example-app-ho.yaml'),'example-app-ho','MANAGED','STOPPED',3,6),
+(7,LOAD_FILE_YAML('yaml/app.example-app-nginx-sla.yaml'),'example-app-nginx-sla','MANAGED','STOPPED',2,7),
+(8,LOAD_FILE_YAML('yaml/app.example-app-bash1.yaml'),'example-app-bash1','MANAGED','STOPPED',2,8),
+(9,LOAD_FILE_YAML('yaml/app.example-app-bash2.yaml'),'example-app-bash2','MANAGED','STOPPED',2,9),
+(10,LOAD_FILE_YAML('yaml/app.example-app-bash3.yaml'),'example-app-bash3','MANAGED','STOPPED',2,10),
+(11,LOAD_FILE_YAML('yaml/app.example-app-bash4.yaml'),'example-app-bash4','MANAGED','STOPPED',2,11);
 /*!40000 ALTER TABLE `app` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -49,13 +49,13 @@ UNLOCK TABLES;
 LOCK TABLES `catalog_app` WRITE;
 /*!40000 ALTER TABLE `catalog_app` DISABLE KEYS */;
 INSERT INTO `catalog_app` (`id`, `app_descriptor`, `name`, `service_provider_id`) VALUES 
-(5,LOAD_FILE_YAML('config/yaml/app.example-app-ve.yaml'),'example-app-ve',NULL),
-(6,LOAD_FILE_YAML('config/yaml/app.example-app-ho.yaml'),'example-app-ho',NULL),
-(7,LOAD_FILE_YAML('config/yaml/app.example-app-nginx-sla.yaml'),'example-app-nginx-sla',NULL),
-(8,LOAD_FILE_YAML('config/yaml/app.example-app-bash1.yaml'),'example-app-bash1',NULL),
-(9,LOAD_FILE_YAML('config/yaml/app.example-app-bash2.yaml'),'example-app-bash2',NULL),
-(10,LOAD_FILE_YAML('config/yaml/app.example-app-bash3.yaml'),'example-app-bash3',NULL),
-(11,LOAD_FILE_YAML('config/yaml/app.example-app-bash4.yaml'),'example-app-bash4',NULL);
+(5,LOAD_FILE_YAML('yaml/app.example-app-ve.yaml'),'example-app-ve',NULL),
+(6,LOAD_FILE_YAML('yaml/app.example-app-ho.yaml'),'example-app-ho',NULL),
+(7,LOAD_FILE_YAML('yaml/app.example-app-nginx-sla.yaml'),'example-app-nginx-sla',NULL),
+(8,LOAD_FILE_YAML('yaml/app.example-app-bash1.yaml'),'example-app-bash1',NULL),
+(9,LOAD_FILE_YAML('yaml/app.example-app-bash2.yaml'),'example-app-bash2',NULL),
+(10,LOAD_FILE_YAML('yaml/app.example-app-bash3.yaml'),'example-app-bash3',NULL),
+(11,LOAD_FILE_YAML('yaml/app.example-app-bash4.yaml'),'example-app-bash4',NULL);
 /*!40000 ALTER TABLE `catalog_app` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -191,13 +191,13 @@ UNLOCK TABLES;
 LOCK TABLES `service` WRITE;
 /*!40000 ALTER TABLE `service` DISABLE KEYS */;
 INSERT INTO `service` (`id`, `priority`, `profile`, `initial_configuration`, `runtime_configuration`, `deploy_descriptor`, `deploy_type`, `name`, `status`, `app_id`) VALUES
-(6,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"250\", \"initial_cpu_millicore\": \"250\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"vertical"}', '',                       LOAD_FILE_YAML('config/yaml/service.example-app-ve.yaml'),            'KUBERNETES', 'example-app-ve',           'STOPPED', '5'),
-(7,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"horizontal", \"replicas\": \"1"}', '', LOAD_FILE_YAML('config/yaml/service.example-app-ho.yaml'),            'KUBERNETES', 'example-app-ho',           'STOPPED', '6'),
-(8,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('config/yaml/service.example-app-nginx-sla.yaml'),     'KUBERNETES', 'example-app-nginx-sla',    'STOPPED', '7'),
-(9,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"250\", \"initial_cpu_millicore\": \"250\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('config/yaml/service.example-app-bash1.yaml'),         'KUBERNETES', 'example-app-bash1',    'STOPPED', '8'),
-(10, 1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"300\", \"initial_cpu_millicore\": \"300\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('config/yaml/service.example-app-bash2.yaml'),         'KUBERNETES', 'example-app-bash2',    'STOPPED', '9'),
-(11, 1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"300\", \"initial_cpu_millicore\": \"300\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('config/yaml/service.example-app-bash3.yaml'),         'KUBERNETES', 'example-app-bash3',    'STOPPED', '10'),
-(12, 1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('config/yaml/service.example-app-bash4.yaml'),         'KUBERNETES', 'example-app-bash4',    'STOPPED', '11');
+(6,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"250\", \"initial_cpu_millicore\": \"250\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"vertical"}', '',                       LOAD_FILE_YAML('yaml/service.example-app-ve.yaml'),            'KUBERNETES', 'example-app-ve',           'STOPPED', '5'),
+(7,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"horizontal", \"replicas\": \"1"}', '', LOAD_FILE_YAML('yaml/service.example-app-ho.yaml'),            'KUBERNETES', 'example-app-ho',           'STOPPED', '6'),
+(8,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-nginx-sla.yaml'),     'KUBERNETES', 'example-app-nginx-sla',    'STOPPED', '7'),
+(9,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"250\", \"initial_cpu_millicore\": \"250\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-bash1.yaml'),         'KUBERNETES', 'example-app-bash1',    'STOPPED', '8'),
+(10, 1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"300\", \"initial_cpu_millicore\": \"300\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-bash2.yaml'),         'KUBERNETES', 'example-app-bash2',    'STOPPED', '9'),
+(11, 1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"300\", \"initial_cpu_millicore\": \"300\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-bash3.yaml'),         'KUBERNETES', 'example-app-bash3',    'STOPPED', '10'),
+(12, 1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-bash4.yaml'),         'KUBERNETES', 'example-app-bash4',    'STOPPED', '11');
 /*!40000 ALTER TABLE `service` ENABLE KEYS */;
 UNLOCK TABLES;
 

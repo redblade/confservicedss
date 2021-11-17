@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.util.StreamUtils;
@@ -21,27 +20,24 @@ public class InitDB {
 
 	public static void main(String[] args) throws Exception {
 		log.info("InitDB started");
-		
+
+		String dumpFilePath = "/app/resources/config/sql/dump_base.sql";
+
 		String host = "confservice-mysql.core.svc.cluster.local";
 		String port = "3306";
 		String user = "root";
 		String pass = "root";
-		String dumpFile = null;
 		
-		if(args.length == 0) {
-			dumpFile = "config/sql/dump_base.sql";
-		}
-		
-		else if(args.length == 1) {
-			dumpFile = args[0];
+		if(args.length == 1) {
+			dumpFilePath = args[0];
 		}
 		
 		else if(args.length == 5) {
-			host = args[0];
-			port = args[1];
-			user = args[2];
-			pass = args[3];
-			dumpFile = args[4];
+			dumpFilePath = args[0];
+			host = args[1];
+			port = args[2];
+			user = args[3];
+			pass = args[4];
 		}
 		
 		boolean isDBLocked = false;
@@ -63,11 +59,12 @@ public class InitDB {
 		}
 		
 		if(!isDBLocked) {
-
+			String basePath = dumpFilePath.substring(0, dumpFilePath.lastIndexOf("/"));
+			String dumpFile = dumpFilePath.substring(dumpFilePath.lastIndexOf("/") + 1);
 			try(Connection connClean = getDataSource(host, port, user, pass).getConnection()){
 				ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
 				
-				try (FileInputStream fis = new FileInputStream("config/sql/mysql_clean_all.sql")){
+				try (FileInputStream fis = new FileInputStream(basePath + "/" + "mysql_clean_all.sql")){
 					String cleanSQL = StreamUtils.copyToString(fis, Charset.defaultCharset()); 
 					
 					rdp.addScript(new ByteArrayResource(cleanSQL.getBytes())); 
@@ -81,9 +78,9 @@ public class InitDB {
 			try(Connection connLoad = getDataSource(host, port, user, pass).getConnection()){
 				ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
 
-				try (FileInputStream fis = new FileInputStream(dumpFile)){
+				try (FileInputStream fis = new FileInputStream(basePath + "/" + dumpFile)){
 					String loadSQL = StreamUtils.copyToString(fis, Charset.defaultCharset()); 
-					loadSQL = loadFilesInScript(loadSQL);
+					loadSQL = loadFilesInScript(basePath, loadSQL);
 	
 					rdp.addScript(new ByteArrayResource(loadSQL.getBytes())); 
 		    		rdp.populate(connLoad);
@@ -111,17 +108,19 @@ public class InitDB {
 		log.info("InitDB done");
 	}
 	
-	private static String loadFilesInScript(String sql) throws java.io.IOException {
+	private static String loadFilesInScript(String basePath, String sql) throws java.io.IOException {
 		while(sql.contains("LOAD_FILE_YAML")) {
 			int indexSplit = sql.indexOf("LOAD_FILE_YAML");
 			String preSQL = sql.substring(0, indexSplit);
-			String postSQL = sql.substring(sql.indexOf(",", indexSplit));
+			String postSQL = sql.substring(sql.indexOf(")", indexSplit) + 1);
 			String fileToLoad = sql.substring(indexSplit + "LOAD_FILE_YAML".length() + "('".length(), sql.indexOf("')", indexSplit));
-			String content = StreamUtils.copyToString(new ClassPathResource(fileToLoad).getInputStream(), Charset.defaultCharset());
-			content = content.replace("\n", "\\n");
-			content = content.replace("'", "\'");
-			content = content.replace("\"", "\\\"");
-			sql = preSQL + "'" + content + "'" + postSQL;
+			try(FileInputStream fis = new FileInputStream(basePath + "/" + fileToLoad)){
+				String content = StreamUtils.copyToString(fis, Charset.defaultCharset());
+				content = content.replace("\n", "\\n");
+				content = content.replace("'", "\'");
+				content = content.replace("\"", "\\\"");
+				sql = preSQL + "'" + content + "'" + postSQL;
+			}
 		}
 		return sql;
 	}
