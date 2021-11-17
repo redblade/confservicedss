@@ -22,7 +22,7 @@ public class InitDB {
 	public static void main(String[] args) throws Exception {
 		log.info("InitDB started");
 		
-		String host = "localhost";
+		String host = "confservice-mysql.core.svc.cluster.local";
 		String port = "3306";
 		String user = "root";
 		String pass = "root";

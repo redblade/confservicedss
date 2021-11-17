@@ -35,4 +35,4 @@ minor is changed ONLY WHEN the DB model changes (pledgerui_vXXX)
 From here, Jenkins build number was restarted
 2.4.4b10:pledgerui_v32   - fixed Mail properties and README
 2.4.4b13:pledgerui_v32   - fixed Kind scenario
-2.4.5b17:pledgerui_v32   - changed InitDB logic
+2.4.5b18:pledgerui_v32   - changed InitDB logic
