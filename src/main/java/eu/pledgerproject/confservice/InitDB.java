@@ -51,6 +51,10 @@ public class InitDB {
 				stat.executeUpdate(updateTimestamp);
 				isDBLocked = true;
 			}
+			catch(Exception e) {
+				//if table is not found, it is ok
+			}
+			
 			
 			log.info("1/4-CHECK done, DB is " + (isDBLocked ? "locked, the DB data will not be changed, please drop db_lock first" : "unlocked, the DB data will be changed"));
 		}catch(Exception e){
