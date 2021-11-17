@@ -47,9 +47,6 @@ public class InitDB {
 				String updateTimestamp = "update db_lock set id=0;";
 				stat.executeUpdate(updateTimestamp);
 				isDBLocked = true;
-				//if the table is found, then the DB is considered as locked and is not overridden
-			}catch(Exception e) {
-				//if the table is not found, then the DB is considered as NOT locked
 			}
 			
 			System.out.println("1/4-CHECK done, DB is " + (isDBLocked ? "locked, the DB data will not be changed, please drop db_lock first" : "unlocked, the DB data will be changed"));
@@ -63,11 +60,12 @@ public class InitDB {
 			try(Connection connClean = getDataSource(host, port, user, pass).getConnection()){
 				ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
 				
-				String script = StreamUtils.copyToString(new ClassPathResource("config/sql/mysql_clean_all.sql").getInputStream(), Charset.defaultCharset()); 
-				
-				rdp.addScript(new ByteArrayResource(script.getBytes())); 
-	    		rdp.populate(connClean);
-				System.out.println("2/4-CLEAN done");
+				try (FileInputStream fis = new FileInputStream("config/sql/mysql_clean_all.sql")){
+					String cleanSQL = StreamUtils.copyToString(fis, Charset.defaultCharset()); 
+					
+					rdp.addScript(new ByteArrayResource(cleanSQL.getBytes())); 
+		    		rdp.populate(connClean);
+				}
 	        }catch(Exception e) {
 	        	System.out.println("2/4-CLEAN " + e.getMessage());
 	        	throw e;
@@ -77,14 +75,12 @@ public class InitDB {
 				ResourceDatabasePopulator rdp = new ResourceDatabasePopulator();
 
 				try (FileInputStream fis = new FileInputStream(dumpFile)){
-					String dumpSQL = StreamUtils.copyToString(fis, Charset.defaultCharset()); 
-					dumpSQL = loadFilesInScript(dumpSQL);
+					String loadSQL = StreamUtils.copyToString(fis, Charset.defaultCharset()); 
+					loadSQL = loadFilesInScript(loadSQL);
 	
-					rdp.addScript(new ByteArrayResource(dumpSQL.getBytes())); 
+					rdp.addScript(new ByteArrayResource(loadSQL.getBytes())); 
 		    		rdp.populate(connLoad);
 					System.out.println("3/4-LOAD done");
-				}catch(Exception e) {
-					throw e;
 				}
 	        }catch(Exception e) {
 	        	System.out.println("3/4-LOAD failed " + e.getMessage());
