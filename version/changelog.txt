@@ -29,5 +29,5 @@
 
 From here, Jenkins build number was restarted
 2.4.4b10:pledgerui_v32   - fixed Mail properties and README
-2.4.4b11:pledgerui_v32   - fixed Kind scenarios
+2.4.4b11:pledgerui_v32   - fixed Kind Scenarios
 
