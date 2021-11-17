@@ -1,6 +1,3 @@
-"Github flow" is used for source code versioning https://guides.github.com/introduction/flow/
-Source code is tagged with major.minor.change (eg. 0.1.2)
-
 A script, change_version.sh, is used to make the changes to the code to reflect the version
 Docker image is built by Jenkins and versioned as major.minor.change_build, where build is changed automatically
 

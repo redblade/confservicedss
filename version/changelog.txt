@@ -1,3 +1,7 @@
+"Github flow" is used for source code versioning https://guides.github.com/introduction/flow/
+
+Source code is tagged with major.minor.change (eg. 0.1.2)
+minor is changed ONLY WHEN the DB model changes (pledgerui_vXXX)
 
 0.0.3b36: pledgerui_v09 - added support to MetricsServer and Prometheus
 0.0.3b37: pledgerui_v09 - reports with Double values
@@ -29,5 +33,5 @@
 
 From here, Jenkins build number was restarted
 2.4.4b10:pledgerui_v32   - fixed Mail properties and README
-2.4.4b11:pledgerui_v32   - fixed Kind scenario
+2.4.4b13:pledgerui_v32   - fixed Kind scenario
 
