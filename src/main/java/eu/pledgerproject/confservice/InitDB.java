@@ -7,6 +7,8 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -15,9 +17,10 @@ import org.springframework.util.StreamUtils;
 
 
 public class InitDB {
+    private final static Logger log = LoggerFactory.getLogger(InitDB.class);
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("InitDB started");
+		log.info("InitDB started");
 		
 		String host = "localhost";
 		String port = "3306";
@@ -49,9 +52,9 @@ public class InitDB {
 				isDBLocked = true;
 			}
 			
-			System.out.println("1/4-CHECK done, DB is " + (isDBLocked ? "locked, the DB data will not be changed, please drop db_lock first" : "unlocked, the DB data will be changed"));
+			log.info("1/4-CHECK done, DB is " + (isDBLocked ? "locked, the DB data will not be changed, please drop db_lock first" : "unlocked, the DB data will be changed"));
 		}catch(Exception e){
-			System.out.println("1/4-CHECK failed " + e.getMessage());
+			log.info("1/4-CHECK failed", e);
 			throw e;
 		}
 		
@@ -67,7 +70,7 @@ public class InitDB {
 		    		rdp.populate(connClean);
 				}
 	        }catch(Exception e) {
-	        	System.out.println("2/4-CLEAN " + e.getMessage());
+	        	log.info("2/4-CLEAN " + e.getMessage());
 	        	throw e;
 	        }
 			
@@ -80,10 +83,10 @@ public class InitDB {
 	
 					rdp.addScript(new ByteArrayResource(loadSQL.getBytes())); 
 		    		rdp.populate(connLoad);
-					System.out.println("3/4-LOAD done");
+					log.info("3/4-LOAD done");
 				}
 	        }catch(Exception e) {
-	        	System.out.println("3/4-LOAD failed " + e.getMessage());
+	        	log.info("3/4-LOAD failed", e);
 	        	throw e;
 	        }
 	        
@@ -93,15 +96,15 @@ public class InitDB {
 					stat.executeUpdate(updateTimestamp);
 				}
 				
-				System.out.println("4/4-LOCK done");
+				log.info("4/4-LOCK done");
 			}catch(Exception e){
-				System.out.println("4/4-LOCK failed " + e.getMessage());
+				log.info("4/4-LOCK failed", e);
 				throw e;
 			}
 	        
 		}
 		
-		System.out.println("InitDB done");
+		log.info("InitDB done");
 	}
 	
 	private static String loadFilesInScript(String sql) throws java.io.IOException {
