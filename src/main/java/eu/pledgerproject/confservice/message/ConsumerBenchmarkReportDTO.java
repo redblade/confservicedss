@@ -46,10 +46,10 @@ public class ConsumerBenchmarkReportDTO {
     	Optional<Infrastructure> infrastructureDB = infrastructureRepository.findById(message.pledgerInfrastructure);
     	Optional<Node> nodeDB = message.pledgerNode == null ? null : nodeRepository.findById(message.pledgerNode);
 
-    	Optional<Benchmark> benchmarkDB = benchmarkRepository.findByName(message.workload);
+    	Optional<Benchmark> benchmarkDB = benchmarkRepository.findByName(message.workloadId);
     	if(!benchmarkDB.isPresent()) {
     		Benchmark benchmark = new Benchmark();
-    		benchmark.setName(message.workload);
+    		benchmark.setName(message.workloadId);
     		benchmark.setCategory(message.category);
     		if(serviceProviderDB.isPresent()) {
     			benchmark.setServiceProvider(serviceProviderDB.get());
@@ -68,7 +68,7 @@ public class ConsumerBenchmarkReportDTO {
     	if(nodeDB != null && nodeDB.isPresent()) {
     		benchmarkReport.setNode(nodeDB.get());
 		}
-    	benchmarkReport.setInterval(message.interval);
+    	benchmarkReport.setInterval(message.interval != null ? message.interval/60/60 : null);
     	benchmarkReport.setMean(message.mean);
     	benchmarkReport.setMetric(message.metric);
     	benchmarkReport.setStabilityIndex(message.stabilityIndex);

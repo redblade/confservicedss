@@ -24,7 +24,7 @@ public class DeserializerBenchmarkReportDTO implements Deserializer<BenchmarkRep
 		result.pledgerServiceProvider = jsonObject.isNull("pledgerServiceProvider") ? null : jsonObject.getLong("pledgerServiceProvider");
 		result.stabilityIndex = jsonObject.getDouble("stabilityIndex");
 		result.tool = jsonObject.getString("tool");
-		result.workload = jsonObject.getString("workload");
+		result.workloadId = jsonObject.getString("workloadId");
 		return result;
 	}
     
