@@ -102,13 +102,11 @@ To launch your ConfServiceDSS from a Docker image, use env variables (eg. [this]
 docker run -v $(pwd):/var/tmp --env-file doc/env/confservicedss.env -p8080:8080 confservicedss
 ```
 
-Once ConfServiceDSS is started the first time, load the basic configuration data (eg. config/sql/dump_base.sql in src/main/resources):
+Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql or dump_kind.sql):
 
 ```
-cd src/main/resources
-mysql -h localhost -D confservice -u root -proot < config/sql/mysql_clean_all.sql
-mysql -h localhost -D confservice -u root -proot < config/sql/dump_base.sql
-cd ../../..
+mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"
+java -cp target/confservicedss-2.4.4.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_base.sql localhost 3306 root root
 ```
 
 Then, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
