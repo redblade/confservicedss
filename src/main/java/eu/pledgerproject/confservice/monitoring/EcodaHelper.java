@@ -213,7 +213,15 @@ public class EcodaHelper {
 		//build the plan
 		for(NodeGroup nodeGroup : tempAllocationMap.keySet()) {
 			for(ServiceData serviceData : tempAllocationMap.get(nodeGroup)) {
+				//if the proposed node is different from the current, we need to offload
 				if(!nodeGroup.nodes.contains(serviceData.currentNode)){
+					result.put(serviceData, nodeGroup);
+				}
+				//but also if the proposed node is the same but the service has different requests
+				else if(
+						ResourceDataReader.getServiceRuntimeCpuRequest(serviceData.service) != serviceData.requestCpuMillicore ||
+						ResourceDataReader.getServiceRuntimeMemRequest(serviceData.service) != serviceData.requestMemoryMB
+				) {
 					result.put(serviceData, nodeGroup);
 				}
 			}

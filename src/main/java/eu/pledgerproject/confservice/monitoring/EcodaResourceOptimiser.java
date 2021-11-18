@@ -161,8 +161,8 @@ public class EcodaResourceOptimiser {
 	
 	private int[] getServiceResourcePlan(Service service) {
 		int[] result = new int[] {
-			ResourceDataReader.getServiceCpuRequest(service),
-			ResourceDataReader.getServiceMemRequest(service)
+			ResourceDataReader.getServiceRuntimeCpuRequest(service),
+			ResourceDataReader.getServiceRuntimeMemRequest(service)
 		};
 		
 		//get the percentage of autoscale
@@ -179,7 +179,7 @@ public class EcodaResourceOptimiser {
 		if(slaViolationListCritical.size() > 0) {
 			result[0] = (int) (result[0] * (100.0 + autoscalePercentageInt)/100.0);
 			result[1] = (int) (result[1] * (100.0 + autoscalePercentageInt)/100.0);
-			saveInfoEvent(service, "Increased resources for service " + service.getName() + " - cpu/mem: " + result[0] + "/" + result[1]);
+			saveInfoEvent(service, "Possible increase of Increased resources for service " + service.getName() + " - cpu/mem: " + result[0] + "/" + result[1]);
 		}
 		//if, on the other hand, the service has been running and no violations have been received so far, then we need to decrease resources
 		else {
@@ -187,14 +187,14 @@ public class EcodaResourceOptimiser {
 
 			List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampSteady);
 			if(service.getLastChangedStatus().isBefore(timestampSteady) && slaViolationCriticalList.size() == 0) {
-				int minCpuRequest = ResourceDataReader.getServiceCpuRequest(service);
-				int minMemRequest = ResourceDataReader.getServiceMemRequest(service);
+				int minCpuRequest = ResourceDataReader.getServiceInitialMinCpuRequest(service);
+				int minMemRequest = ResourceDataReader.getServiceInitialMinMemRequest(service);
 				
 				int cpuRequestTemp = (int) (result[0] * (100.0 - autoscalePercentageInt)/100.0);
 				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageInt)/100.0); 
 				result[0] = cpuRequestTemp > minCpuRequest ? cpuRequestTemp : minCpuRequest;
 				result[1] = memRequestTemp > minMemRequest ? memRequestTemp : minMemRequest;
-				saveInfoEvent(service, "Decreased resources for service " + service.getName() + " - cpu/mem: " + result[0] + "/" + result[1]);
+				saveInfoEvent(service, "Possible decrease of resources for service " + service.getName() + " - cpu/mem: " + result[0] + "/" + result[1]);
 			}
 		}
 

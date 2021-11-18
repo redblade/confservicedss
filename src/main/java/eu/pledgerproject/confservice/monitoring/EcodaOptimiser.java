@@ -131,8 +131,8 @@ public class EcodaOptimiser {
 			for(Service service: serviceList) {
 
 				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-				int requestCpuMillicore = ResourceDataReader.getServiceCpuRequest(service);
-				int requestMemoryMB = ResourceDataReader.getServiceMemRequest(service);
+				int requestCpuMillicore = ResourceDataReader.getServiceRuntimeCpuRequest(service);
+				int requestMemoryMB = ResourceDataReader.getServiceRuntimeMemRequest(service);
 				
 				ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 				serviceData.currentNode = resourceDataReader.getCurrentNode(service);

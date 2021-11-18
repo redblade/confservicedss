@@ -35,8 +35,8 @@ Two Kubernetes infrastructures are configured:
     - cluster1-worker3: edge  (with cpu/mem 300)
 
 - cluster2:
-    - cluster2-master : edge  (unavailable for scheduling)
-    - cluster2-worker : edge  (with cpu/mem 300)
+    - cluster2-master : cloud  (unavailable for scheduling)
+    - cluster2-worker : cloud  (with cpu/mem 3000)
 
 <h2>  DSS SCENARIO GROUP#1: optimisation of type 'resource', horizontal scaling based on SLA violations received </h2>
 
@@ -114,7 +114,7 @@ initial configuration: App example-app-ho running
 
 ```
 APPNAME=example-app-ho
-kubectl --kubeconfig kind-kubeconfig2.yaml exec -it `kubectl --kubeconfig kind-kubeconfig2.yaml get po -n testsp2 | grep $APPNAME | awk '{ print $1}'` -n testsp2 -- sh
+kubectl --kubeconfig kind-kubeconfig1.yaml exec -it `kubectl --kubeconfig kind-kubeconfig1.yaml get po -n test1 | grep $APPNAME | awk '{ print $1}'` -n testsp1 -- sh
 simulate high CPU usage with 'stress'
 stress --cpu 8
 ```
@@ -127,8 +127,7 @@ result: example-app-ho is scaled OUT adding a replica
 
 <u><b>scenario#2.2</b></u> - scaling IN because of low resource usage after a grace period without SLA violations
 
-simulate low CPU usage
-stop the 'stress' tool
+simulate low CPU usage stopping the 'stress' tool
 
 result: after some minutes, example-app-ho is scaled IN, removing a replica
 
@@ -164,7 +163,7 @@ send another SLA violation about resources (sla_violation_sla_ve.json)
 ./send_dev_kafka.sh -t sla_violation -f sla_violation_sla_ve.json
 ```
 
-result#2: example-app-ve is scaled UP and offloaded to the cloud. In fact, request are raised to 275+10%=302 which is too much for edge node capacity (300)
+result#2: example-app-ve is scaled UP and offloaded to the cloud on cluster2. In fact, request are raised to 275+10%=302 which is too much for edge node capacity (300)
 
 <u><b>scenario#3.2</b></u> - offloading to the edge when resources are available again
 

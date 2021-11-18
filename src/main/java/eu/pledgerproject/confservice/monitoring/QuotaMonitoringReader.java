@@ -215,8 +215,8 @@ public class QuotaMonitoringReader {
 			for(Service service : runningServiceBySP) {
 				Node currentNode = resourceDataReader.getCurrentNode(service);
 				if(currentNode != null && node.getName().equals(currentNode.getName())) {
-					totalNodeCpuRequests += ResourceDataReader.getServiceCpuRequest(service);
-					totalNodeMemRequests += ResourceDataReader.getServiceMemRequest(service);
+					totalNodeCpuRequests += ResourceDataReader.getServiceRuntimeCpuRequest(service);
+					totalNodeMemRequests += ResourceDataReader.getServiceRuntimeMemRequest(service);
 				}
 			}
 			long nodeCpuCapacity = ResourceDataReader.getNodeCpuCapacityMillicore(node);

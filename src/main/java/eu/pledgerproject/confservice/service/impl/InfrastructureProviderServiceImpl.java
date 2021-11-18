@@ -63,7 +63,11 @@ public class InfrastructureProviderServiceImpl implements InfrastructureProvider
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(infrastructureProviderRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent());
+        	for (InfrastructureProvider infrastructureProvider : infrastructureProviderRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent()) {
+        		if(!tempResult.contains(infrastructureProvider)) {
+        			tempResult.add(infrastructureProvider);
+        		}
+        	}
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_IP"))) {
         	String infrastructureProviderName = securityContext.getAuthentication().getName();

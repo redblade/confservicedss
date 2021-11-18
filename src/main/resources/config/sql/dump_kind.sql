@@ -24,7 +24,7 @@ LOCK TABLES `app` WRITE;
 /*!40000 ALTER TABLE `app` DISABLE KEYS */;
 INSERT INTO `app` (`id`, `app_descriptor`, `name`, `management_type`, `status`, `service_provider_id`, `catalog_app_id`) VALUES
 (5,LOAD_FILE_YAML('yaml/app.example-app-ve.yaml'),'example-app-ve','MANAGED','STOPPED',2,5),
-(6,LOAD_FILE_YAML('yaml/app.example-app-ho.yaml'),'example-app-ho','MANAGED','STOPPED',3,6),
+(6,LOAD_FILE_YAML('yaml/app.example-app-ho.yaml'),'example-app-ho','MANAGED','STOPPED',2,6),
 (7,LOAD_FILE_YAML('yaml/app.example-app-nginx-sla.yaml'),'example-app-nginx-sla','MANAGED','STOPPED',2,7),
 (8,LOAD_FILE_YAML('yaml/app.example-app-bash1.yaml'),'example-app-bash1','MANAGED','STOPPED',2,8),
 (9,LOAD_FILE_YAML('yaml/app.example-app-bash2.yaml'),'example-app-bash2','MANAGED','STOPPED',2,9),
@@ -90,7 +90,7 @@ LOCK TABLES `infrastructure` WRITE;
 /*!40000 ALTER TABLE `infrastructure` DISABLE KEYS */;
 INSERT INTO `infrastructure` (`id`, `endpoint`, `name`, `properties`, `infrastructure_provider_id`, `monitoring_plugin`, `type`, `total_resources`) VALUES 
 (1,'https://localhost:44441','kind cluster1','{\'infrastructure_location\': \'localhost\'}',1,'{\'kubeconfig\': \'/var/tmp/kind-kubeconfig1.yaml\',\'monitoring_type\': \'metrics-server\',\'goldpinger_endpoint\': \'http://localhost:30091\'}','K8S','{\'cpu_millicore\': \'4000\',\'memory_mb\': \'4000\'}'),
-(2,'https://localhost:44442','kind cluster2','{\'infrastructure_location\': \'localhost\'}',1,'{\'kubeconfig\': \'/var/tmp/kind-kubeconfig2.yaml\',\'monitoring_type\': \'metrics-server\',\'goldpinger_endpoint\': \'http://localhost:30092\'}','K8S','{\'cpu_millicore\': \'2000\',\'memory_mb\': \'2000\'}');
+(2,'https://localhost:44442','kind cluster2','{\'infrastructure_location\': \'localhost\'}',1,'{\'kubeconfig\': \'/var/tmp/kind-kubeconfig2.yaml\',\'monitoring_type\': \'metrics-server\',\'goldpinger_endpoint\': \'http://localhost:30092\'}','K8S','{\'cpu_millicore\': \'3000\',\'memory_mb\': \'3000\'}');
 /*!40000 ALTER TABLE `infrastructure` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -128,8 +128,7 @@ INSERT INTO `jhi_user` (`id`, `login`, `password_hash`, `first_name`, `last_name
 (3,'admin'  ,'$2a$10$1QqavCm/7OxkyoTNHCW2gepetuSd.9SR3HgAg6ExEw9c6isL/d072','Administrator','Administrator','admin@localhost','',_binary '','en',NULL,NULL,'system',NULL,NULL,'system',NULL),
 (5,'api'    ,'$2a$10$1QqavCm/7OxkyoTNHCW2gepetuSd.9SR3HgAg6ExEw9c6isL/d072','api','api','api@localhost','',_binary '','en',NULL,NULL,'system',NULL,NULL,'system',NULL),
 (4,'root'   ,'$2a$10$1QqavCm/7OxkyoTNHCW2gepetuSd.9SR3HgAg6ExEw9c6isL/d072','Root','root','root@localhost','',_binary '','en',NULL,NULL,'system',NULL,NULL,'system',NULL),
-(8,'testSP1','$2a$10$1QqavCm/7OxkyoTNHCW2gepetuSd.9SR3HgAg6ExEw9c6isL/d072','testSP1','organisation 1','sp1@example.org',NULL,_binary '','en',NULL,'n0lkGVwnM1lbqbhDj4uX','admin','2021-02-16 09:56:16','2021-02-16 09:56:16','admin','2021-02-16 09:56:16'),
-(9,'testSP2','$2a$10$1QqavCm/7OxkyoTNHCW2gepetuSd.9SR3HgAg6ExEw9c6isL/d072','testSP2','organisation 2','sp2@example.org',NULL,_binary '','en',NULL,'n0lkGVwnM1lbqbhDj4uX','admin','2021-02-16 09:56:16','2021-02-16 09:56:16','admin','2021-02-16 09:56:16');
+(8,'testSP1','$2a$10$1QqavCm/7OxkyoTNHCW2gepetuSd.9SR3HgAg6ExEw9c6isL/d072','testSP1','organisation 1','sp1@example.org',NULL,_binary '','en',NULL,'n0lkGVwnM1lbqbhDj4uX','admin','2021-02-16 09:56:16','2021-02-16 09:56:16','admin','2021-02-16 09:56:16');
 
 /*!40000 ALTER TABLE `jhi_user` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -147,8 +146,7 @@ INSERT INTO `jhi_user_authority` (`user_id`, `authority_name`) VALUES
 (4,'ROLE_ADMIN'),
 (4,'ROLE_SP'),
 (5,'ROLE_ROAPI'),
-(8,'ROLE_SP'),
-(9,'ROLE_SP');
+(8,'ROLE_SP');
 
 /*!40000 ALTER TABLE `jhi_user_authority` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -164,8 +162,8 @@ INSERT INTO `node` (`id`, `features`,`ipaddress`,`name`,`properties`,`total_reso
 ('2',NULL,NULL,'cluster1-worker','{\'location\': \'cluster1\', \'node_type\': \'cloud\', \'node_master\': \'false\'}','{\'cpu_millicore\': \'6000\',\'memory_mb\': \'6000\'}','1'),
 ('3',NULL,NULL,'cluster1-worker2','{\'location\': \'cluster1\', \'node_type\': \'edge\',  \'node_master\': \'false\'}','{\'cpu_millicore\':  \'300\',\'memory_mb\':  \'300\'}','1'),
 ('4',NULL,NULL,'cluster1-worker3','{\'location\': \'cluster1\', \'node_type\': \'edge\',  \'node_master\': \'false\'}','{\'cpu_millicore\':  \'300\',\'memory_mb\':  \'300\'}','1'),
-('5',NULL,NULL,'cluster2-control-plane','{\'location\': \'cluster2\', \'node_type\': \'edge\',  \'node_master\': \'true\'}','{\'cpu_millicore\': \'1000\',\'memory_mb\': \'1000\'}','2'),
-('6',NULL,NULL,'cluster2-worker','{\'location\': \'cluster2\', \'node_type\': \'edge\',  \'node_master\': \'false\'}','{\'cpu_millicore\': \'300\',\'memory_mb\': \'300\'}','2');
+('5',NULL,NULL,'cluster2-control-plane','{\'location\': \'cluster2\', \'node_type\': \'cloud\',  \'node_master\': \'true\'}','{\'cpu_millicore\': \'1000\',\'memory_mb\': \'1000\'}','2'),
+('6',NULL,NULL,'cluster2-worker','{\'location\': \'cluster2\', \'node_type\': \'cloud\',  \'node_master\': \'false\'}','{\'cpu_millicore\': \'3000\',\'memory_mb\': \'3000\'}','2');
 /*!40000 ALTER TABLE `node` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -178,8 +176,7 @@ LOCK TABLES `project` WRITE;
 /*!40000 ALTER TABLE `project` DISABLE KEYS */;
 INSERT INTO `project` (`id`, `credentials`, `enable_benchmark`, `jhi_group`, `name`, `private_benchmark`, `properties`, `quota_cpu_millicore`, `quota_disk_gb`, `quota_mem_mb`, `infrastructure_id`, `service_provider_id`) VALUES   
 (1,null, false,'testSP1 group','testSP1 on cluster1',false,'{\'namespace\': \'testsp1\'}',5000,0,5000,1,2),
-(2,null, false,'testSP2 group','testSP2 on cluster1',false,'{\'namespace\': \'testsp2\'}',1000,0,1000,1,3),
-(3,null, false,'testSP2 group','testSP2 on cluster2',false,'{\'namespace\': \'testsp2\'}',300,0,300,2,3);
+(2,null, false,'testSP1 group','testSP1 on cluster2',false,'{\'namespace\': \'testsp1\'}',1000,0,1000,2,2);
 /*!40000 ALTER TABLE `project` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -192,7 +189,7 @@ LOCK TABLES `service` WRITE;
 /*!40000 ALTER TABLE `service` DISABLE KEYS */;
 INSERT INTO `service` (`id`, `priority`, `profile`, `initial_configuration`, `runtime_configuration`, `deploy_descriptor`, `deploy_type`, `name`, `status`, `app_id`) VALUES
 (6,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"250\", \"initial_cpu_millicore\": \"250\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"vertical"}', '',                       LOAD_FILE_YAML('yaml/service.example-app-ve.yaml'),            'KUBERNETES', 'example-app-ve',           'STOPPED', '5'),
-(7,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"horizontal", \"replicas\": \"1"}', '', LOAD_FILE_YAML('yaml/service.example-app-ho.yaml'),            'KUBERNETES', 'example-app-ho',           'STOPPED', '6'),
+(7,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"150\", \"initial_cpu_millicore\": \"150\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"horizontal", \"replicas\": \"1"}', '', LOAD_FILE_YAML('yaml/service.example-app-ho.yaml'),            'KUBERNETES', 'example-app-ho',           'STOPPED', '6'),
 (8,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"100\", \"min_cpu_millicore\": \"100\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-nginx-sla.yaml'),     'KUBERNETES', 'example-app-nginx-sla',    'STOPPED', '7'),
 (9,  1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"250\", \"initial_cpu_millicore\": \"250\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-bash1.yaml'),         'KUBERNETES', 'example-app-bash1',    'STOPPED', '8'),
 (10, 1, 'CPU_MEM_INTENSIVE','{\"initial_memory_mb\": \"300\", \"initial_cpu_millicore\": \"300\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"vertical\"}', '',                      LOAD_FILE_YAML('yaml/service.example-app-bash2.yaml'),         'KUBERNETES', 'example-app-bash2',    'STOPPED', '9'),
@@ -230,10 +227,10 @@ UNLOCK TABLES;
 LOCK TABLES `service_constraint` WRITE;
 /*!40000 ALTER TABLE `service_constraint` DISABLE KEYS */;
 INSERT INTO `confservice`.`service_constraint` (`id`, `category`,`name`,`priority`,`value`,`value_type`,`service_id`)VALUES
-('1', 'rule', 'example-app-ve on cluster1 cloud', '1', 'location:\'cluster1\' AND node_type:\'cloud\' AND node_master:\'false\'', 'text', '6'),
+('1', 'rule', 'example-app-ve on cluster2 cloud', '1', 'location:\'cluster2\' AND node_type:\'cloud\' AND node_master:\'false\'', 'text', '6'),
 ('2', 'rule', 'example-app-ve on cluster1 edge',  '0', 'location:\'cluster1\' AND node_type:\'edge\'  AND node_master:\'false\'', 'text', '6'),
-('3', 'rule', 'example-app-ho on cluster2 edge',  '0', 'location:\'cluster2\' AND node_type:\'edge\'  AND node_master:\'false\'', 'text', '7'),
-('4', 'rule', 'example-app-ho on cluster1 cloud', '1', 'node_type:\'cloud\' AND node_master:\'false\'', 'text', '7'),
+('3', 'rule', 'example-app-ho on cluster1 cloud', '1', 'location:\'cluster1\' AND node_type:\'cloud\' AND node_master:\'false\'', 'text', '7'),
+('4', 'rule', 'example-app-ho on cluster1 edge',  '0', 'location:\'cluster1\' AND node_type:\'edge\'  AND node_master:\'false\'', 'text', '7'),
 ('5', 'rule', 'example-app-bash1 on cluster1 cloud', '1', 'location:\'cluster1\' AND node_type:\'cloud\' AND node_master:\'false\'', 'text', '9'),
 ('6', 'rule', 'example-app-bash1 on cluster1 edge',  '0', 'location:\'cluster1\' AND node_type:\'edge\'  AND node_master:\'false\'', 'text', '9'),
 ('7', 'rule', 'example-app-bash2 on cluster1 cloud', '1', 'location:\'cluster1\' AND node_type:\'cloud\' AND node_master:\'false\'', 'text', '10'),
@@ -253,8 +250,7 @@ UNLOCK TABLES;
 LOCK TABLES `service_provider` WRITE;
 /*!40000 ALTER TABLE `service_provider` DISABLE KEYS */;
 INSERT INTO `service_provider` (`id`, `name`, `organisation`, `preferences`) VALUES 
-(2,'testSP1'  ,'organisation 1','{\n  \"monitoring.steadyServices.maxResourceUsedPercentage\": 70,\n  \"monitoring.criticalServices.maxResourceBufferPercentage\": 20,\n  \"monitoring.slaViolation.periodSec\": 300,\n   \"autoscale.percentage\": 10\n}'),
-(3,'testSP2'  ,'organisation 2','{\n  \"monitoring.steadyServices.maxResourceUsedPercentage\": 70,\n  \"monitoring.criticalServices.maxResourceBufferPercentage\": 20,\n  \"monitoring.slaViolation.periodSec\": 300,\n   \"autoscale.percentage\": 10\n}');
+(2,'testSP1'  ,'organisation 1','{\n  \"monitoring.steadyServices.maxResourceUsedPercentage\": 70,\n  \"monitoring.criticalServices.maxResourceBufferPercentage\": 20,\n  \"monitoring.slaViolation.periodSec\": 300,\n   \"autoscale.percentage\": 10\n}');
 /*!40000 ALTER TABLE `service_provider` ENABLE KEYS */;
 UNLOCK TABLES;
 

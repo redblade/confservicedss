@@ -34,26 +34,16 @@ cp -r kind-kubeconfig2.yaml /var/tmp
 #testSP1 can launch apps on cluster1 on namespace testsp1
 #testSP2 can launch apps on cluster1 and cluster2 on namespace testsp2
 kubectl --kubeconfig kind-kubeconfig1.yaml create ns testsp1
-kubectl --kubeconfig kind-kubeconfig1.yaml create ns testsp2
-kubectl --kubeconfig kind-kubeconfig2.yaml create ns testsp2
+kubectl --kubeconfig kind-kubeconfig2.yaml create ns testsp1
 
 #5)
-#label nodes just for convenience
-kubectl --kubeconfig kind-kubeconfig1.yaml label node cluster1-control-plane location=cloud capacity_cpu=1000m capacity_mem=1000mi
-kubectl --kubeconfig kind-kubeconfig1.yaml label node cluster1-worker        location=cloud capacity_cpu=6000m capacity_mem=6000mi
-kubectl --kubeconfig kind-kubeconfig1.yaml label node cluster1-worker2       location=edge  capacity_cpu=300m  capacity_mem=300mi
-kubectl --kubeconfig kind-kubeconfig1.yaml label node cluster1-worker3       location=edge  capacity_cpu=300m  capacity_mem=300mi
-kubectl --kubeconfig kind-kubeconfig2.yaml label node cluster2-control-plane location=edge  capacity_cpu=1000m capacity_mem=1000mi
-kubectl --kubeconfig kind-kubeconfig2.yaml label node cluster2-worker        location=edge  capacity_cpu=300m  capacity_mem=300mi
-
-#6)
 #test node status and metrics-server status
 kubectl --kubeconfig kind-kubeconfig1.yaml get no
 kubectl --kubeconfig kind-kubeconfig2.yaml get no
 kubectl --kubeconfig kind-kubeconfig1.yaml top no
 kubectl --kubeconfig kind-kubeconfig2.yaml top no
 
-#7) 
+#6) 
 #expose goldpinger endpoints and check the status
 kubectl --kubeconfig kind-kubeconfig1.yaml port-forward svc/goldpinger 30091:8080
 kubectl --kubeconfig kind-kubeconfig2.yaml port-forward svc/goldpinger 30092:8080

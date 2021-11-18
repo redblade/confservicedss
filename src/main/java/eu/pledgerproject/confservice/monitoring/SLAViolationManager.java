@@ -20,7 +20,7 @@ public class SLAViolationManager {
     	this.resourceDataReader = resourceDataReader;
     }
     
-	@Scheduled(cron = "0 */1 * * * *")
+	@Scheduled(cron = "15/30 * * * * *")
 	public void executeTask() {
 
 		for(SlaViolation slaViolation : slaViolationRepository.findAllByStatus(SlaViolationStatus.open.name())){

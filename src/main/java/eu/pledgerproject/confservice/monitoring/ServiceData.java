@@ -20,8 +20,8 @@ public class ServiceData implements Comparable<ServiceData>{
 		this.service = service;
 		this.priority = service.getPriority();
 		
-		int requestCpuMillicoreOriginal = ResourceDataReader.getServiceCpuRequest(service);
-		int requestMemoryMBOriginal = ResourceDataReader.getServiceMemRequest(service);
+		int requestCpuMillicoreOriginal = ResourceDataReader.getServiceRuntimeCpuRequest(service);
+		int requestMemoryMBOriginal = ResourceDataReader.getServiceRuntimeMemRequest(service);
 
 		this.requestsAreChanged = requestCpuMillicoreOriginal != requestCpuMillicoreNew || requestMemoryMBOriginal != requestMemoryMBNew;
 		

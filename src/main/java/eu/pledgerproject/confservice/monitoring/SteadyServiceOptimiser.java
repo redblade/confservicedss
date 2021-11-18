@@ -56,7 +56,7 @@ public class SteadyServiceOptimiser {
     }
 	
 	
-	@Scheduled(cron = "0 */1 * * * *")
+	@Scheduled(cron = "30 */1 * * * *")
 	public void executeTask() {
 		log.info("SteadyServiceOptimiser started");
 		

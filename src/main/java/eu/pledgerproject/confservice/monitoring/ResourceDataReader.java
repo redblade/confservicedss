@@ -125,21 +125,25 @@ public class ResourceDataReader {
 		return result;
 	}
 	
-	public static int getServiceCpuRequest(Service service) {
-		int result = 0; try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get(MonitoringService.CPU_LABEL));}catch(Exception e) {}
+	public static int getServiceRuntimeCpuRequest(Service service) {
+		int result = 0; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get(MonitoringService.CPU_LABEL));}catch(Exception e) {}
 		return result;
 	}
-	public static int getServiceMemRequest(Service service) {
-		int result = 0; try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get(MonitoringService.MEMORY_LABEL));}catch(Exception e) {}
+	public static int getServiceRuntimeMemRequest(Service service) {
+		int result = 0; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get(MonitoringService.MEMORY_LABEL));}catch(Exception e) {}
 		return result;
 	}
 	
-	public static int getServiceMinCpuRequest(Service service) {
-		int result = 0; try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.CPU_LABEL));}catch(Exception e) {}
+	public static int getServiceInitialMinCpuRequest(Service service) {
+		int result = 0; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.MIN_CPU_MILLICORE));}catch(Exception e) {}
 		return result;
 	}
-	public static int getServiceMinMemRequest(Service service) {
-		int result = 0; try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.MEMORY_LABEL));}catch(Exception e) {}
+	public static int getServiceInitialMinMemRequest(Service service) {
+		int result = 0; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.MIN_MEMORY_MB));}catch(Exception e) {}
 		return result;
 	}
 
@@ -176,8 +180,8 @@ public class ResourceDataReader {
 		}
 		for(Service service : serviceRepository.findAllRunning()) {
 			Node currentNode = getCurrentNode(service);
-			int usedCapacityCpu = getServiceCpuRequest(service);
-			int usedCapacityMem = getServiceMemRequest(service);
+			int usedCapacityCpu = getServiceRuntimeCpuRequest(service);
+			int usedCapacityMem = getServiceRuntimeMemRequest(service);
 			Integer[] capacityLeft = capacityCpuMemLeft.get(currentNode);
 			if(capacityLeft != null) {
 				capacityLeft[0] = capacityLeft[0] - usedCapacityCpu < 0 ? 0 :capacityLeft[0] - usedCapacityCpu;
