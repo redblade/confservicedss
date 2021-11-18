@@ -102,7 +102,9 @@ To launch your ConfServiceDSS from a Docker image, use env variables (eg. [this]
 docker run -v $(pwd):/var/tmp --env-file doc/env/confservicedss.env -p8080:8080 confservicedss
 ```
 
-Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql or dump_kind.sql):
+Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql, dump_kind.sql or any other SQL). 
+A security table (db_lock) needs to be dropped before overriding the data, for safety reason.
+An example is provided below:
 
 ```
 mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"

@@ -24,7 +24,7 @@ public interface ServiceReportRepository extends JpaRepository<ServiceReport, Lo
 	@Query(value = "select serviceReport from ServiceReport serviceReport where :categoryFilter is null or :categoryFilter = serviceReport.category order by id desc")
 	Page<ServiceReport> findAll(Pageable pageable, @Param("categoryFilter") String categoryFilter);
 	
-	@Query(value = "select max(serviceReport.value) from ServiceReport serviceReport where serviceReport.service.id = :serviceId and serviceReport.category = :category and serviceReport.key = :key and serviceReport.timestamp > :timestamp")
+	@Query(value = "select max(serviceReport.value) from ServiceReport serviceReport where serviceReport.service.id = :serviceId and serviceReport.category = :category and serviceReport.key = :key and serviceReport.timestamp >= :timestamp")
 	Integer findMaxResourceUsedByServiceIdCategoryKeyTimestamp(@Param("serviceId") long serviceId, @Param("category") String category, @Param("key") String key, @Param("timestamp") Instant timestamp);
 	
 	@Query(value = "select serviceReport from ServiceReport serviceReport where serviceReport.service.id = :serviceId and serviceReport.category = :category and serviceReport.key = :key order by serviceReport.timestamp desc")

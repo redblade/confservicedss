@@ -183,11 +183,12 @@ public class EcodaResourceOptimiser {
 		}
 		//if, on the other hand, the service has been running and no violations have been received so far, then we need to decrease resources
 		else {
-			Instant timestampSteady = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec * SteadyServiceOptimiser.STEADY_PERIOD_SEC_FACTOR);
-			List<Service> steadyServiceList = serviceRepository.findSteadyServiceListByServiceProviderServiceOptimisationSinceTimestamp(service.getApp().getServiceProvider(), ServiceOptimisationType.resources_latency.name(), timestampSteady);
-			if(steadyServiceList.size() > 0) {
-				int minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
-				int minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
+			Instant timestampSteady = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
+
+			List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampSteady);
+			if(service.getLastChangedStatus().isBefore(timestampSteady) && slaViolationCriticalList.size() == 0) {
+				int minCpuRequest = ResourceDataReader.getServiceCpuRequest(service);
+				int minMemRequest = ResourceDataReader.getServiceMemRequest(service);
 				
 				int cpuRequestTemp = (int) (result[0] * (100.0 - autoscalePercentageInt)/100.0);
 				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageInt)/100.0); 

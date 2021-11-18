@@ -16,17 +16,18 @@ import org.springframework.stereotype.Component;
 import eu.pledgerproject.confservice.domain.Event;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
+import eu.pledgerproject.confservice.domain.SlaViolation;
 import eu.pledgerproject.confservice.domain.SteadyService;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
+import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.repository.SteadyServiceRepository;
 
 @Component
 public class SteadyServiceOptimiser {
-	public static int STEADY_PERIOD_SEC_FACTOR = 2;
 	
     private final Logger log = LoggerFactory.getLogger(SteadyServiceOptimiser.class);
     
@@ -41,8 +42,9 @@ public class SteadyServiceOptimiser {
     private final ServiceResourceOptimiser serviceResourceOptimiser;
     private final ServiceRepository serviceRepository;
     private final EventRepository eventRepository;
+    private final SlaViolationRepository slaViolationRepository;
     
-    public SteadyServiceOptimiser(ResourceDataReader resourceDataReader, ServiceProviderRepository serviceProviderRepository, SteadyServiceRepository steadyServiceRepository, ServiceReportRepository serviceReportRepository, ServiceResourceOptimiser serviceResourceOptimiser, ServiceRepository serviceRepository, EventRepository eventRepository) {
+    public SteadyServiceOptimiser(ResourceDataReader resourceDataReader, ServiceProviderRepository serviceProviderRepository, SteadyServiceRepository steadyServiceRepository, ServiceReportRepository serviceReportRepository, ServiceResourceOptimiser serviceResourceOptimiser, ServiceRepository serviceRepository, EventRepository eventRepository, SlaViolationRepository slaViolationRepository) {
     	this.resourceDataReader = resourceDataReader;
     	this.serviceProviderRepository = serviceProviderRepository;
         this.steadyServiceRepository = steadyServiceRepository;
@@ -50,6 +52,7 @@ public class SteadyServiceOptimiser {
         this.serviceResourceOptimiser = serviceResourceOptimiser;
         this.serviceRepository = serviceRepository;
         this.eventRepository = eventRepository;
+        this.slaViolationRepository = slaViolationRepository;
     }
 	
 	
@@ -142,23 +145,24 @@ public class SteadyServiceOptimiser {
 			int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
 	
 			//prepare the timestamp for the range of time to check for slaViolations before now() 
-			Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec * STEADY_PERIOD_SEC_FACTOR);
+			Instant timestampSteady = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
 			log.info("SteadyOptimizer started for serviceProvider " + serviceProvider.getName());
 			
-			List<Service> steadyServiceList = serviceRepository.findSteadyServiceListByServiceProviderServiceOptimisationSinceTimestamp(serviceProvider, ServiceOptimisationType.resources.name(), timestamp);
-			for(Service service : steadyServiceList) {
-				if(service.getStatus().equals(ExecStatus.RUNNING) && service.getServiceOptimisation() != null && service.getServiceOptimisation().getOptimisation().equals(ServiceOptimisationType.resources.name())) {
+			List<Service> runningServiceList = serviceRepository.findServiceListByServiceProviderServiceOptimisationSinceTimestamp(serviceProvider, ServiceOptimisationType.resources.name(), timestampSteady);
+			for(Service service : runningServiceList) {
+				List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.resources.name(), timestampSteady); 
+				if(slaViolationCriticalList.size() == 0) {
 					//get service scaling type
 					Map<String, String> serviceInitialConfigurationProperties = ConverterJSON.convertToMap(service.getInitialConfiguration());
 					String scaling = serviceInitialConfigurationProperties.get("scaling");
 					//and skip the check if scaling is not "horizontal" or "vertical"
 					if(ServiceResourceOptimiser.SCALING_VERTICAL.equals(scaling)) {
 						log.info("SteadyOptimizer found a steady service with vertical scaling to be checked " + service.getName());
-						addSteadyServiceForVerticalScaling(timestamp, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
+						addSteadyServiceForVerticalScaling(timestampSteady, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
 					}
 					else if(ServiceResourceOptimiser.SCALING_HORIZONTAL.equals(scaling)) {
 						log.info("SteadyOptimizer found a steady service with horizontal scaling to be checked " + service.getName());
-						addSteadyServiceForHorizontalScaling(timestamp, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
+						addSteadyServiceForHorizontalScaling(timestampSteady, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
 					}
 				}
 			}
@@ -168,6 +172,7 @@ public class SteadyServiceOptimiser {
 	}
 	
 	private void addSteadyServiceForVerticalScaling(Instant timestamp, List<SteadyService> result, Service service, Map<String, String> serviceInitialConfigurationProperties, int slaViolationMonitoringPeriodSec) {
+		
 		//get the resource requested
 		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service);
 		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service);
@@ -226,17 +231,18 @@ public class SteadyServiceOptimiser {
 		int percCpuUsed =  (int) (100.0 * maxServiceUsedCpu / (maxServiceReservedCpu));
 		log.info("SteadyServiceOptimiser.getScoreScalingVertical(" + service.getName() + ") : percMemUsed: "+percMemUsed+", percCpuUsed:"+percCpuUsed+". [maxServiceUsedMem:"+maxServiceUsedMem+", maxServiceReservedMem:"+maxServiceReservedMem + ", maxServiceUsedCpu:"+maxServiceUsedCpu + ", maxServiceReservedCpu:"+maxServiceReservedCpu+"]");
 
-		//we consider STEADY a service that uses less than the min percentage (eg. 70%). If not, we skip it!
+		//we consider STEADY a service that uses less than the min percentage (eg. min is 70%, if it is currently 75%, then we skip steady optimisation)
 		if(	percMemUsed > resourceUsedSteadyPerc || percCpuUsed > resourceUsedSteadyPerc ) {
 			return SCORE_THRESHOLD;
 		}
-		//we also DO NOT consider STEADY a service that is "too close" (100 + autoscale %) to the min values. Basically, we want to stop reducing max_resources when below a min value
+		//we also DO NOT consider STEADY a service that is "too close" to the min values. Basically, we stop reducing when below a min value.
+		//min value is min * (100 + autoscale)/100
 		if(maxServiceReservedMem < minConfiguredServiceMem * (100.0 + autoscalePercentage)/100.0 || maxServiceReservedCpu < minConfiguredServiceCpu * (100.0 + autoscalePercentage)/100.0) {
 			return SCORE_THRESHOLD;
 		}
-		
-		long score_mem = (long) (SCORE_THRESHOLD * (1.0 + percMemUsed / 100.0));
-		long score_cpu = (long) (SCORE_THRESHOLD * (1.0 + percCpuUsed / 100.0));
+		//high score is given to services which use less. 100 means nothing to do, 200 is max
+		long score_mem = (long) (SCORE_THRESHOLD * (1.0 + (100-percMemUsed) / 100.0));
+		long score_cpu = (long) (SCORE_THRESHOLD * (1.0 + (100-percCpuUsed) / 100.0));
 		return Math.min(score_mem, score_cpu);
 	}
 	
