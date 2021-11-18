@@ -111,6 +111,14 @@ java -cp target/confservicedss-2.4.4.jar -Dloader.main=eu.pledgerproject.confser
 
 Then, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
 
+
+For remote debugging you can attach to remote session after launching ConfServiceDSS with the option
+
+```
+java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
+```
+
+
 ###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.
 
 
