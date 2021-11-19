@@ -111,9 +111,18 @@ mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"
 java -cp target/confservicedss-2.4.4.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_base.sql localhost 3306 root root
 ```
 
-Then, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
+The lock table ''db_lock' is automatically re-created by InitDB; if necessary, it can also be created with 
+
+```
+mysql -h localhost -D confservice -u root -proot -e "create table db_lock(id INT);"
+```
+
+### Login
+
+Finally, when the 'dump_base.sql' configuration is loaded, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
 
 
+### Remote debugging
 For remote debugging you can attach to remote session after launching ConfServiceDSS with the option
 
 ```
