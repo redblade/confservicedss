@@ -68,10 +68,12 @@ public class AppScheduler {
 			int initialRequestCpu = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_CPU_MILLICORE));
 			int initialRequestMem = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_MEMORY_MB));
 
-			if(
-					ServiceOptimisationType.latency.name().equals(service.getServiceOptimisation().getOptimisation())
-					||
-					ServiceOptimisationType.resources_latency.name().equals(service.getServiceOptimisation().getOptimisation())
+			if(service.getServiceOptimisation() != null &&
+					(
+						ServiceOptimisationType.latency.name().equals(service.getServiceOptimisation().getOptimisation())
+							||
+						ServiceOptimisationType.resources_latency.name().equals(service.getServiceOptimisation().getOptimisation())
+					)
 			) {
 				List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithRemainingCapacityThatCanHostRequests(service.getApp().getServiceProvider(), initialRequestCpu, initialRequestMem);
 				if(nodeGroupList.size() > 0) {
