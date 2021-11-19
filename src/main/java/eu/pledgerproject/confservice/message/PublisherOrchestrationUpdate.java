@@ -55,7 +55,7 @@ public class PublisherOrchestrationUpdate {
 	public void publish(String message) {
 		try {
 			producer.send(new ProducerRecord<>(TOPIC, KEY, message)).get();
-			log.info("PublisherConfigurationUpdate: update sent for entity " + message);
+			log.info("PublisherOrchestrationUpdate: update sent. TOPIC: " + TOPIC + "  MSG:"+message);
 		} catch (InterruptedException | ExecutionException e) {
 			log.error("PublisherConfigurationUpdate", e);
 			saveErrorEvent(e.getMessage());
@@ -67,7 +67,7 @@ public class PublisherOrchestrationUpdate {
 		try {
 			String message = getJsonMessage(id, entity, operation).toString();
 			producer.send(new ProducerRecord<>(TOPIC, KEY, message)).get();
-			log.info("PublisherConfigurationUpdate: update sent for entity " + entity);
+			log.info("PublisherOrchestrationUpdate: update sent for entity " + entity + ". TOPIC: " + TOPIC + "  MSG:"+message);
 		} catch (InterruptedException | ExecutionException e) {
 			log.error("PublisherConfigurationUpdate", e);
 			saveErrorEvent(e.getMessage());
@@ -86,7 +86,7 @@ public class PublisherOrchestrationUpdate {
 			}
 			message.put("placeholders", placeholders);
 			producer.send(new ProducerRecord<>(TOPIC, KEY, message.toString())).get();
-			log.info("PublisherConfigurationUpdate: update sent for entity " + entity);
+			log.info("PublisherOrchestrationUpdate: update sent for entity " + entity + ". TOPIC: " + TOPIC + "  MSG:"+message);
 		} catch (InterruptedException | ExecutionException e) {
 			log.error("PublisherConfigurationUpdate", e);
 			saveErrorEvent(e.getMessage());

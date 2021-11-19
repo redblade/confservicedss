@@ -53,7 +53,7 @@ public class PublisherConfigurationUpdate {
 	public void publish(String message) {
 		try {
 			producer.send(new ProducerRecord<>(TOPIC, KEY, message)).get();
-			log.info("PublisherConfigurationUpdate: update sent for entity " + message);
+			log.info("PublisherConfigurationUpdate: update sent. TOPIC: " + TOPIC + "  MSG:"+message);
 		} catch (InterruptedException | ExecutionException e) {
 			log.error("PublisherConfigurationUpdate", e);
 			saveErrorEvent(e.getMessage());
@@ -65,7 +65,7 @@ public class PublisherConfigurationUpdate {
 		try {
 			String message = getJsonMessage(id, entity, operation).toString();
 			producer.send(new ProducerRecord<>(TOPIC, KEY, message)).get();
-			log.info("PublisherConfigurationUpdate: update sent for entity " + entity);
+			log.info("PublisherConfigurationUpdate: update sent for entity " + entity + ". TOPIC: " + TOPIC + "  MSG:"+message);
 		} catch (InterruptedException | ExecutionException e) {
 			log.error("PublisherConfigurationUpdate", e);
 			saveErrorEvent(e.getMessage());
