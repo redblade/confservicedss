@@ -14,7 +14,7 @@ public class DeserializerBenchmarkReportDTO implements Deserializer<BenchmarkRep
 		JSONObject jsonObject = new JSONObject(source);
 		
 		BenchmarkReportDTO result = new BenchmarkReportDTO();
-		result.category = jsonObject.optString("category", null);
+		result.category = jsonObject.optString("categories", null);
 		result.interval = jsonObject.getInt("interval");
 		result.mean = jsonObject.getDouble("mean");
 		result.metric = jsonObject.getString("metric");

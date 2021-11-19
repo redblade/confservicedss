@@ -28,7 +28,7 @@
                     <th scope="col"  jhiSortBy="tool"><span>Tool</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="mean"><span>Mean</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="interval"><span>Interval (hour)</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="stabilityIndex"><span>Stability Index (0..1)</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="stabilityIndex"><span>Stability Index</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="node.id"><span>Node</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="benchmark.id"><span>Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"></th>
@@ -40,9 +40,9 @@
                     <td>{{ benchmarkReport.time | date:'medium' }}</td>
                     <td>{{ benchmarkReport.metric }}</td>
                     <td>{{ benchmarkReport.tool }}</td>
-                    <td>{{ benchmarkReport.mean }}</td>
+                    <td>{{ benchmarkReport.mean  | number:'1.0-3'}}</td>
                     <td>{{ benchmarkReport.interval }}</td>
-                    <td>{{ benchmarkReport.stabilityIndex }}</td>
+                    <td>{{ benchmarkReport.stabilityIndex | number:'1.0-3'}}</td>
                     <td>
                         <div *ngIf="benchmarkReport.node">
                             <a [routerLink]="['/node', benchmarkReport.node?.id, 'view']" >{{ benchmarkReport.node?.name }}</a>

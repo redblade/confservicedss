@@ -1,1 +1,14 @@
-{'metric': 'duration_s', 'tool': 'YCSB MongoDB', 'workload': '10k reads', 'pledgerInfrastructure': '5', 'pledgerServiceProvider': '5', 'pledgerProject': '6', 'mean': 10.666666666666666, 'stabilityIndex': 6.027713773341708, 'interval': 604800}
+{"categories": ["cpu", "prime-numbers", "cpu-intensive"],
+"interval": 604800,
+"mean": 0.38892727272727273,
+"metric": "total_time_8_s",
+"pledgerInfrastructure": 5,
+"pledgerNode": 13,
+"pledgerProject": 6,
+"pledgerServiceProvider": 5,
+"r_stddev": 0.02246685734334705,
+"stabilityIndex": 0.02246685734334705,
+"stddev": 0.008737973553300667,
+"tool": "Sysbench CPU",
+"workload": "CPU 1k",
+"workloadId": "sysbench-cpu:cpu-1k:0.1-b"}
