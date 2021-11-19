@@ -1,135 +1,120 @@
-# ConfServiceDSS
+##HOWTO test ConfService/DSS with KinD (Kubernetes in Docker)
 
-This file contains the main instruction to build and run ConfServiceDSS
+First, install [Kind tool](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
-
-### Development
-
-ConfServiceDSS is based on [JHipster 6.10.5](https://www.jhipster.tech/documentation-archive/v6.10.5) with [this model file](jhipster-jdl.jdl). Before you can build this project, you must install and configure the following dependencies on your machine with minimal version highlighted:
-
-- [OpenJDK](https://openjdk.java.net/) or [AdoptJDK](https://adoptopenjdk.net/) v1.8: Java Developer Kit is used to run the project services
-- [Maven](https://maven.apache.org/) v3.3: Maven is used to build the project
-- [MySQL](https://www.mysql.com/downloads/) v5.6: MySQL is used to persist configuration and DSS data
-- [Node.js](https://nodejs.org/en/) v12.16: Node is used to run a development web server and build the project.
-- [npm](https://docs.npmjs.com/) v6.14: npm is used to install Node dependencies and to launch the development front end service
-
-After installing Node, run the following command to install development tools.
-You will also need to run this command when dependencies change in [package.json](package.json).
+1) load the MySQL dump dump_kind.sql
 
 ```
-npm install
+cd src/main/resources
+mysql -h localhost -D confservice -u root -proot < config/sql/mysql_clean_all.sql
+mysql -h localhost -D confservice -u root -proot < config/sql/dump_kind.sql
 ```
 
-Before you run the project, you need a [Kafka](https://kafka.apache.org/) service running and these topics to be available:
-- configuration
-- sla_violation
-- deployment
-- deployment_feedback
-- benchmarking
-- app_profiler
-
-Environment variables for Kafka need to be set, if needed also Mail, for example:
+2) delete Kind cluster
 
 ```
-export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-export KAFKA_CONSUMER_KEY_DESERIALIZER=org.apache.kafka.common.serialization.StringDeserializer
-export KAFKA_CONSUMER_VALUE_DESERIALIZER=org.apache.kafka.common.serialization.JsonDeserializer
-export KAFKA_PRODUCER_KEY_SERIALIZER=org.apache.kafka.common.serialization.StringSerializer 
-export KAFKA_PRODUCER_VALUE_SERIALIZER=org.springframework.kafka.support.serializer.JsonSerializer
+kind delete cluster --name cluster1
+kind delete cluster --name cluster2
+```
+3) install Kind clusters, cluster1 (1 master cloud + 1 worker cloud + 2 workers edge), cluster2 (1 master cloud + 1 worker cloud)
 
-export SPRING_MAIL_BASEURL=mybaseurl
-export SPRING_MAIL_FROM=myaddress
-export SPRING_MAIL_HOST=myserver
-export SPRING_MAIL_PORT=myport
-export SPRING_MAIL_USERNAME=myuser
-export SPRING_MAIL_PASSWORD=mypass
+```
+rm -fr kind-kubeconfig1.yaml
+touch kind-kubeconfig1.yaml
+kind create cluster --name cluster1 --kubeconfig kind-kubeconfig1.yaml --config kind-cluster1.yaml
+kubectl --kubeconfig kind-kubeconfig1.yaml apply -f kind-metricserver.yaml
+kubectl --kubeconfig kind-kubeconfig1.yaml apply -f kind-goldpinger.yaml
+cp -r kind-kubeconfig1.yaml /var/tmp
+
+rm -fr kind-kubeconfig2.yaml
+touch kind-kubeconfig2.yaml
+kind create cluster --name cluster2 --kubeconfig kind-kubeconfig2.yaml --config kind-cluster2.yaml
+kubectl --kubeconfig kind-kubeconfig2.yaml apply -f kind-metricserver.yaml
+kubectl --kubeconfig kind-kubeconfig2.yaml apply -f kind-goldpinger.yaml
+cp -r kind-kubeconfig2.yaml /var/tmp
 
 ```
 
-After setting up the environment variables, you can run the following commands in two separate terminals for development, to have browser auto-refresh when files change on the hard drive (backend will listen on port 8080, frontend on port 9000)
+4) configure namespaces 
+
+testSP1 can launch apps on cluster1 on namespace testsp1
+testSP2 can launch apps on cluster1 and cluster2 on namespace testsp2
 
 ```
-mvn -Dspring.profiles.active=prod -DskipTests=true
-npm start
+kubectl --kubeconfig kind-kubeconfig1.yaml create ns testsp1
+kubectl --kubeconfig kind-kubeconfig2.yaml create ns testsp1
 ```
-
-By default, ConfServiceDSS expects MySQL to be running on localhost:3306 with user/pass root/root with a schema "confservice" already created. MySQL parameters can be overridden with the following additional environment variables:
-
-```
-export SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/confservice
-export SPRING_DATASOURCE_USERNAME=root
-export SPRING_DATASOURCE_PASSWORD=root
-```
-
-
-### Packaging and launching as jar
-
-To build the final jar and optimize ConfServiceDSS for production, run:
+5) test node status and metrics-server status
 
 ```
-mvn -Pprod clean package -DskipTests=true 
+kubectl --kubeconfig kind-kubeconfig1.yaml get no
+kubectl --kubeconfig kind-kubeconfig2.yaml get no
+kubectl --kubeconfig kind-kubeconfig1.yaml top no
+kubectl --kubeconfig kind-kubeconfig2.yaml top no
+```
+6) expose goldpinger endpoints and check the status
 
 ```
+kubectl --kubeconfig kind-kubeconfig1.yaml port-forward svc/goldpinger 30091:8080
+kubectl --kubeconfig kind-kubeconfig2.yaml port-forward svc/goldpinger 30092:8080
+```
+open http://localhost:30091
+open http://localhost:30092
 
-To launch the executable as a jar, run:
+
+##HOWTO do tests and see the DSS optimisation at work
+
+The configuration file "dump_kind.sql" has:
+
+PROJECTs
+- user testSP1 with 1 project on cluster1 and 1 project on cluster2
+
+INFRASTRUCTUREs
+- cluster1 with 7600m cpu 7600m mem
+- cluster2 with 4000m cpu 4000m mem
+
+NODEs 
+- cluster1.control-plane (cloud) with 1000m cpu 1000m mem - unavailable for Apps
+- cluster1.worker        (cloud) with 6000m cpu 6000m mem
+- cluster1.worker2       (edge ) with  300m cpu  300m mem
+- cluster1.worker3       (edge ) with  300m cpu  300m mem
+- cluster2.control-plane (cloud) with 1000m cpu 1000m mem - unavailable for Apps
+- cluster2.worker        (cloud) with 3000m cpu 3000m mem
+
+APPs
+- app1 with cpu/mem request 250/250 initial startup  5 
+- app2 with cpu/mem request 300/300 initial startup 10
+- app3 with cpu/mem request 300/300 initial startup 15
+- app4 with cpu/mem request 200/200 initial startup 20
+
+
+TEST.1 add latency to the cluster1 cloud worker and check the values on GoldPinger (response-time measured is latency*2)
 
 ```
-export $(grep -v '^#' doc/env/confservicedss.env | xargs)
-java -jar target/*.jar -Pprod
-
-
+docker exec -it `docker ps --format '{{.Names}}' | grep cluster1-worker | grep -v worker2 | grep -v worker3` bash
 ```
 
-### Packaging and launching as a Docker container
-
-To package your ConfServiceDSS as a local Docker image, run:
+add latency 
 
 ```
-mvn package -Pprod jib:dockerBuild -DskipTests=true -Dimage=confservicedss 
-
+tc qdisc add dev eth0 root netem delay 50ms
 ```
 
-To package your ConfServiceDSS as a Docker image and push to a Docker registry, run:
+remove latency
 
 ```
-mvn package -Pprod jib:dockerBuild -DskipTests=true -Djib.allowInsecureRegistries=true  -Dimage=myregistry/confservicedss
-
+tc qdisc del dev eth0 root
 ```
 
-To launch your ConfServiceDSS from a Docker image, use env variables (eg. [this](doc/env/confservicedss.env), to be changed) and run:
+TEST.2 change startup time
+
+this adds 60s to normal startup time
 
 ```
-docker run -v $(pwd):/var/tmp --env-file doc/env/confservicedss.env -p8080:8080 confservicedss
-```
-
-Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql, dump_kind.sql or any other SQL). 
-A security table (db_lock) needs to be dropped before overriding the data, for safety reason.
-An example is provided below:
-
-```
-mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"
-java -cp target/confservicedss-2.4.4.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_base.sql localhost 3306 root root
-```
-
-The lock table ''db_lock' is automatically re-created by InitDB; if necessary, it can also be created with 
-
-```
-mysql -h localhost -D confservice -u root -proot -e "create table db_lock(id INT);"
-```
-
-### Login
-
-Finally, when the 'dump_base.sql' configuration is loaded, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
-
-
-### Remote debugging
-For remote debugging you can attach to remote session after launching ConfServiceDSS with the option
-
-```
-java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
-```
-
-
-###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.
-
-
+readinessProbe:
+  exec:
+    command:
+    - ls
+  initialDelaySeconds: 55
+  periodSeconds: 5
+```  
