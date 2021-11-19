@@ -1,0 +1,49 @@
+{
+  "name": "Benchmark",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "unique"
+      ]
+    },
+    {
+      "fieldName": "category",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "benchmarkReport",
+      "otherEntityRelationshipName": "benchmark",
+      "relationshipName": "benchmarkReportSet"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "infrastructure",
+      "otherEntityRelationshipName": "benchmarkSet",
+      "relationshipName": "infrastructure",
+      "otherEntityField": "id"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "serviceProvider",
+      "otherEntityRelationshipName": "benchmarkSet",
+      "relationshipName": "serviceProvider",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216210052",
+  "entityTableName": "benchmark",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

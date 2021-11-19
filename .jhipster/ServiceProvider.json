@@ -1,0 +1,73 @@
+{
+  "name": "ServiceProvider",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "unique"
+      ]
+    },
+    {
+      "fieldName": "organisation",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "preferences",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "20000"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "event",
+      "otherEntityRelationshipName": "serviceProvider",
+      "relationshipName": "eventSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "catalogApp",
+      "otherEntityRelationshipName": "serviceProvider",
+      "relationshipName": "catalogAppSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "app",
+      "otherEntityRelationshipName": "serviceProvider",
+      "relationshipName": "appSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "project",
+      "otherEntityRelationshipName": "serviceProvider",
+      "relationshipName": "projectSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "sla",
+      "otherEntityRelationshipName": "serviceProvider",
+      "relationshipName": "slaSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "benchmark",
+      "otherEntityRelationshipName": "serviceProvider",
+      "relationshipName": "benchmarkSet"
+    }
+  ],
+  "changelogDate": "20210216205452",
+  "entityTableName": "service_provider",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

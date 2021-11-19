@@ -1,0 +1,49 @@
+{
+  "name": "SteadyService",
+  "fields": [
+    {
+      "fieldName": "timestampCreated",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "timestampProcessed",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "actionTaken",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "score",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "details",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "monitoringPeriodSec",
+      "fieldType": "Integer"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "service",
+      "otherEntityRelationshipName": "steadyServiceSet",
+      "relationshipName": "service",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210524071657",
+  "entityTableName": "steady_service",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

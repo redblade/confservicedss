@@ -1,0 +1,96 @@
+{
+  "name": "Infrastructure",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "unique"
+      ]
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "endpoint",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "credentials",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "2000"
+    },
+    {
+      "fieldName": "monitoringPlugin",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "20000"
+    },
+    {
+      "fieldName": "properties",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "2000"
+    },
+    {
+      "fieldName": "totalResources",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "2000"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "infrastructure",
+      "relationshipName": "nodeSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "benchmark",
+      "otherEntityRelationshipName": "infrastructure",
+      "relationshipName": "benchmarkSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "infrastructureReport",
+      "otherEntityRelationshipName": "infrastructure",
+      "relationshipName": "infrastructureReportSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "project",
+      "otherEntityRelationshipName": "infrastructure",
+      "relationshipName": "projectSet"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "infrastructureProvider",
+      "otherEntityRelationshipName": "infrastructureSet",
+      "relationshipName": "infrastructureProvider",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216205652",
+  "entityTableName": "infrastructure",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

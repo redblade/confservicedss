@@ -1,0 +1,33 @@
+{
+  "name": "CatalogService",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "serviceDescriptor",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "catalogApp",
+      "otherEntityRelationshipName": "catalogServiceSet",
+      "relationshipName": "catalogApp",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210429154344",
+  "entityTableName": "catalog_service",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

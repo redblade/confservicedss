@@ -1,0 +1,48 @@
+{
+  "name": "NodeReport",
+  "fields": [
+    {
+      "fieldName": "timestamp",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "category",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "key",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "value",
+      "fieldType": "Double"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "nodeReportSet",
+      "relationshipName": "node",
+      "otherEntityField": "id"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "nodeReportDestinationSet",
+      "relationshipName": "nodeDestination",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216205952",
+  "entityTableName": "node_report",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

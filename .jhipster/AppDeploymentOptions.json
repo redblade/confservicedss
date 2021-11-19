@@ -1,0 +1,30 @@
+{
+  "name": "AppDeploymentOptions",
+  "fields": [
+    {
+      "fieldName": "options",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-one",
+      "otherEntityName": "app",
+      "otherEntityRelationshipName": "appDeploymentOptions",
+      "relationshipName": "app",
+      "otherEntityField": "id",
+      "ownerSide": true
+    }
+  ],
+  "changelogDate": "20210506101451",
+  "entityTableName": "app_deployment_options",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

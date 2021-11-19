@@ -1,0 +1,75 @@
+{
+  "name": "Node",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "ipaddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "properties",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "2000"
+    },
+    {
+      "fieldName": "features",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "20000"
+    },
+    {
+      "fieldName": "totalResources",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "2000"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "benchmarkReport",
+      "otherEntityRelationshipName": "node",
+      "relationshipName": "benchmarkReportSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "nodeReport",
+      "otherEntityRelationshipName": "node",
+      "relationshipName": "nodeReportSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "nodeReport",
+      "otherEntityRelationshipName": "nodeDestination",
+      "relationshipName": "nodeReportDestinationSet"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "infrastructure",
+      "otherEntityRelationshipName": "nodeSet",
+      "relationshipName": "infrastructure",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216205852",
+  "entityTableName": "node",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

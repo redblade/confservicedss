@@ -1,0 +1,112 @@
+{
+  "name": "Service",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "profile",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "priority",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "initialConfiguration",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "runtimeConfiguration",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "deployType",
+      "fieldType": "DeployType",
+      "fieldValues": "KUBERNETES,DOCKER,TOSCA,CUSTOM"
+    },
+    {
+      "fieldName": "deployDescriptor",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "40000"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "ExecStatus",
+      "fieldValues": "RUNNING,STOPPED,ERROR,STARTING,STOPPING,FORCE_STOP,SCALING_MORE_RESOURCES,SCALING_LESS_RESOURCES,OFFLOADING_BETTER_RANKING,OFFLOADING_WORSE_RANKING"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "criticalService",
+      "otherEntityRelationshipName": "service",
+      "relationshipName": "criticalServiceSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "steadyService",
+      "otherEntityRelationshipName": "service",
+      "relationshipName": "steadyServiceSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "appConstraint",
+      "otherEntityRelationshipName": "serviceSource",
+      "relationshipName": "appConstraintSourceSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "appConstraint",
+      "otherEntityRelationshipName": "serviceDestination",
+      "relationshipName": "appConstraintDestinationSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "serviceReport",
+      "otherEntityRelationshipName": "service",
+      "relationshipName": "serviceReportSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "serviceConstraint",
+      "otherEntityRelationshipName": "service",
+      "relationshipName": "serviceConstraintSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "sla",
+      "otherEntityRelationshipName": "service",
+      "relationshipName": "slaSet"
+    },
+    {
+      "relationshipType": "one-to-one",
+      "otherEntityName": "serviceOptimisation",
+      "otherEntityRelationshipName": "service",
+      "relationshipName": "serviceOptimisation",
+      "ownerSide": false
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "app",
+      "otherEntityRelationshipName": "serviceSet",
+      "relationshipName": "app",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210429154544",
+  "entityTableName": "service",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

@@ -1,0 +1,50 @@
+{
+  "name": "SlaViolation",
+  "fields": [
+    {
+      "fieldName": "timestamp",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "violationName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "severityType",
+      "fieldType": "SlaViolationType",
+      "fieldValues": "Warning,Mild,Serious,Severe,Catastrophic"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "20000"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "sla",
+      "otherEntityRelationshipName": "slaViolationSet",
+      "relationshipName": "sla",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216210852",
+  "entityTableName": "sla_violation",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

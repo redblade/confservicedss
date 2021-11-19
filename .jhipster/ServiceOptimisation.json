@@ -1,0 +1,38 @@
+{
+  "name": "ServiceOptimisation",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "optimisation",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "parameters",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-one",
+      "otherEntityName": "service",
+      "otherEntityRelationshipName": "serviceOptimisation",
+      "relationshipName": "service",
+      "otherEntityField": "id",
+      "ownerSide": true
+    }
+  ],
+  "changelogDate": "20211006112046",
+  "entityTableName": "service_optimisation",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

@@ -1,0 +1,41 @@
+{
+  "name": "Event",
+  "fields": [
+    {
+      "fieldName": "timestamp",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "severity",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "category",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "details",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "serviceProvider",
+      "otherEntityRelationshipName": "eventSet",
+      "relationshipName": "serviceProvider",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210524080845",
+  "entityTableName": "event",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

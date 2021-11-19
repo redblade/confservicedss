@@ -1,0 +1,46 @@
+{
+  "name": "CatalogApp",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "unique"
+      ]
+    },
+    {
+      "fieldName": "appDescriptor",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "40000"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "app",
+      "otherEntityRelationshipName": "catalogApp",
+      "relationshipName": "appSet"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "serviceProvider",
+      "otherEntityRelationshipName": "catalogAppSet",
+      "relationshipName": "serviceProvider",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216210452",
+  "entityTableName": "catalog_app",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

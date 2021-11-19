@@ -1,0 +1,41 @@
+{
+  "name": "InfrastructureProvider",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "unique"
+      ]
+    },
+    {
+      "fieldName": "organisation",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "sla",
+      "otherEntityRelationshipName": "infrastructureProvider",
+      "relationshipName": "slaSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "infrastructure",
+      "otherEntityRelationshipName": "infrastructureProvider",
+      "relationshipName": "infrastructureSet"
+    }
+  ],
+  "changelogDate": "20210216205552",
+  "entityTableName": "infrastructure_provider",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

@@ -1,0 +1,56 @@
+{
+  "name": "BenchmarkReport",
+  "fields": [
+    {
+      "fieldName": "time",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "metric",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "tool",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "mean",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "interval",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "stabilityIndex",
+      "fieldType": "Double"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "benchmarkReportSet",
+      "relationshipName": "node",
+      "otherEntityField": "id"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "benchmark",
+      "otherEntityRelationshipName": "benchmarkReportSet",
+      "relationshipName": "benchmark",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216210152",
+  "entityTableName": "benchmark_report",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

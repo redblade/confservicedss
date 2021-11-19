@@ -1,0 +1,70 @@
+{
+  "name": "Sla",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "unique"
+      ]
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "creation",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "expiration",
+      "fieldType": "Instant"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "slaViolation",
+      "otherEntityRelationshipName": "sla",
+      "relationshipName": "slaViolationSet"
+    },
+    {
+      "relationshipType": "one-to-many",
+      "otherEntityName": "guarantee",
+      "otherEntityRelationshipName": "sla",
+      "relationshipName": "guaranteeSet"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "infrastructureProvider",
+      "otherEntityRelationshipName": "slaSet",
+      "relationshipName": "infrastructureProvider",
+      "otherEntityField": "id"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "serviceProvider",
+      "otherEntityRelationshipName": "slaSet",
+      "relationshipName": "serviceProvider",
+      "otherEntityField": "id"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "service",
+      "otherEntityRelationshipName": "slaSet",
+      "relationshipName": "service",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216210652",
+  "entityTableName": "sla",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

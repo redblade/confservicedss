@@ -1,0 +1,79 @@
+{
+  "name": "Project",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "unique"
+      ]
+    },
+    {
+      "fieldName": "group",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "properties",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "20000"
+    },
+    {
+      "fieldName": "quotaCpuMillicore",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "quotaMemMB",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "quotaDiskGB",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "credentials",
+      "fieldType": "String",
+      "fieldValidateRules": [
+        "maxlength"
+      ],
+      "fieldValidateRulesMaxlength": "20000"
+    },
+    {
+      "fieldName": "enableBenchmark",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "privateBenchmark",
+      "fieldType": "Boolean"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "infrastructure",
+      "otherEntityRelationshipName": "projectSet",
+      "relationshipName": "infrastructure",
+      "otherEntityField": "id"
+    },
+    {
+      "relationshipType": "many-to-one",
+      "otherEntityName": "serviceProvider",
+      "otherEntityRelationshipName": "projectSet",
+      "relationshipName": "serviceProvider",
+      "otherEntityField": "id"
+    }
+  ],
+  "changelogDate": "20210216210252",
+  "entityTableName": "project",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}
