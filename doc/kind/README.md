@@ -5,9 +5,9 @@ First, install [Kind tool](https://kind.sigs.k8s.io/docs/user/quick-start/)
 1) load the MySQL dump dump_kind.sql
 
 ```
-cd src/main/resources
-mysql -h localhost -D confservice -u root -proot < config/sql/mysql_clean_all.sql
-mysql -h localhost -D confservice -u root -proot < config/sql/dump_kind.sql
+mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"
+java -cp target/confservicedss-2.4.4.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_kind.sql localhost 3306 root root
+
 ```
 
 2) delete Kind cluster
