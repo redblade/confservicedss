@@ -29,6 +29,7 @@ import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 
 @Component
 public class CriticalServiceOptimiser {
+	public static final String NO_ACTION_TAKEN = "No action taken - score within limits";
     private final Logger log = LoggerFactory.getLogger(CriticalServiceOptimiser.class);
     
     public static int SCORE_THRESHOLD = 100;
@@ -55,7 +56,7 @@ public class CriticalServiceOptimiser {
 		if(criticalServiceDB.isPresent()) {
 			criticalServiceDB.get().setScore(criticalService.getScore());
 			criticalServiceDB.get().setTimestampProcessed(timestamp);
-			criticalServiceDB.get().setActionTaken("none");
+			criticalServiceDB.get().setActionTaken(criticalService.getActionTaken());
 			criticalServiceDB.get().setDetails(criticalService.getDetails());
 			criticalServiceRepository.save(criticalServiceDB.get());
 		}
@@ -65,13 +66,13 @@ public class CriticalServiceOptimiser {
 		}
 	}
 	
-	private void removeEverythingElse(List<CriticalService> criticalServiceList) {
+	private void keepOnlyThisListAndOldRecordsWithActions(List<CriticalService> criticalServiceList) {
 		Set<eu.pledgerproject.confservice.domain.Service> serviceListToKeep = new HashSet<eu.pledgerproject.confservice.domain.Service>();
 		for(CriticalService criticalService : criticalServiceList) {
 			serviceListToKeep.add(criticalService.getService());
 		}
 		for(CriticalService criticalService : criticalServiceRepository.findAll()) {
-			if(!serviceListToKeep.contains(criticalService.getService())){
+			if(!serviceListToKeep.contains(criticalService.getService()) && criticalService.getActionTaken().equals(NO_ACTION_TAKEN)){
 				criticalServiceRepository.delete(criticalService);
 			}
 		}
@@ -91,7 +92,7 @@ public class CriticalServiceOptimiser {
 		for(CriticalService criticalService : newCriticalServiceList) {
 			saveOrMerge(criticalService);
 		}
-		removeEverythingElse(newCriticalServiceList);
+		keepOnlyThisListAndOldRecordsWithActions(newCriticalServiceList);
 
 		if(newCriticalServiceList.size() > 0) {
 			//an event to track activities
@@ -103,21 +104,19 @@ public class CriticalServiceOptimiser {
 
 		
 		//then, we check what to do with them
-		for(CriticalService criticalService : criticalServiceRepository.getOpenWithActionsToTakeOrdered()) {
+		for(CriticalService criticalService : criticalServiceRepository.getAllOrderedByScoreDesc()) {
 			log.info("CriticalService " + criticalService + " has score " + criticalService.getScore());
 			
 			// we activate only if the score is greater than the warning threshold
 			if(criticalService.getScore() > SCORE_THRESHOLD) {
 				String actionTaken = serviceResourceOptimiser.optimise(criticalService.getService(), true);
 				criticalService.setActionTaken(actionTaken);
-				criticalService.setTimestampProcessed(Instant.now());
-				saveOrMerge(criticalService);
 			}
 			else {
-				criticalService.setActionTaken("No actions to take (score below warning threshold)");
-				criticalService.setTimestampProcessed(Instant.now());
-				saveOrMerge(criticalService);
+				criticalService.setActionTaken(NO_ACTION_TAKEN);
 			}
+			criticalService.setTimestampProcessed(Instant.now());
+			saveOrMerge(criticalService);
 		}
 			
 	}
@@ -143,7 +142,7 @@ public class CriticalServiceOptimiser {
 				slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
 				slaViolationRepository.save(slaViolation);
 			}
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_keep_same_resources.name(), ServiceOptimisationType.resources.name(), startTime)) {
+			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.resources.name(), startTime)) {
 				slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
 				slaViolationRepository.save(slaViolation);
 			}

@@ -68,21 +68,7 @@ public class AppScheduler {
 			int initialRequestCpu = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_CPU_MILLICORE));
 			int initialRequestMem = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_MEMORY_MB));
 
-			if(service.getServiceOptimisation() == null || ServiceOptimisationType.resources.name().equals(service.getServiceOptimisation().getOptimisation())){
-				RankingData rankingData = rankingManager.getBestAvailableRankingForRequestedResources(service, initialRequestCpu, initialRequestMem);
-				if(rankingData.getNodeSet().size() > 0) {
-					Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, rankingData.getNodeSet());
-					
-					started = serviceScheduler.start(service, bestNode, initialRequestCpu, initialRequestMem);
-				}
-				else {
-					started = false;
-					String warningMessage = "App " + app.getName() + " has no DeploymentOptions found, or selected options have not enough resources to host it"; 
-					saveWarningEvent(app, warningMessage);
-					log.warn("AppScheduler.start warning: " + warningMessage);
-				}
-			}
-			else if(
+			if(
 					ServiceOptimisationType.latency.name().equals(service.getServiceOptimisation().getOptimisation())
 					||
 					ServiceOptimisationType.resources_latency.name().equals(service.getServiceOptimisation().getOptimisation())
@@ -96,6 +82,20 @@ public class AppScheduler {
 				else {
 					started = false;
 					String warningMessage = "App " + app.getName() + " has no Nodes with 'node_type' equals to 'edge'/'cloud' available"; 
+					saveWarningEvent(app, warningMessage);
+					log.warn("AppScheduler.start warning: " + warningMessage);
+				}
+			}
+			else {
+				RankingData rankingData = rankingManager.getBestAvailableRankingForRequestedResources(service, initialRequestCpu, initialRequestMem);
+				if(rankingData.getNodeSet().size() > 0) {
+					Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, rankingData.getNodeSet());
+					
+					started = serviceScheduler.start(service, bestNode, initialRequestCpu, initialRequestMem);
+				}
+				else {
+					started = false;
+					String warningMessage = "App " + app.getName() + " has no DeploymentOptions found, or selected options have not enough resources to host it"; 
 					saveWarningEvent(app, warningMessage);
 					log.warn("AppScheduler.start warning: " + warningMessage);
 				}

@@ -27,5 +27,5 @@ public interface CriticalServiceRepository extends JpaRepository<CriticalService
 	Optional<CriticalService> getByServiceID(@Param("serviceId") Long serviceId);
 	
 	@Query(value = "select criticalService from CriticalService criticalService order by criticalService.score desc")
-	List<CriticalService> getOpenWithActionsToTakeOrdered();
+	List<CriticalService> getAllOrderedByScoreDesc();
 }

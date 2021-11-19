@@ -82,7 +82,7 @@ public class EcodaResourceOptimiser {
 	
 	//Each SP has his own set of Nodes to work on, named "NodeGroup"
 	//Each group has its resource capability
-	@Scheduled(cron = "0 */1 * * * *")
+	@Scheduled(cron = "30 */1 * * * *")
 	public void doOptimise() {
 		log.info("EcodaResourceOptimiser started");
 		
@@ -98,7 +98,7 @@ public class EcodaResourceOptimiser {
 				slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
 				slaViolationRepository.save(slaViolation);
 			}
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_keep_same_resources.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
 				slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
 				slaViolationRepository.save(slaViolation);
 			}
@@ -141,7 +141,7 @@ public class EcodaResourceOptimiser {
 			Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
 			if(serviceOptimisedAllocationPlan == null) {
 				log.error("EcodaResourceOptimiser error: not enough resources on the worse option(cloud)");
-				saveErrorEvent(serviceProvider, "EcodaResourceOptimiser error: not enough resources on the worse option(cloud)");
+				saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 			}
 			else { 
 				if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
@@ -179,7 +179,7 @@ public class EcodaResourceOptimiser {
 		if(slaViolationListCritical.size() > 0) {
 			result[0] = (int) (result[0] * (100.0 + autoscalePercentageInt)/100.0);
 			result[1] = (int) (result[1] * (100.0 + autoscalePercentageInt)/100.0);
-			saveInfoEvent(service, "Possible increase of Increased resources for service " + service.getName() + " - cpu/mem: " + result[0] + "/" + result[1]);
+			saveInfoEvent(service, "Increased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
 		}
 		//if, on the other hand, the service has been running and no violations have been received so far, then we need to decrease resources
 		else {
@@ -194,7 +194,12 @@ public class EcodaResourceOptimiser {
 				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageInt)/100.0); 
 				result[0] = cpuRequestTemp > minCpuRequest ? cpuRequestTemp : minCpuRequest;
 				result[1] = memRequestTemp > minMemRequest ? memRequestTemp : minMemRequest;
-				saveInfoEvent(service, "Possible decrease of resources for service " + service.getName() + " - cpu/mem: " + result[0] + "/" + result[1]);
+				if(result[0] != minCpuRequest || result[1] != minMemRequest) {
+					saveInfoEvent(service, "Decreased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+				}
+				else {
+					saveInfoEvent(service, "Min resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+				}
 			}
 		}
 

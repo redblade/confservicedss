@@ -28,7 +28,7 @@ import eu.pledgerproject.confservice.repository.SteadyServiceRepository;
 
 @Component
 public class SteadyServiceOptimiser {
-	
+	public static final String NO_ACTION_TAKEN = "No action taken - score within limits";
     private final Logger log = LoggerFactory.getLogger(SteadyServiceOptimiser.class);
     
     public static final String RESOURCE_USAGE_CATEGORY = "resource-usage";
@@ -70,7 +70,7 @@ public class SteadyServiceOptimiser {
 		for(SteadyService steadyService : newSteadyServiceList) {
 			saveOrMerge(steadyService);
 		}
-		removeEverythingElse(newSteadyServiceList);
+		keepOnlyThisListAndOldRecordsWithActions(newSteadyServiceList);
 		
 		if(newSteadyServiceList.size() > 0) {
 			//an event to track activities
@@ -81,29 +81,24 @@ public class SteadyServiceOptimiser {
 		}
 		
 		//then, we check what to do with them
-		for(SteadyService steadyService : steadyServiceRepository.getOpenWithActionsToTakeOrdered()) {
+		for(SteadyService steadyService : steadyServiceRepository.getAllOrderedByScoreDesc()) {
 			log.info("SteadyService " + steadyService + " has score " + steadyService.getScore());
 			
 			//is the service is stopped, we can close the steadyService entry
 			if(steadyService.getService().getStatus().equals(ExecStatus.STOPPED)) {
-				String actionTaken = "No actions to take (service stopped)";
+				String actionTaken = NO_ACTION_TAKEN;
 				steadyService.setActionTaken(actionTaken);
-				steadyService.setTimestampProcessed(Instant.now());
-				saveOrMerge(steadyService);
 			}
-			
 			//else we activate only if the score is greater than the warning threshold
 			else if(steadyService.getScore() > SCORE_THRESHOLD) {
 				String actionTaken = serviceResourceOptimiser.optimise(steadyService.getService(), false);
 				steadyService.setActionTaken(actionTaken);
-				steadyService.setTimestampProcessed(Instant.now());
-				saveOrMerge(steadyService);
 			}
 			else {
 				steadyService.setActionTaken("No actions to take (score below warning threshold)");
-				steadyService.setTimestampProcessed(Instant.now());
-				saveOrMerge(steadyService);
 			}
+			steadyService.setTimestampProcessed(Instant.now());
+			saveOrMerge(steadyService);
 		}
 	}
 	
@@ -123,13 +118,13 @@ public class SteadyServiceOptimiser {
 		}
 	}
 	
-	private void removeEverythingElse(List<SteadyService> steadyServiceList) {
+	private void keepOnlyThisListAndOldRecordsWithActions(List<SteadyService> steadyServiceList) {
 		Set<Service> serviceListToKeep = new HashSet<Service>();
 		for(SteadyService steadyService : steadyServiceList) {
 			serviceListToKeep.add(steadyService.getService());
 		}
 		for(SteadyService steadyService : steadyServiceRepository.findAll()) {
-			if(!serviceListToKeep.contains(steadyService.getService())){
+			if(!serviceListToKeep.contains(steadyService.getService()) && steadyService.getActionTaken().equals(NO_ACTION_TAKEN)){
 				steadyServiceRepository.delete(steadyService);
 			}
 		}

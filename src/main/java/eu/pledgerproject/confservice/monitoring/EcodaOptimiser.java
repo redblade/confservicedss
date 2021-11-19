@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -64,7 +65,7 @@ public class EcodaOptimiser {
 	public static final int MAX_PERC_THRESHOLD_BEFORE_OFFLOAD_TO_WORSE = 80;
 	public static final int MIN_PERC_THRESHOLD_BEFORE_OFFLOAD_TO_BETTER = 60;
 	
-	private final org.slf4j.Logger log = LoggerFactory.getLogger(EcodaOptimiser.class);
+	private final Logger log = LoggerFactory.getLogger(EcodaOptimiser.class);
 
 	
 	private final ResourceDataReader resourceDataReader;
@@ -89,6 +90,16 @@ public class EcodaOptimiser {
 		this.eventRepository = eventRepository;
 	}
 	
+	private void saveInfoEvent(Service service, String msg) {
+		Event event = new Event();
+		event.setTimestamp(Instant.now());
+		event.setServiceProvider(service.getApp().getServiceProvider());
+		event.setDetails(msg);
+		event.setCategory("EcodaOptimiser");
+		event.severity(Event.INFO);
+		eventRepository.save(event);
+	}
+	
 	private void saveErrorEvent(ServiceProvider serviceProvider, String msg) {
 		Event event = new Event();
 		event.setTimestamp(Instant.now());
@@ -100,7 +111,7 @@ public class EcodaOptimiser {
 	}
 	
 	
-	@Scheduled(cron = "0 */1 * * * *")
+	@Scheduled(cron = "30 */1 * * * *")
 	public void doOptimise() {
 		log.info("EcodaOptimiser started");
 
@@ -146,7 +157,7 @@ public class EcodaOptimiser {
 			Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
 			if(serviceOptimisedAllocationPlan == null) {
 				log.error("EcodaOptimiser error: not enough resources on the worse option(cloud)");
-				saveErrorEvent(serviceProvider, "EcodaOptimiser error: not enough resources on the worse option(cloud)");
+				saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 			}
 			else { 
 				if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
@@ -157,7 +168,9 @@ public class EcodaOptimiser {
 						NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
 						log.info("EcodaResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
 						Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
+
 						serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
+						saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode);
 					}
 				}
 			}

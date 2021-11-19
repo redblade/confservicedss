@@ -1,5 +1,7 @@
 package eu.pledgerproject.confservice.monitoring;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +12,8 @@ import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 
 @Component
 public class SLAViolationManager {
+	private final Logger log = LoggerFactory.getLogger(EcodaOptimiser.class);
+
 	private static final int RESOURCE_USED_PERCENTAGE_THRESHOLD = 80;
     
     private final SlaViolationRepository slaViolationRepository;
@@ -22,6 +26,7 @@ public class SLAViolationManager {
     
 	@Scheduled(cron = "15/30 * * * * *")
 	public void executeTask() {
+		log.info("SLAViolationManager started");
 
 		for(SlaViolation slaViolation : slaViolationRepository.findAllByStatus(SlaViolationStatus.open.name())){
 			Service service = slaViolation.getSla().getService();
@@ -43,7 +48,7 @@ public class SLAViolationManager {
 						slaViolationRepository.save(slaViolation);
 					}
 					else {
-						slaViolation.setStatus(SlaViolationStatus.elab_keep_same_resources.name());
+						slaViolation.setStatus(SlaViolationStatus.elab_no_action_taken.name());
 						slaViolationRepository.save(slaViolation);
 					}
 				}
@@ -52,12 +57,13 @@ public class SLAViolationManager {
 						serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.latency.name())
 						||
 						serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.energy.name())
-						||
-						serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.webhook.name())
-
 				) {
 					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.name());
 					slaViolationRepository.save(slaViolation);
+				}
+				else if(serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.webhook.name())) {
+					slaViolation.setStatus(SlaViolationStatus.elab_no_action_taken.name());
+					slaViolationRepository.save(slaViolation);					
 				}
 			}				
 		}
