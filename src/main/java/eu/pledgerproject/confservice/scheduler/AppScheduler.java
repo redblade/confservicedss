@@ -81,7 +81,7 @@ public class AppScheduler {
 				}
 				else {
 					started = false;
-					String warningMessage = "App " + app.getName() + " has no Nodes with 'node_type' equals to 'edge'/'cloud' available"; 
+					String warningMessage = "App " + app.getName() + " has no Nodes with 'node_type' equals to 'edge' or 'cloud' available"; 
 					saveWarningEvent(app, warningMessage);
 					log.warn("AppScheduler.start warning: " + warningMessage);
 				}
