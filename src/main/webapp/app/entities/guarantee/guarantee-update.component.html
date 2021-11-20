@@ -23,7 +23,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_constraint">Constraint</label>
-                    <input type="text" class="form-control" name="constraint" list="staticConstraint" id="field_constraint"
+                    <input required type="text" class="form-control" name="constraint" list="staticConstraint" id="field_constraint"
                            formControlName="constraint"/>
                            <datalist id="staticConstraint">
 					        <option>responseTime &lt;= 200</option>
@@ -39,7 +39,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_thresholdWarning">Threshold Warning</label>
-                    <input type="text" class="form-control" name="thresholdWarning" id="field_thresholdWarning"
+                    <input required type="text" class="form-control" name="thresholdWarning" id="field_thresholdWarning"
                            formControlName="thresholdWarning"/>
                     <div *ngIf="editForm.get('thresholdWarning')!.invalid && (editForm.get('thresholdWarning')!.dirty || editForm.get('thresholdWarning')!.touched)">
                         <small class="form-text text-danger"
@@ -99,8 +99,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_sla">SLA</label>
-                    <select class="form-control" id="field_sla" name="sla" formControlName="sla">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_sla" name="sla" formControlName="sla">
                         <option [ngValue]="slaOption.id === editForm.get('sla')!.value?.id ? editForm.get('sla')!.value : slaOption" *ngFor="let slaOption of slas; trackBy: trackById">{{ slaOption.name }}</option>
                     </select>
                 </div>

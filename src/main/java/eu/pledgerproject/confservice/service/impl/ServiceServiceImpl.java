@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import eu.pledgerproject.confservice.domain.Service;
+import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
 import eu.pledgerproject.confservice.message.PublisherConfigurationUpdate;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.security.CheckRole;
@@ -40,6 +41,18 @@ public class ServiceServiceImpl implements ServiceService {
     public Service save(Service service) {
         log.debug("Request to save Service : {}", service);
         CheckRole.block("ROLE_ROAPI");
+        if(service.getProfile() == null) {
+			service.setProfile(Service.DEFAULT_SERVICE_PROFILE);
+        }
+        if(service.getInitialConfiguration() == null || service.getInitialConfiguration().trim().length() == 0) {
+			service.setInitialConfiguration(Service.DEFAULT_SERVICE_INITIAL_CONF);
+        }
+        if(service.getRuntimeConfiguration() == null) {
+			service.setInitialConfiguration(Service.DEFAULT_SERVICE_RUNTIME_CONF);
+        }
+        if(service.getStatus() == null) {
+        	service.setStatus(ExecStatus.STOPPED);
+        }
 
         Service result = serviceRepository.save(service);
         configurationNotifierService.publish(result.getId(), "service", "update");

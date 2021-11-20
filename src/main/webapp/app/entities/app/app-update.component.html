@@ -19,7 +19,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_managementType">Management Type</label>
-                    <select class="form-control" name="managementType" formControlName="managementType" id="field_managementType" >
+                    <select required class="form-control" name="managementType" formControlName="managementType" id="field_managementType" >
                         <option value="MANAGED">MANAGED</option>
                         <option value="DELEGATED">DELEGATED</option>
                     </select>
@@ -43,7 +43,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_serviceProvider">Service Provider</label>
-                    <select class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider" required>
+                    <select required class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider" required>
                         <option [ngValue]="serviceProviderOption.id === editForm.get('serviceProvider')!.value?.id ? editForm.get('serviceProvider')!.value : serviceProviderOption" *ngFor="let serviceProviderOption of serviceproviders; trackBy: trackById">{{ serviceProviderOption.name }}</option>
                     </select>
                 </div>

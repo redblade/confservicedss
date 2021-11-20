@@ -22,7 +22,7 @@ export class InfrastructureUpdateComponent implements OnInit {
     id: [],
     name: [null, []],
     type: [],
-    endpoint: [],
+    endpoint: [null, []],
     credentials: [null, [Validators.maxLength(2000)]],
     monitoringPlugin: [null, [Validators.maxLength(20000)]],
     properties: [null, [Validators.maxLength(2000)]],

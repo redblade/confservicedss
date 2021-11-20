@@ -14,11 +14,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import eu.pledgerproject.confservice.domain.App;
 import eu.pledgerproject.confservice.domain.Event;
+import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.enumeration.DeployType;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
 import eu.pledgerproject.confservice.message.PublisherConfigurationUpdate;
@@ -32,7 +32,7 @@ import eu.pledgerproject.confservice.service.AppService;
 /**
  * Service Implementation for managing {@link App}.
  */
-@Service
+@org.springframework.stereotype.Service
 @Transactional
 public class AppServiceImpl implements AppService {
 
@@ -71,13 +71,18 @@ public class AppServiceImpl implements AppService {
 	    		Properties properties = new Properties();
 	    		properties.load(new StringReader("service_name: " + services[i]));
 	    		
-	    		eu.pledgerproject.confservice.domain.Service service = new eu.pledgerproject.confservice.domain.Service();
+	    		Service service = new Service();
 				
 				service.setApp(app);
 				service.setName(properties.getProperty("service_name"));
 				service.setDeployDescriptor(services[i].split("service_descriptor:")[1]);
 				service.setDeployType(DeployType.valueOf(properties.getProperty("service_type")));
+				
+				service.setInitialConfiguration(Service.DEFAULT_SERVICE_PROFILE);
+				service.setInitialConfiguration(Service.DEFAULT_SERVICE_INITIAL_CONF);
+				service.setRuntimeConfiguration(Service.DEFAULT_SERVICE_RUNTIME_CONF);
 				service.setStatus(ExecStatus.STOPPED);
+
 				serviceRepository.save(service);
 	    	}
     	

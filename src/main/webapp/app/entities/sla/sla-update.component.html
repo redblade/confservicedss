@@ -21,7 +21,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_type">DSS Resource management</label>
-                    <select class="form-control" name="type" id="field_type" formControlName="type" required=true>
+                    <select required class="form-control" name="type" id="field_type" formControlName="type" required=true>
 					      <option>active</option>
 					      <option>suspend</option>
 					      <option>ignore</option>
@@ -44,24 +44,21 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_infrastructureProvider">Infrastructure Provider</label>
-                    <select class="form-control" id="field_infrastructureProvider" name="infrastructureProvider" formControlName="infrastructureProvider">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_infrastructureProvider" name="infrastructureProvider" formControlName="infrastructureProvider">
                         <option [ngValue]="infrastructureProviderOption.id === editForm.get('infrastructureProvider')!.value?.id ? editForm.get('infrastructureProvider')!.value : infrastructureProviderOption" *ngFor="let infrastructureProviderOption of infrastructureproviders; trackBy: trackById">{{ infrastructureProviderOption.name }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_serviceProvider">Service Provider</label>
-                    <select class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider">
                         <option [ngValue]="serviceProviderOption.id === editForm.get('serviceProvider')!.value?.id ? editForm.get('serviceProvider')!.value : serviceProviderOption" *ngFor="let serviceProviderOption of serviceproviders; trackBy: trackById">{{ serviceProviderOption.name }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_service">Service</label>
-                    <select class="form-control" id="field_service" name="service" formControlName="service">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_service" name="service" formControlName="service">
                         <option [ngValue]="serviceOption.id === editForm.get('service')!.value?.id ? editForm.get('service')!.value : serviceOption" *ngFor="let serviceOption of services; trackBy: trackById">{{ serviceOption.name }}</option>
                     </select>
                 </div>

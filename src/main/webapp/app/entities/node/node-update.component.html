@@ -63,8 +63,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_infrastructure">Infrastructure</label>
-                    <select class="form-control" id="field_infrastructure" name="infrastructure" formControlName="infrastructure">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_infrastructure" name="infrastructure" formControlName="infrastructure">
                         <option [ngValue]="infrastructureOption.id === editForm.get('infrastructure')!.value?.id ? editForm.get('infrastructure')!.value : infrastructureOption" *ngFor="let infrastructureOption of infrastructures; trackBy: trackById">{{ infrastructureOption.name }}</option>
                     </select>
                 </div>

@@ -47,14 +47,14 @@ spec:
                 sleep 10
               done
         - name: init-db
-          image: 116.203.2.204:443/plgregistry/confservicedss:2.4.4bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.4.5bJENKINS_BUILD
           command:
             - '/bin/sh'
             - '-c'
             - 'java -cp /app/resources/:/app/classes/:/app/libs/* eu.pledgerproject.confservice.InitDB /app/resources/config/sql/dump_base.sql'
       containers:
         - name: confservice-app
-          image: 116.203.2.204:443/plgregistry/confservicedss:2.4.4bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.4.5bJENKINS_BUILD
           env:
             - name: SPRING_MAIL_FROM
               value: 'confservicedss@gmail.com'

@@ -21,18 +21,18 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_type">Type</label>
-                    <input type="text" class="form-control" list="staticType" name="type" id="field_type"
+                    <input required type="text" class="form-control" list="staticType" name="type" id="field_type"
                            formControlName="type"/>
                            <datalist id="staticType">
 					        <option>K8S</option>
-					        <option>Windows</option>
+					        <option>VMWare</option>
 					        <option>Docker</option>
 					       </datalist>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-control-label" for="field_endpoint">Endpoint</label>
-                    <input type="text" class="form-control" name="endpoint" id="field_endpoint"
+                    <label class="form-control-label" for="field_endpoint">Endpoint (eg. Kubernetes API server URL)</label>
+                    <input required type="text" class="form-control" name="endpoint" id="field_endpoint" 
                            formControlName="endpoint"/>
                            
                 </div>
@@ -51,7 +51,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_monitoringPlugin">Monitoring Plugin (eg. &#123;&#39;kubeconfig&#39;: &#39;/var/myconfig&#39;, &#39;monitoring_type&#39;: &#39;metrics-server&#39;, &#39;goldpinger_endpoint&#39;: &#39;my_url&#39;&#125;)</label>
-                    <textarea type="text" class="form-control" name="monitoringPlugin" id="field_monitoringPlugin"
+                    <textarea required type="text" class="form-control" name="monitoringPlugin" id="field_monitoringPlugin"
                            formControlName="monitoringPlugin"></textarea>
                     <div *ngIf="editForm.get('monitoringPlugin')!.invalid && (editForm.get('monitoringPlugin')!.dirty || editForm.get('monitoringPlugin')!.touched)">
                         <small class="form-text text-danger"
@@ -88,7 +88,6 @@
                 <div class="form-group">
                     <label class="form-control-label" for="field_infrastructureProvider">Infrastructure Provider</label>
                     <select class="form-control" id="field_infrastructureProvider" name="infrastructureProvider" formControlName="infrastructureProvider">
-                        <option [ngValue]="null"></option>
                         <option [ngValue]="infrastructureProviderOption.id === editForm.get('infrastructureProvider')!.value?.id ? editForm.get('infrastructureProvider')!.value : infrastructureProviderOption" *ngFor="let infrastructureProviderOption of infrastructureproviders; trackBy: trackById">{{ infrastructureProviderOption.name }}</option>
                     </select>
                 </div>

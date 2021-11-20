@@ -32,7 +32,10 @@ import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
 @Table(name = "service")
 public class Service implements Serializable {
 	public static final int DEFAULT_PRIORITY = 1;
-	
+	public static String DEFAULT_SERVICE_PROFILE = "";
+	public static String DEFAULT_SERVICE_INITIAL_CONF = "{\"initial_memory_mb\": \"200\", \"initial_cpu_millicore\": \"200\", \"min_memory_mb\": \"200\", \"min_cpu_millicore\": \"200\", \"scaling\": \"none\"}";
+	public static String DEFAULT_SERVICE_RUNTIME_CONF = "";
+
     private static final long serialVersionUID = 1L;
 
     @Id

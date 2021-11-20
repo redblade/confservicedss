@@ -38,20 +38,20 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-control-label" for="field_quotaCpuMillicore">Quota Cpu (millicore)</label>
-                    <input type="number" class="form-control" name="quotaCpuMillicore" id="field_quotaCpuMillicore"
+                    <label class="form-control-label" for="field_quotaCpuMillicore">Quota Cpu (millicore - 0 for none)</label>
+                    <input type="number" min=0 class="form-control" name="quotaCpuMillicore" id="field_quotaCpuMillicore"
                            formControlName="quotaCpuMillicore"/>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-control-label" for="field_quotaMemMB">Quota Mem (MB)</label>
-                    <input type="number" class="form-control" name="quotaMemMB" id="field_quotaMemMB"
+                    <label class="form-control-label" for="field_quotaMemMB">Quota Mem (megabyte - 0 for none)</label>
+                    <input type="number" min=0 class="form-control" name="quotaMemMB" id="field_quotaMemMB"
                            formControlName="quotaMemMB"/>
                 </div>
 
                 <div hidden=true class="form-group">
-                    <label class="form-control-label" for="field_quotaDiskGB">Quota Disk (GB)</label>
-                    <input type="number" class="form-control" name="quotaDiskGB" id="field_quotaDiskGB"
+                    <label class="form-control-label" for="field_quotaDiskGB">Quota Disk (gigabyte - 0 for none)</label>
+                    <input type="number" min=0  class="form-control" name="quotaDiskGB" id="field_quotaDiskGB"
                            formControlName="quotaDiskGB"/>
                 </div>
 
@@ -81,16 +81,14 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_infrastructure">Infrastructure</label>
-                    <select class="form-control" id="field_infrastructure" name="infrastructure" formControlName="infrastructure">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_infrastructure" name="infrastructure" formControlName="infrastructure">
                         <option [ngValue]="infrastructureOption.id === editForm.get('infrastructure')!.value?.id ? editForm.get('infrastructure')!.value : infrastructureOption" *ngFor="let infrastructureOption of infrastructures; trackBy: trackById">{{ infrastructureOption.name }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_serviceProvider">Service Provider</label>
-                    <select class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_serviceProvider" name="serviceProvider" formControlName="serviceProvider">
                         <option [ngValue]="serviceProviderOption.id === editForm.get('serviceProvider')!.value?.id ? editForm.get('serviceProvider')!.value : serviceProviderOption" *ngFor="let serviceProviderOption of serviceproviders; trackBy: trackById">{{ serviceProviderOption.name }}</option>
                     </select>
                 </div>

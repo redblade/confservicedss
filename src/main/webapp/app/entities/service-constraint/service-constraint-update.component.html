@@ -27,14 +27,14 @@
                 
                 <div class="form-group">
                     <label class="form-control-label" for="field_value">Value</label>
-                    <input type="text" class="form-control" list="staticValue" name="value" id="field_value"
+                    <input required type="text" class="form-control" list="staticValue" name="value" id="field_value"
                            formControlName="value"/>
                            
                 </div>
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_valueType">Value Type</label>
-                    <input type="text" list="staticValueType" class="form-control" name="valueType" id="field_valueType" formControlName="valueType" />
+                    <input required type="text" list="staticValueType" class="form-control" name="valueType" id="field_valueType" formControlName="valueType" />
                     <datalist id="staticValueType">
 					        <option>text</option>
 					</datalist>
@@ -42,7 +42,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_priority">Priority</label>
-                    <input type="number" list="staticPriority" class="form-control" name="priority" id="field_priority"
+                    <input required type="number" list="staticPriority" class="form-control" name="priority" id="field_priority"
                            formControlName="priority"/>
                            <datalist id="staticPriority">
 					        <option>0</option>
@@ -55,8 +55,7 @@
 
                 <div class="form-group">
                     <label class="form-control-label" for="field_service">Service</label>
-                    <select class="form-control" id="field_service" name="service" formControlName="service">
-                        <option [ngValue]="null"></option>
+                    <select required class="form-control" id="field_service" name="service" formControlName="service">
                         <option [ngValue]="serviceOption.id === editForm.get('service')!.value?.id ? editForm.get('service')!.value : serviceOption" *ngFor="let serviceOption of services; trackBy: trackById">{{ serviceOption.name }}</option>
                     </select>
                 </div>

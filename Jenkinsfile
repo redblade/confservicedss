@@ -3,7 +3,7 @@
 node {
     APP_NAME = "confservicedss"
     BRANCH_NAME = "master"
-    DOCKER_IMAGE_TAG = "$APP_NAME:2.4.4b${env.BUILD_ID}"
+    DOCKER_IMAGE_TAG = "$APP_NAME:2.4.5b${env.BUILD_ID}"
     MYBUILD_ID = "${env.BUILD_ID}"
     ARTIFACTORY_SERVER = "https://116.203.2.204:443/artifactory/plgregistry/"
     ARTIFACTORY_DOCKER_REGISTRY = "116.203.2.204:443/plgregistry/"
