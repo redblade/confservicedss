@@ -1,6 +1,7 @@
 # ConfServiceDSS
 
-This file contains the main instruction to build and run ConfServiceDSS
+This file contains the main instruction to build and run ConfService and DSS components.
+The general architecture is described in this [doc](doc/architecture/readme.md)
 
 
 ### Development
