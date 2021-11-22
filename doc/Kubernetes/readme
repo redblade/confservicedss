@@ -6,3 +6,14 @@ export ns=$2
 echo secret $sa in namespace $ns has base64-decoded token equals to:
 kubectl get secret `kubectl get sa $sa -n $ns -o yaml | grep token | awk '{print $3}'` -n $ns -o yaml | grep " token" | awk '{print $2}' | base64 --decode
 
+
+
+HOWTO create a role across namespaces (and verify)
+
+kubectl create clusterrole my_clusterrole --verb=create,get,list,update,delete,watch --resource=*
+kubectl create clusterrolebinding my_clusterrole --clusterrole my_clusterrole --serviceaccount core:orchestrator
+
+kubectl auth can-i create deploy  --as=system:serviceaccount:core:orchestrator -n uc1
+kubectl auth can-i create deploy  --as=system:serviceaccount:core:orchestrator -n uc2
+kubectl auth can-i create deploy  --as=system:serviceaccount:core:orchestrator -n uc3
+
