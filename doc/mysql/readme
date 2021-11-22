@@ -9,7 +9,7 @@ show tables;
 
 HOWTO create a dump of the DB
 
-mysqldump --host=192.168.70.13 --port=30888 --user=root --password=root -p confservice \
+mysqldump --host=localhost --port=3306 --user=root --password=root -p confservice \
 --single-transaction --complete-insert --no-create-info --no-create-db --column-statistics=0 \
 -t app  \
 -t app_constraint  \

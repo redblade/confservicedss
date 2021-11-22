@@ -24,7 +24,7 @@ public class BenchmarkManager {
 
 	private static final boolean ENABLE_BENCHMARK_FILTER = false;
 	public static final String DEFAULT_METRIC = "performance_index";
-	public static final int DEFAULT_SEC_CHECK_BENCHMARK_REPORT = 60*60*24*2;
+	public static final int DEFAULT_SEC_CHECK_BENCHMARK_REPORT = 60*60*24*7;
 	private final BenchmarkReportRepository benchmarkReportRepository;
 	private final ResourceDataReader resourceDataReader;
 	private final EventRepository eventRepository;
@@ -55,7 +55,7 @@ public class BenchmarkManager {
 	/*
 	The selection of the best nodes is done as follows:
 	
-	1) the selection of best nodes is computed ONLY IF there is a Benchmark with BenchmarkReports with metric "performance_index" and that cover ALL the existing Nodes for that specific Service in the last period of time (2 days)
+	1) the selection of best nodes is computed ONLY IF there is a Benchmark with BenchmarkReports with metric "performance_index" and that cover ALL the existing Nodes for that specific Service in the last period of time (7 days)
 	2) the BenchmarkReport selected are ONLY THOSE either those with matching service.profile == benchmark.name (given by AppProfiler) or, if not found, those with matching service.profile contained into benchmark.category (given by the initial configuration)  
 	3) of all the BenchmarkReport with metric performance_index, it is then selected the one with highest "mean". In the future, also "stability_index" will be considered
 	
@@ -65,8 +65,9 @@ public class BenchmarkManager {
 	public Node getBestNodeUsingBenchmark(Service service, Set<Node> nodeSet) {
 		
 		//here, we expect service.getProfile() has been populated with the matching benchmarkName by the AppProfiler
-		List<Object> nodeMeanByBenchmarkNameList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndTimestampAndNodeSet(service.getProfile(), DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
-		if(nodeMeanByBenchmarkNameList.size() == nodeSet.size()) {
+		String benchmarkName = service.getProfile();
+		List<Object> nodeMeanByBenchmarkNameList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndTimestampAndNodeSet(benchmarkName, DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
+		if(nodeMeanByBenchmarkNameList.size() > 0) {
 			
 			double maxFound = 0;
 			Node nodeFound = null;
@@ -79,16 +80,22 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				saveInfoEvent("Found best node using Benchmarks using benchmarkName. Node: " + nodeFound.getName());
-				log.info("Found best node using Benchmarks using benchmarkName. Node: " + nodeFound.getName());
+				if(ENABLE_BENCHMARK_FILTER) {
+					log.info("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
+					saveInfoEvent("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
 
-				if(ENABLE_BENCHMARK_FILTER) return nodeFound;
+					return nodeFound;
+				}
+				else {
+					log.warn("Found best node using Benchmarks using benchmarkName by AppProfiler but FILTER is not enabled. Node: " + nodeFound.getName());
+				}
 			}
 		}
 		
 		//here, we expect service.getProfile() has a been populated with a category with matches with those in the Benchmark
-		List<Object> nodeMeanByBenchmarkCategoryList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByCategoryMetricAndTimestampAndNodeSet(service.getProfile(), DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
-		if(nodeMeanByBenchmarkCategoryList.size() == nodeSet.size()) {
+		String categoryLike = "%\""+service.getProfile()+"\"%";
+		List<Object> nodeMeanByBenchmarkCategoryList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByCategoryMetricAndTimestampAndNodeSet(categoryLike, DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
+		if(nodeMeanByBenchmarkCategoryList.size()  > 0) {
 			
 			double maxFound = 0;
 			Node nodeFound = null;
@@ -101,10 +108,15 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				saveInfoEvent("Found best node using Benchmarks using category. Node: " + nodeFound.getName());
-				log.info("Found best node using Benchmarks using category. Node: " + nodeFound.getName());
-				
-				if(ENABLE_BENCHMARK_FILTER) return nodeFound;
+				if(ENABLE_BENCHMARK_FILTER) {
+					log.info("Found best node using Benchmarks using category. Node: " + nodeFound.getName());
+					saveInfoEvent("Found best node using Benchmarks using category. Node: " + nodeFound.getName());
+
+					return nodeFound;
+				}
+				else {
+					log.warn("Found best node using Benchmarks using category but FILTER is not enabled. Node: " + nodeFound.getName());
+				}
 			}
 		}
 
