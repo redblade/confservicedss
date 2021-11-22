@@ -27,14 +27,18 @@ public class CredentialService {
     
 	@EventListener(ApplicationReadyEvent.class)
 	public void initialiseCredentials() {
-		log.info("DSS just started, initialising credentialService..");
-		updateCredentials();
-		log.info("credentialService initialising completed");
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+			log.info("DSS just started, initialising credentialService..");
+			updateCredentials();
+			log.info("credentialService initialising completed");
+		}
 	}
 	
 	@Scheduled(cron = "0 */5 * * * *")
 	public void executeTask() {
-		updateCredentials();
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+			updateCredentials();
+		}
 	}
 
 	private void updateCredentials() {

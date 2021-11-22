@@ -104,7 +104,7 @@ public class BenchmarkResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-
+    
     /**
      * {@code GET  /benchmarks/:id} : get the "id" benchmark.
      *

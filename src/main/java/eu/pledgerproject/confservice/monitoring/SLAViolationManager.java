@@ -26,46 +26,49 @@ public class SLAViolationManager {
     
 	@Scheduled(cron = "15/30 * * * * *")
 	public void executeTask() {
-		log.info("SLAViolationManager started");
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
 
-		for(SlaViolation slaViolation : slaViolationRepository.findAllByStatus(SlaViolationStatus.open.name())){
-			Service service = slaViolation.getSla().getService();
-
-			//we process this SLA Violation ONLY if there are no past violations on the same Service with status 'created'
-			ServiceOptimisation serviceOptimisation = service.getServiceOptimisation();
-			if(serviceOptimisation != null && serviceOptimisation.getOptimisation() != null) {
-				
-				//in case of ServiceOptimisation resource or resource_latency, we check whether there is ACTUAL need of more resources or not
-				if(
-						serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources_latency.name())
-						||
-						serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources.name())
-				) {
-
-					int resourceUsedPerc = resourceDataReader.getResourceUsagePercentage(slaViolation.getSla().getService());
-					if(resourceUsedPerc > RESOURCE_USED_PERCENTAGE_THRESHOLD) {
-						slaViolation.setStatus(SlaViolationStatus.elab_add_more_resources.name());
+			log.info("SLAViolationManager started");
+	
+			for(SlaViolation slaViolation : slaViolationRepository.findAllByStatus(SlaViolationStatus.open.name())){
+				Service service = slaViolation.getSla().getService();
+	
+				//we process this SLA Violation ONLY if there are no past violations on the same Service with status 'created'
+				ServiceOptimisation serviceOptimisation = service.getServiceOptimisation();
+				if(serviceOptimisation != null && serviceOptimisation.getOptimisation() != null) {
+					
+					//in case of ServiceOptimisation resource or resource_latency, we check whether there is ACTUAL need of more resources or not
+					if(
+							serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources_latency.name())
+							||
+							serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources.name())
+					) {
+	
+						int resourceUsedPerc = resourceDataReader.getResourceUsagePercentage(slaViolation.getSla().getService());
+						if(resourceUsedPerc > RESOURCE_USED_PERCENTAGE_THRESHOLD) {
+							slaViolation.setStatus(SlaViolationStatus.elab_add_more_resources.name());
+							slaViolationRepository.save(slaViolation);
+						}
+						else {
+							slaViolation.setStatus(SlaViolationStatus.elab_no_action_taken.name());
+							slaViolationRepository.save(slaViolation);
+						}
+					}
+					//else, in case ServiceOptimisation latency, energy, webhook, there are no Optimiser, so violations are moved to 'not_critical'
+					else if(
+							serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.latency.name())
+							||
+							serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.energy.name())
+					) {
+						slaViolation.setStatus(SlaViolationStatus.closed_not_critical.name());
 						slaViolationRepository.save(slaViolation);
 					}
-					else {
+					else if(serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.webhook.name())) {
 						slaViolation.setStatus(SlaViolationStatus.elab_no_action_taken.name());
-						slaViolationRepository.save(slaViolation);
+						slaViolationRepository.save(slaViolation);					
 					}
-				}
-				//else, in case ServiceOptimisation latency, energy, webhook, there are no Optimiser, so violations are moved to 'not_critical'
-				else if(
-						serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.latency.name())
-						||
-						serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.energy.name())
-				) {
-					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.name());
-					slaViolationRepository.save(slaViolation);
-				}
-				else if(serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.webhook.name())) {
-					slaViolation.setStatus(SlaViolationStatus.elab_no_action_taken.name());
-					slaViolationRepository.save(slaViolation);					
-				}
-			}				
+				}				
+			}
 		}
 	}
 		

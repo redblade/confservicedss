@@ -2,6 +2,7 @@ package eu.pledgerproject.confservice.repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,11 @@ public interface BenchmarkReportRepository extends JpaRepository<BenchmarkReport
 	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider is null")
 	Page<BenchmarkReport> findAllPublic(Pageable pageable);
 	
+	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.category like :category and benchmarkReport.metric = :metric and benchmarkReport.time > :timestamp group by benchmarkReport.node having benchmarkReport.node in :nodeSet")
+	List<Object> findNodeMeanFromBenchmarkReportByCategoryMetricAndTimestampAndNodeSet(@Param("category") String category, @Param("metric") String metric, @Param("timestamp") Instant timestamp, @Param("nodeSet") Set<Node> nodeSet);
+
+	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.name = :benchmarkName and benchmarkReport.metric = :metric and benchmarkReport.time > :timestamp group by benchmarkReport.node having benchmarkReport.node in :nodeSet")
+	List<Object> findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndTimestampAndNodeSet(@Param("benchmarkName") String benchmarkName, @Param("metric") String metric, @Param("timestamp") Instant timestamp, @Param("nodeSet") Set<Node> nodeSet);
 	
 	@Modifying
 	@Query(value = "delete from BenchmarkReport benchmarkReport where benchmarkReport.time < :timestamp")

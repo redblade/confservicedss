@@ -14,12 +14,10 @@ import eu.pledgerproject.confservice.domain.Service;
 public class RankingManager {
 	
     private final DeploymentOptionsManager deploymentOptionsManager;
-    private final BenchmarkManager benchmarkManager;
     private final QuotaMonitoringReader quotaMonitoringReader;
 	
-    public RankingManager (DeploymentOptionsManager deploymentOptionsManager, BenchmarkManager benchmarkManager, QuotaMonitoringReader quotaMonitoringReader) {
+    public RankingManager (DeploymentOptionsManager deploymentOptionsManager, QuotaMonitoringReader quotaMonitoringReader) {
     	this.deploymentOptionsManager = deploymentOptionsManager;
-    	this.benchmarkManager = benchmarkManager;
     	this.quotaMonitoringReader = quotaMonitoringReader;
     }
     
@@ -60,8 +58,7 @@ public class RankingManager {
 			int ranking = availableRankingForRequestedResources.keySet().iterator().next();
 			Set<Node> candidateSet = availableRankingForRequestedResources.get(ranking);
 			
-			Set<Node> bestNodeSet = benchmarkManager.getBestNodeSetUsingBenchmark(service, candidateSet);
-			return new RankingData(ranking, bestNodeSet);
+			return new RankingData(ranking, candidateSet);
 		}
 
 		return new RankingData(0, new HashSet<Node>());

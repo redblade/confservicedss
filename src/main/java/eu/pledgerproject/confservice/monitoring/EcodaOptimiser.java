@@ -113,14 +113,16 @@ public class EcodaOptimiser {
 	
 	@Scheduled(cron = "30 */1 * * * *")
 	public void doOptimise() {
-		log.info("EcodaOptimiser started");
-
-		//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
-		for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
-			
-			//by SP: the list of Services to optimise and the Node set where they could be allocated
-			List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.latency.name());
-			doOptimise(serviceProvider, serviceList);
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+			log.info("EcodaOptimiser started");
+	
+			//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
+			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
+				
+				//by SP: the list of Services to optimise and the Node set where they could be allocated
+				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.latency.name());
+				doOptimise(serviceProvider, serviceList);
+			}
 		}
 	}
 	

@@ -26,14 +26,17 @@ public class LogCleanerService {
 	@Scheduled(cron = "0 0 */1 * * *")
 	@Transactional
 	public void executeTask() {
-		log.info("LogCleaner removed events older than " + REPORT_CLEAN_HOUR + " h");
-		
-		Event event = new Event();
-		event.setCategory("LogCleaner");
-		event.setDetails("started");
-		eventRepository.save(event);
-		
-		eventRepository.deleteOld(Instant.now().minusSeconds(REPORT_CLEAN_HOUR*60*60));
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+
+			log.info("LogCleaner removed events older than " + REPORT_CLEAN_HOUR + " h");
+			
+			Event event = new Event();
+			event.setCategory("LogCleaner");
+			event.setDetails("started");
+			eventRepository.save(event);
+			
+			eventRepository.deleteOld(Instant.now().minusSeconds(REPORT_CLEAN_HOUR*60*60));
+		}
 	}
 
 }

@@ -84,28 +84,31 @@ public class EcodaResourceOptimiser {
 	//Each group has its resource capability
 	@Scheduled(cron = "30 */1 * * * *")
 	public void doOptimise() {
-		log.info("EcodaResourceOptimiser started");
-		
-		//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
-		for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
-			Map<String, String> preferences = ConverterJSON.convertToMap(serviceProvider.getPreferences());
-			int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+
+			log.info("EcodaResourceOptimiser started");
 			
-			Instant stopTime = Instant.now();
-			Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
-			
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_add_more_resources.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
-				slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
-				slaViolationRepository.save(slaViolation);
+			//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
+			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
+				Map<String, String> preferences = ConverterJSON.convertToMap(serviceProvider.getPreferences());
+				int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+				
+				Instant stopTime = Instant.now();
+				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
+				
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_add_more_resources.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+					slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
+					slaViolationRepository.save(slaViolation);
+				}
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
+					slaViolationRepository.save(slaViolation);
+				}
+				
+				//then we optimise the services
+				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
+				doOptimise(serviceProvider, serviceList);
 			}
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
-				slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
-				slaViolationRepository.save(slaViolation);
-			}
-			
-			//then we optimise the services
-			List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
-			doOptimise(serviceProvider, serviceList);
 		}
 	}
 	

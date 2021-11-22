@@ -38,18 +38,21 @@ public class ReportCleanerService {
 	@Scheduled(cron = "0 0 */1 * * *")
 	@Transactional
 	public void executeTask() {
-		log.info("LogCleaner removed events older than " + REPORT_CLEAN_HOUR + " h");
-		
-		Event event = new Event();
-		event.setCategory("ReportCleaner");
-		event.setDetails("started");
-		eventRepository.save(event);
-		
-		Instant timestampClean = Instant.now().minusSeconds(REPORT_CLEAN_HOUR*60*60);
-		serviceReportRepository.deleteOld(timestampClean);
-		infrastructureReportRepository.deleteOld(timestampClean);
-		nodeReportRepository.deleteOld(timestampClean);
-		benchmarkReportRepository.deleteOld(timestampClean);
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+	
+			log.info("LogCleaner removed events older than " + REPORT_CLEAN_HOUR + " h");
+			
+			Event event = new Event();
+			event.setCategory("ReportCleaner");
+			event.setDetails("started");
+			eventRepository.save(event);
+			
+			Instant timestampClean = Instant.now().minusSeconds(REPORT_CLEAN_HOUR*60*60);
+			serviceReportRepository.deleteOld(timestampClean);
+			infrastructureReportRepository.deleteOld(timestampClean);
+			nodeReportRepository.deleteOld(timestampClean);
+			benchmarkReportRepository.deleteOld(timestampClean);
+		}
 	}
 
 }

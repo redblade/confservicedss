@@ -58,47 +58,50 @@ public class SteadyServiceOptimiser {
 	
 	@Scheduled(cron = "30 */1 * * * *")
 	public void executeTask() {
-		log.info("SteadyServiceOptimiser started");
-		
-		//first, we create steadyServices and delete old ones
-		List<SteadyService> newSteadyServiceList = new ArrayList<SteadyService>();
-		for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
-			for(SteadyService steadyService : getSteadyServiceListByServiceProvider(serviceProvider)) {
-				newSteadyServiceList.add(steadyService);
-			}
-		}
-		for(SteadyService steadyService : newSteadyServiceList) {
-			saveOrMerge(steadyService);
-		}
-		keepOnlyThisListAndOldRecordsWithActions(newSteadyServiceList);
-		
-		if(newSteadyServiceList.size() > 0) {
-			//an event to track activities
-			Event event = new Event();
-			event.setCategory("SteadyServiceOptimiser");
-			event.setDetails("started");
-			eventRepository.save(event);
-		}
-		
-		//then, we check what to do with them
-		for(SteadyService steadyService : steadyServiceRepository.getAllOrderedByScoreDesc()) {
-			log.info("SteadyService " + steadyService + " has score " + steadyService.getScore());
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+
+			log.info("SteadyServiceOptimiser started");
 			
-			//is the service is stopped, we can close the steadyService entry
-			if(steadyService.getService().getStatus().equals(ExecStatus.STOPPED)) {
-				String actionTaken = NO_ACTION_TAKEN;
-				steadyService.setActionTaken(actionTaken);
+			//first, we create steadyServices and delete old ones
+			List<SteadyService> newSteadyServiceList = new ArrayList<SteadyService>();
+			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
+				for(SteadyService steadyService : getSteadyServiceListByServiceProvider(serviceProvider)) {
+					newSteadyServiceList.add(steadyService);
+				}
 			}
-			//else we activate only if the score is greater than the warning threshold
-			else if(steadyService.getScore() > SCORE_THRESHOLD) {
-				String actionTaken = serviceResourceOptimiser.optimise(steadyService.getService(), false);
-				steadyService.setActionTaken(actionTaken);
+			for(SteadyService steadyService : newSteadyServiceList) {
+				saveOrMerge(steadyService);
 			}
-			else {
-				steadyService.setActionTaken("No actions to take (score below warning threshold)");
+			keepOnlyThisListAndOldRecordsWithActions(newSteadyServiceList);
+			
+			if(newSteadyServiceList.size() > 0) {
+				//an event to track activities
+				Event event = new Event();
+				event.setCategory("SteadyServiceOptimiser");
+				event.setDetails("started");
+				eventRepository.save(event);
 			}
-			steadyService.setTimestampProcessed(Instant.now());
-			saveOrMerge(steadyService);
+			
+			//then, we check what to do with them
+			for(SteadyService steadyService : steadyServiceRepository.getAllOrderedByScoreDesc()) {
+				log.info("SteadyService " + steadyService + " has score " + steadyService.getScore());
+				
+				//is the service is stopped, we can close the steadyService entry
+				if(steadyService.getService().getStatus().equals(ExecStatus.STOPPED)) {
+					String actionTaken = NO_ACTION_TAKEN;
+					steadyService.setActionTaken(actionTaken);
+				}
+				//else we activate only if the score is greater than the warning threshold
+				else if(steadyService.getScore() > SCORE_THRESHOLD) {
+					String actionTaken = serviceResourceOptimiser.optimise(steadyService.getService(), false);
+					steadyService.setActionTaken(actionTaken);
+				}
+				else {
+					steadyService.setActionTaken("No actions to take (score below warning threshold)");
+				}
+				steadyService.setTimestampProcessed(Instant.now());
+				saveOrMerge(steadyService);
+			}
 		}
 	}
 	

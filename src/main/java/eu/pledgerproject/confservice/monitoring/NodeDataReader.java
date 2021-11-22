@@ -60,81 +60,84 @@ public class NodeDataReader {
 	
 	@Scheduled(cron = "0 */1 * * * *")
 	public void scheduleTask() {
-		log.info("NodeDataReader started");
-		Event event = new Event();
-		event.setCategory("NodeDataReader");
-		event.setDetails("started");
-		eventRepository.save(event);
-		
-		for (Infrastructure infrastructure : infrastructureRepository.findAll()) {
-			log.info("NodeDataReader is working on infrastructure " + infrastructure.getName());
-			try {
-				log.info("NodeDataReader: " + infrastructure.getName());
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
 
-				String infrastructureType = infrastructure.getType();
-				if(infrastructureType != null && infrastructureType.equals("K8S")) {
-					
-					ApiClient client = tokenKubernetes.getKubernetesApiClient(infrastructure);
-					
-					if(client != null) {
-						log.info("NodeDataReader got a K8S client");
-
-						List<Node> nodeList = nodeRepository.findAllNodesByInfrastructureId(infrastructure.getId());
+			log.info("NodeDataReader started");
+			Event event = new Event();
+			event.setCategory("NodeDataReader");
+			event.setDetails("started");
+			eventRepository.save(event);
+			
+			for (Infrastructure infrastructure : infrastructureRepository.findAll()) {
+				log.info("NodeDataReader is working on infrastructure " + infrastructure.getName());
+				try {
+					log.info("NodeDataReader: " + infrastructure.getName());
+	
+					String infrastructureType = infrastructure.getType();
+					if(infrastructureType != null && infrastructureType.equals("K8S")) {
 						
-						int infrastructureCpu = 0;
-						int infrastructureMemMB = 0;
+						ApiClient client = tokenKubernetes.getKubernetesApiClient(infrastructure);
 						
-						try {
-							Configuration.setDefaultApiClient(client);
-						    CoreV1Api coreApi = new CoreV1Api(client);
-						    for(V1Node v1Node : coreApi.listNode(null, null, null, null, null, null, null, null, null, null).getItems()) {
-						    	
-						    	Node nodeFound = null;
-						    	for(Node node : nodeList) {
-						    		if(node.getName().equals(v1Node.getMetadata().getName())) {
-						    			nodeFound = node;
-						    			break;
-						    		}
-						    	}
-						    	if(nodeFound != null && (nodeFound.getTotalResources() == null || nodeFound.getTotalResources().isEmpty())) {
-						    		V1NodeStatus v1NodeStatus = v1Node.getStatus();
-						    		int nodeCpu = 1000 * v1NodeStatus.getCapacity().get("cpu").getNumber().intValue();
-						    		int nodeMemMB = (int) (v1NodeStatus.getCapacity().get("memory").getNumber().longValue() / 1024 / 1024);
-						    		StringBuilder ipaddress = new StringBuilder();
-						    		for(V1NodeAddress nodeAddress : v1NodeStatus.getAddresses()) {
-						    			ipaddress.append(" " + nodeAddress.getAddress() + " ");
-						    		}
-						    		Map<String, String> labels = v1Node.getMetadata().getLabels();
-						    		String features = ConverterJSON.convertToJSON(labels);
-						    		nodeFound.setIpaddress(ipaddress.toString().trim());
-						    		nodeFound.setFeatures(features);
-						    		
-						    		String totalResources = RESOURCE_TEMPLATE.replace("CPU", ""+nodeCpu).replace("MEMORY", ""+nodeMemMB);
-						    		nodeFound.setTotalResources(totalResources);
-						    		
-						    		nodeRepository.saveAndFlush(nodeFound);
-						    		
-						    		infrastructureCpu += nodeCpu;
-						    		infrastructureMemMB += nodeMemMB;
-						    	}
-						    }
-						    
-						    String totalResources = RESOURCE_TEMPLATE.replace("CPU", ""+infrastructureCpu).replace("MEMORY", ""+infrastructureMemMB);
-				    		if(infrastructure.getTotalResources() == null || infrastructure.getTotalResources().length() == 0) {
-				    			infrastructure.setTotalResources(totalResources);
-				    			infrastructureRepository.saveAndFlush(infrastructure);
-				    		}
-				    		
-						    
-						}catch (ApiException e) {
-							log.warn("Error getting info from Kubernetes " + e.getMessage());
+						if(client != null) {
+							log.info("NodeDataReader got a K8S client");
+	
+							List<Node> nodeList = nodeRepository.findAllNodesByInfrastructureId(infrastructure.getId());
+							
+							int infrastructureCpu = 0;
+							int infrastructureMemMB = 0;
+							
+							try {
+								Configuration.setDefaultApiClient(client);
+							    CoreV1Api coreApi = new CoreV1Api(client);
+							    for(V1Node v1Node : coreApi.listNode(null, null, null, null, null, null, null, null, null, null).getItems()) {
+							    	
+							    	Node nodeFound = null;
+							    	for(Node node : nodeList) {
+							    		if(node.getName().equals(v1Node.getMetadata().getName())) {
+							    			nodeFound = node;
+							    			break;
+							    		}
+							    	}
+							    	if(nodeFound != null && (nodeFound.getTotalResources() == null || nodeFound.getTotalResources().isEmpty())) {
+							    		V1NodeStatus v1NodeStatus = v1Node.getStatus();
+							    		int nodeCpu = 1000 * v1NodeStatus.getCapacity().get("cpu").getNumber().intValue();
+							    		int nodeMemMB = (int) (v1NodeStatus.getCapacity().get("memory").getNumber().longValue() / 1024 / 1024);
+							    		StringBuilder ipaddress = new StringBuilder();
+							    		for(V1NodeAddress nodeAddress : v1NodeStatus.getAddresses()) {
+							    			ipaddress.append(" " + nodeAddress.getAddress() + " ");
+							    		}
+							    		Map<String, String> labels = v1Node.getMetadata().getLabels();
+							    		String features = ConverterJSON.convertToJSON(labels);
+							    		nodeFound.setIpaddress(ipaddress.toString().trim());
+							    		nodeFound.setFeatures(features);
+							    		
+							    		String totalResources = RESOURCE_TEMPLATE.replace("CPU", ""+nodeCpu).replace("MEMORY", ""+nodeMemMB);
+							    		nodeFound.setTotalResources(totalResources);
+							    		
+							    		nodeRepository.saveAndFlush(nodeFound);
+							    		
+							    		infrastructureCpu += nodeCpu;
+							    		infrastructureMemMB += nodeMemMB;
+							    	}
+							    }
+							    
+							    String totalResources = RESOURCE_TEMPLATE.replace("CPU", ""+infrastructureCpu).replace("MEMORY", ""+infrastructureMemMB);
+					    		if(infrastructure.getTotalResources() == null || infrastructure.getTotalResources().length() == 0) {
+					    			infrastructure.setTotalResources(totalResources);
+					    			infrastructureRepository.saveAndFlush(infrastructure);
+					    		}
+					    		
+							    
+							}catch (ApiException e) {
+								log.warn("Error getting info from Kubernetes " + e.getMessage());
+							}
 						}
+						
 					}
-					
+				}catch(Exception e) {
+					log.error("NodeDataReader", e);
+					saveErrorEvent("NodeDataReader error " + e.getClass() + " " + e.getMessage());
 				}
-			}catch(Exception e) {
-				log.error("NodeDataReader", e);
-				saveErrorEvent("NodeDataReader error " + e.getClass() + " " + e.getMessage());
 			}
 		}
 	}

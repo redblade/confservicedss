@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.pledgerproject.confservice.domain.Node;
+import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
 import eu.pledgerproject.confservice.service.NodeService;
 import eu.pledgerproject.confservice.web.rest.errors.BadRequestAlertException;
 import io.github.jhipster.web.util.HeaderUtil;
@@ -46,9 +47,11 @@ public class NodeResource {
     private String applicationName;
 
     private final NodeService nodeService;
+    private final BenchmarkManager benchmarkManager;
 
-    public NodeResource(NodeService nodeService) {
+    public NodeResource(NodeService nodeService, BenchmarkManager benchmarkManager) {
         this.nodeService = nodeService;
+        this.benchmarkManager = benchmarkManager;
     }
 
     /**
@@ -69,6 +72,21 @@ public class NodeResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+    
+    /**
+     * {@code GET  /nodes/integration/:serviceID/infrastructureID} : get the best Node (its name) given the current BenchmarkReports.
+     *
+     * @param id the id of the benchmark to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the benchmark, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/nodes/integration/{serviceID}/{infrastructureID}")
+    public ResponseEntity<String> getBestNodeUsingBenchmark(@PathVariable Long serviceID, @PathVariable Long infrastructureID) {
+        log.debug("REST request to get getBestNodeUsingBenchmark");
+        Optional<String> result = benchmarkManager.getBestNodeUsingBenchmark(serviceID, infrastructureID);
+        return ResponseUtil.wrapOrNotFound(result);
+    }
+
+
 
     /**
      * {@code PUT  /nodes} : Updates an existing node.

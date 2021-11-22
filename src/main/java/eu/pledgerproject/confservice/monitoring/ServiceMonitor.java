@@ -80,22 +80,24 @@ public class ServiceMonitor {
 	
 	@Scheduled(cron = "0 */1 * * * *")
 	public void executeTask() {
-		
-		Event event = new Event();
-		event.setCategory("ServiceMonitor");
-		event.setDetails("started");
-		eventRepository.save(event);
-		Instant timestamp = Instant.now().minusSeconds(60);
-		for(Service service : serviceRepository.findAllOldRunning(timestamp)) {
-				
-			if(service.getDeployType().equals(DeployType.KUBERNETES)){
-				Node currentNode = resourceDataReader.getCurrentNode(service);
-				
-				if(currentNode != null) {
-					Infrastructure infrastructure = currentNode.getInfrastructure();
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+
+			Event event = new Event();
+			event.setCategory("ServiceMonitor");
+			event.setDetails("started");
+			eventRepository.save(event);
+			Instant timestamp = Instant.now().minusSeconds(60);
+			for(Service service : serviceRepository.findAllOldRunning(timestamp)) {
 					
-					updateServiceRuntimeData(infrastructure, service);
-					updateStartupTimes(infrastructure, service);
+				if(service.getDeployType().equals(DeployType.KUBERNETES)){
+					Node currentNode = resourceDataReader.getCurrentNode(service);
+					
+					if(currentNode != null) {
+						Infrastructure infrastructure = currentNode.getInfrastructure();
+						
+						updateServiceRuntimeData(infrastructure, service);
+						updateStartupTimes(infrastructure, service);
+					}
 				}
 			}
 		}

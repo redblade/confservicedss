@@ -62,29 +62,32 @@ public class CustomServiceOptimiser {
     
 	@Scheduled(cron = "0 */1 * * * *")
 	public void executeTask() {
-		List<ServiceOptimisation> serviceOptimisationList = serviceOptimisationRepository.findServiceOptimisationOnRunningServices(ServiceOptimisationType.webhook.name());
-		
-		if(serviceOptimisationList.size() > 0) {
-			//an event to track activities
-			Event event = new Event();
-			event.setCategory("CustomServiceOptimiser");
-			event.setDetails("started");
-			eventRepository.save(event);
-		}
-		
-		for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
-			Map<String, String> preferences = ConverterJSON.convertToMap(serviceProvider.getPreferences());
-			int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+
+			List<ServiceOptimisation> serviceOptimisationList = serviceOptimisationRepository.findServiceOptimisationOnRunningServices(ServiceOptimisationType.webhook.name());
 			
-			Instant stopTime = Instant.now();
-			Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
-			
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.webhook.name(), startTime)) {
-				slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
-				slaViolationRepository.save(slaViolation);
-				doOptimise(serviceProvider, slaViolation.getSla().getService());
+			if(serviceOptimisationList.size() > 0) {
+				//an event to track activities
+				Event event = new Event();
+				event.setCategory("CustomServiceOptimiser");
+				event.setDetails("started");
+				eventRepository.save(event);
 			}
 			
+			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
+				Map<String, String> preferences = ConverterJSON.convertToMap(serviceProvider.getPreferences());
+				int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+				
+				Instant stopTime = Instant.now();
+				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
+				
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.webhook.name(), startTime)) {
+					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
+					slaViolationRepository.save(slaViolation);
+					doOptimise(serviceProvider, slaViolation.getSla().getService());
+				}
+				
+			}
 		}
 	}
 	

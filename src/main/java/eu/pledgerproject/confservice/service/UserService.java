@@ -22,6 +22,7 @@ import eu.pledgerproject.confservice.domain.Authority;
 import eu.pledgerproject.confservice.domain.InfrastructureProvider;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.User;
+import eu.pledgerproject.confservice.monitoring.ControlFlag;
 import eu.pledgerproject.confservice.repository.AuthorityRepository;
 import eu.pledgerproject.confservice.repository.InfrastructureProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
@@ -334,12 +335,15 @@ public class UserService {
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
-        userRepository
-            .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
-            .forEach(user -> {
-                log.debug("Deleting not activated user {}", user.getLogin());
-                userRepository.delete(user);
-            });
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+
+	        userRepository
+	            .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
+	            .forEach(user -> {
+	                log.debug("Deleting not activated user {}", user.getLogin());
+	                userRepository.delete(user);
+	            });
+		}
     }
 
     /**

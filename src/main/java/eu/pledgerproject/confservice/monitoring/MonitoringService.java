@@ -57,48 +57,51 @@ public class MonitoringService {
 
 	@Scheduled(cron = "0 */1 * * * *")
 	public void executeTask() {
-		log.info("MonitoringService started");
-		
-		Event event = new Event();
-		event.setCategory("MonitoringService");
-		event.setDetails("started");
-		eventRepository.save(event);
-		
-		for (Infrastructure infrastructure : infrastructureRepository.findAllWithNodes()) {
-			Instant timestamp = Instant.now();
-			
-			log.info("MonitoringService is working on infrastructure " + infrastructure.getName());
-			try {
-				log.info("MonitoringService: " + infrastructure.getName());
-				
-				if(infrastructure.getNodeSets().size() == 0) {
-					nodeAutodiscovery.autodiscoveryNodes(infrastructure);
-				}
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
 
-				String infrastructureType = infrastructure.getType();
-				if(infrastructureType != null && infrastructureType.equals("K8S")) {
+			log.info("MonitoringService started");
+			
+			Event event = new Event();
+			event.setCategory("MonitoringService");
+			event.setDetails("started");
+			eventRepository.save(event);
+			
+			for (Infrastructure infrastructure : infrastructureRepository.findAllWithNodes()) {
+				Instant timestamp = Instant.now();
+				
+				log.info("MonitoringService is working on infrastructure " + infrastructure.getName());
+				try {
+					log.info("MonitoringService: " + infrastructure.getName());
 					
-					Map<String, String> monitoringProperties = ConverterJSON.convertToMap(infrastructure.getMonitoringPlugin());
+					if(infrastructure.getNodeSets().size() == 0) {
+						nodeAutodiscovery.autodiscoveryNodes(infrastructure);
+					}
+	
+					String infrastructureType = infrastructure.getType();
+					if(infrastructureType != null && infrastructureType.equals("K8S")) {
 						
-					if(MetricsServerReader.HEADER.equals(monitoringProperties.get("monitoring_type"))) {
-						metricsServerReader.storeMetrics(infrastructure, timestamp);
-					}
-					else if(PrometheusReaderKubernetes.HEADER.equals(monitoringProperties.get("monitoring_type"))) {
-						String endpoint = monitoringProperties.get("prometheus_endpoint");
-						prometheusReaderKubernetes.storeMetrics(infrastructure, endpoint, timestamp);
+						Map<String, String> monitoringProperties = ConverterJSON.convertToMap(infrastructure.getMonitoringPlugin());
+							
+						if(MetricsServerReader.HEADER.equals(monitoringProperties.get("monitoring_type"))) {
+							metricsServerReader.storeMetrics(infrastructure, timestamp);
+						}
+						else if(PrometheusReaderKubernetes.HEADER.equals(monitoringProperties.get("monitoring_type"))) {
+							String endpoint = monitoringProperties.get("prometheus_endpoint");
+							prometheusReaderKubernetes.storeMetrics(infrastructure, endpoint, timestamp);
+						}
+						
+						if(monitoringProperties.containsKey("goldpinger_endpoint")) {
+							String endpoint = monitoringProperties.get("goldpinger_endpoint");
+							goldPingerReader.storeMetrics(infrastructure, endpoint, timestamp);
+						}
 					}
 					
-					if(monitoringProperties.containsKey("goldpinger_endpoint")) {
-						String endpoint = monitoringProperties.get("goldpinger_endpoint");
-						goldPingerReader.storeMetrics(infrastructure, endpoint, timestamp);
-					}
+					quotaMonitoringReader.storeMetrics(timestamp);
+					
+				} catch(Exception e) {
+					log.error("MonitoringService", e);
+					saveErrorEvent("MonitoringService error " + e.getClass() + " " + e.getMessage());
 				}
-				
-				quotaMonitoringReader.storeMetrics(timestamp);
-				
-			} catch(Exception e) {
-				log.error("MonitoringService", e);
-				saveErrorEvent("MonitoringService error " + e.getClass() + " " + e.getMessage());
 			}
 		}
 	}

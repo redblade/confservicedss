@@ -80,45 +80,47 @@ public class CriticalServiceOptimiser {
     
 	@Scheduled(cron = "30 */1 * * * *")
 	public void executeTask() {
-		log.info("CriticalServiceOptimiser started");
+		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
 
-		//first, we create criticalServices and delete old ones
-		List<CriticalService> newCriticalServiceList = new ArrayList<CriticalService>();
-		for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
-			for(CriticalService criticalService : getCriticalServiceListByServiceProvider(serviceProvider)) {
-				newCriticalServiceList.add(criticalService);
+			log.info("CriticalServiceOptimiser started");
+	
+			//first, we create criticalServices and delete old ones
+			List<CriticalService> newCriticalServiceList = new ArrayList<CriticalService>();
+			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
+				for(CriticalService criticalService : getCriticalServiceListByServiceProvider(serviceProvider)) {
+					newCriticalServiceList.add(criticalService);
+				}
 			}
-		}
-		for(CriticalService criticalService : newCriticalServiceList) {
-			saveOrMerge(criticalService);
-		}
-		keepOnlyThisListAndOldRecordsWithActions(newCriticalServiceList);
-
-		if(newCriticalServiceList.size() > 0) {
-			//an event to track activities
-			Event event = new Event();
-			event.setCategory("CriticalServiceOptimiser");
-			event.setDetails("started");
-			eventRepository.save(event);
-		}
-
-		
-		//then, we check what to do with them
-		for(CriticalService criticalService : criticalServiceRepository.getAllOrderedByScoreDesc()) {
-			log.info("CriticalService " + criticalService + " has score " + criticalService.getScore());
+			for(CriticalService criticalService : newCriticalServiceList) {
+				saveOrMerge(criticalService);
+			}
+			keepOnlyThisListAndOldRecordsWithActions(newCriticalServiceList);
+	
+			if(newCriticalServiceList.size() > 0) {
+				//an event to track activities
+				Event event = new Event();
+				event.setCategory("CriticalServiceOptimiser");
+				event.setDetails("started");
+				eventRepository.save(event);
+			}
+	
 			
-			// we activate only if the score is greater than the warning threshold
-			if(criticalService.getScore() > SCORE_THRESHOLD) {
-				String actionTaken = serviceResourceOptimiser.optimise(criticalService.getService(), true);
-				criticalService.setActionTaken(actionTaken);
+			//then, we check what to do with them
+			for(CriticalService criticalService : criticalServiceRepository.getAllOrderedByScoreDesc()) {
+				log.info("CriticalService " + criticalService + " has score " + criticalService.getScore());
+				
+				// we activate only if the score is greater than the warning threshold
+				if(criticalService.getScore() > SCORE_THRESHOLD) {
+					String actionTaken = serviceResourceOptimiser.optimise(criticalService.getService(), true);
+					criticalService.setActionTaken(actionTaken);
+				}
+				else {
+					criticalService.setActionTaken(NO_ACTION_TAKEN);
+				}
+				criticalService.setTimestampProcessed(Instant.now());
+				saveOrMerge(criticalService);
 			}
-			else {
-				criticalService.setActionTaken(NO_ACTION_TAKEN);
-			}
-			criticalService.setTimestampProcessed(Instant.now());
-			saveOrMerge(criticalService);
 		}
-			
 	}
 		
     private List<CriticalService> getCriticalServiceListByServiceProvider(ServiceProvider serviceProvider) {

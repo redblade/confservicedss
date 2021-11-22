@@ -1,9 +1,43 @@
-HOWTO recreate the DB with sample data
+HOWTO access the DB
 
 kubectl exec -it `kubectl get po -n core | grep confservice-mysql | awk '{ print $1}'` -n core -- mysql -u root -p
 
-#use confservice;
-#show tables;
+use confservice;
+show tables;
 
-kubectl scale deployment confservice --replicas=0
-kubectl scale deployment confservice --replicas=1
+
+
+HOWTO create a dump of the DB
+
+mysqldump --host=192.168.70.13 --port=30888 --user=root --password=root -p confservice \
+--single-transaction --complete-insert --no-create-info --no-create-db --column-statistics=0 \
+-t app  \
+-t app_constraint  \
+-t benchmark  \
+-t benchmark_report  \
+-t catalog_app  \
+-t critical_service  \
+-t event  \
+-t guarantee  \
+-t infrastructure  \
+-t infrastructure_provider  \
+-t infrastructure_report  \
+-t jhi_authority  \
+-t jhi_persistent_audit_event  \
+-t jhi_persistent_audit_evt_data  \
+-t jhi_user  \
+-t jhi_user_authority  \
+-t node  \
+-t node_report  \
+-t project  \
+-t service  \
+-t service_constraint  \
+-t service_optimisation  \
+-t service_provider  \
+> dump_mysql.sql
+
+
+HOWTO load a dump of a DB
+
+mysql --host=localhost --user=root --password=root -p confservice < mysql_clean_all.sql
+mysql --host=localhost --user=root --password=root -p confservice < dump_mysql.sql
