@@ -1,5 +1,6 @@
 package eu.pledgerproject.confservice.message;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -7,21 +8,42 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 
 import eu.pledgerproject.confservice.domain.Benchmark;
+import eu.pledgerproject.confservice.domain.Event;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.message.dto.AppProfilerDTO;
 import eu.pledgerproject.confservice.repository.BenchmarkRepository;
+import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 
 @org.springframework.stereotype.Service
 public class ConsumerAppProfilerDTO { 
     private static final Logger log = LoggerFactory.getLogger(ConsumerAppProfilerDTO.class);
-    private ServiceRepository serviceRepository;
-    private BenchmarkRepository benchmarkRepository;
+    private final ServiceRepository serviceRepository;
+    private final BenchmarkRepository benchmarkRepository;
+    private final EventRepository eventRepository;
 
-    public ConsumerAppProfilerDTO(ServiceRepository serviceRepository, BenchmarkRepository benchmarkRepository) {
+    public ConsumerAppProfilerDTO(ServiceRepository serviceRepository, BenchmarkRepository benchmarkRepository, EventRepository eventRepository) {
     	this.serviceRepository = serviceRepository;
     	this.benchmarkRepository = benchmarkRepository;
+    	this.eventRepository = eventRepository;
     }
+    
+    private void saveInfoEvent(String msg) {
+		Event event = new Event();
+		event.setTimestamp(Instant.now());
+		event.setDetails(msg);
+		event.setCategory("ConsumerAppProfilerDTO");
+		event.severity(Event.INFO);
+		eventRepository.save(event);
+	}
+    private void saveErrorEvent(String msg) {
+		Event event = new Event();
+		event.setTimestamp(Instant.now());
+		event.setDetails(msg);
+		event.setCategory("ConsumerAppProfilerDTO");
+		event.severity(Event.ERROR);
+		eventRepository.save(event);
+	}
     
     @KafkaListener(topics = "app_profiler", groupId = "id", containerFactory = "appProfilerDTOListener") 
     public void consume(AppProfilerDTO message) { 
@@ -33,9 +55,11 @@ public class ConsumerAppProfilerDTO {
     		Service serviceDB = serviceOpt.get();
     		serviceDB.setProfile(benchmarkOpt.get().getName());
     		serviceRepository.save(serviceDB);
+    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkOpt.get().getName() );
     	}
     	else {
-        	log.warn("New AppProfilerDTO received is referring not existing Service or Benchmark: " + message); 
+        	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(id) match: " + message.service_id + "->" + message.benchmark_id); 
+        	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(id) match: " + message.service_id + "->" + message.benchmark_id);
     	}
     } 
     
