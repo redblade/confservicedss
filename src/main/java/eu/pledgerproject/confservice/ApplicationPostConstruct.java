@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import eu.pledgerproject.confservice.domain.Event;
-import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
 import eu.pledgerproject.confservice.monitoring.ControlFlag;
 import eu.pledgerproject.confservice.repository.EventRepository;
 
