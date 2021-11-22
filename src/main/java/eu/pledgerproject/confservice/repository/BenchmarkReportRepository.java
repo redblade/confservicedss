@@ -26,8 +26,6 @@ public interface BenchmarkReportRepository extends JpaRepository<BenchmarkReport
 	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider is null")
 	Page<BenchmarkReport> findAllPublic(Pageable pageable);
 	
-	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport group by benchmarkReport.node where benchmarkReport.benchmark.metric = :metric and benchmarkReport.benchmark.category like :category and benchmarkReport.node in (:nodeSet) order by benchmarkReport.mean desc")
-	List<BenchmarkReport> findBenchmarkReportByCategoryMetricAndNodeSet(@Param("category") String category, @Param("metric") String metric, @Param("nodeSet") List<Node> nodeSet);
 	
 	@Modifying
 	@Query(value = "delete from BenchmarkReport benchmarkReport where benchmarkReport.time < :timestamp")
