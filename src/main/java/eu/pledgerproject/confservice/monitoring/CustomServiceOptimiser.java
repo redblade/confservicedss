@@ -19,10 +19,8 @@ import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceOptimisationRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 
 @Component
 public class CustomServiceOptimiser {
@@ -95,15 +93,14 @@ public class CustomServiceOptimiser {
 
 		try {
 			String url = service.getServiceOptimisation().getParameters();
+			if(url != null && url.endsWith("/")) {
+				url = url.substring(0, url.length()-1);
+			}
 			
 			OkHttpClient client = new OkHttpClient().newBuilder().build();
-			RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
-			  .addFormDataPart("serviceID",""+service.getId())
-			  .build();
-			
 			Request request = new Request.Builder()
-					  .url(url)
-					  .method("POST", body)
+					  .url(url+"?serviceID="+service.getId())
+					  .method("GET", null)
 					  .build();
 			client.newCall(request).execute();
 			
