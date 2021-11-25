@@ -1,0 +1,19 @@
+{
+    "Version": 1,
+    "MA": "ma-005700",
+    "TimeStamp": "2021-11-24T09:43:48.280610+01:00",
+    "DocumentType": "SystemMonitoring",
+    "InfrastructureProvider": "FILL",
+    "InfrastructureName": "UC3-edge",
+    "NodeName": "server-FILL",
+    "DocumentBody": {
+        "cpu_stats": {
+            "used_millicore": 6738,
+            "total_millicore": 7864
+        },
+        "memory_stats": {
+            "used_megabyte": 18423.087104,
+            "total_megabyte": 68634.763264
+        }
+    }
+}

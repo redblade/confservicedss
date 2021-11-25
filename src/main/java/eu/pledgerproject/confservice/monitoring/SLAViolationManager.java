@@ -12,7 +12,7 @@ import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 
 @Component
 public class SLAViolationManager {
-	private final Logger log = LoggerFactory.getLogger(EcodaOptimiser.class);
+	private final Logger log = LoggerFactory.getLogger(ECODAOptimiser.class);
 
 	private static final int RESOURCE_USED_PERCENTAGE_THRESHOLD = 80;
     

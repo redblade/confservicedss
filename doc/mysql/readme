@@ -7,7 +7,7 @@ show tables;
 
 
 
-HOWTO create a dump of the DB
+HOWTO create a dump of the DB - ALL
 
 mysqldump --host=localhost --port=3306 --user=root --password=root -p confservice \
 --single-transaction --complete-insert --no-create-info --no-create-db --column-statistics=0 \
@@ -34,10 +34,43 @@ mysqldump --host=localhost --port=3306 --user=root --password=root -p confservic
 -t service_constraint  \
 -t service_optimisation  \
 -t service_provider  \
+-t sla_violation  \
+-t steady_service  \
 > dump_mysql.sql
+
+
+HOWTO create a dump of the DB - only configuration
+
+mysqldump --host=localhost --port=3306 --user=root --password=root -p confservice \
+--single-transaction --complete-insert --no-create-info --no-create-db --column-statistics=0 \
+-t app  \
+-t app_constraint  \
+-t catalog_app  \
+-t guarantee  \
+-t infrastructure  \
+-t infrastructure_provider  \
+-t jhi_authority  \
+-t jhi_persistent_audit_event  \
+-t jhi_persistent_audit_evt_data  \
+-t jhi_user  \
+-t jhi_user_authority  \
+-t node  \
+-t project  \
+-t service  \
+-t service_constraint  \
+-t service_optimisation  \
+-t service_provider  
+> dump_conf_mysql.sql
 
 
 HOWTO load a dump of a DB
 
 mysql --host=localhost --user=root --password=root -p confservice < mysql_clean_all.sql
 mysql --host=localhost --user=root --password=root -p confservice < dump_mysql.sql
+
+
+HOWTO compare two configuration dumps
+
+mysqldump --skip-comments --skip-extended-insert -u root -p confservice .. > file1.sql
+mysqldump --skip-comments --skip-extended-insert -u root -p confservice .. > file2.sql
+diff file1.sql file2.sql

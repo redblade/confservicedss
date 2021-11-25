@@ -2,6 +2,7 @@ package eu.pledgerproject.confservice.message;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +28,7 @@ import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 public class ConsumerSlaViolationDTO { 
 	public static final int MINS_TO_SUSPEND = 5;
 	
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private static final Logger log = LoggerFactory.getLogger(ConsumerSlaViolationDTO.class);
     
     private final GuaranteeRepository guaranteeRepository;
@@ -91,9 +92,11 @@ public class ConsumerSlaViolationDTO {
 	    		slaViolation.setDescription(message.description);
 	    		Instant timestamp = Instant.now();
 	    		try {
-	    			timestamp = Instant.ofEpochMilli(sdf.parse("message.datetime").getTime());
+	    			String timestampString = message.datetime;
+	    			timestampString = timestampString.indexOf(".")>0 ? timestampString.substring(0, timestampString.indexOf(".")) : timestampString;
+	    			timestamp = Instant.ofEpochMilli(sdf.parse(timestampString).getTime());
 	    		}catch(Exception e ) {
-	    			log.warn("Wrong timestamp format, using now(): got " + "message.datetime");
+	    			log.warn("ConsumerSlaViolationDTO. Wrong timestamp format, using now(): got " + message.datetime + ", using " + sdf.format(new Date()));
 	    		}
 	    		slaViolation.setTimestamp(timestamp);
 	    		slaViolationRepository.save(slaViolation);

@@ -16,6 +16,7 @@ import eu.pledgerproject.confservice.config.KafkaProperties;
 import eu.pledgerproject.confservice.message.dto.AppProfilerDTO;
 import eu.pledgerproject.confservice.message.dto.BenchmarkReportDTO;
 import eu.pledgerproject.confservice.message.dto.DeploymentFeedbackDTO;
+import eu.pledgerproject.confservice.message.dto.ResourceMetricDTO;
 import eu.pledgerproject.confservice.message.dto.SlaViolationDTO;
 
 @EnableKafka
@@ -50,12 +51,35 @@ public class KafkaConsumersConfiguration {
         Map<String, Object> map = kafkaProperties.getConsumerProps();
         return new DefaultKafkaConsumerFactory<String, BenchmarkReportDTO>(map, new StringDeserializer(), new ErrorHandlingDeserializer2(new DeserializerBenchmarkReportDTO())); 
     } 
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Bean
+    public ConsumerFactory<String, ResourceMetricDTO> resourceMetricDTOConsumer() { 
+        Map<String, Object> map = kafkaProperties.getConsumerProps();
+        return new DefaultKafkaConsumerFactory<String, ResourceMetricDTO>(map, new StringDeserializer(), new ErrorHandlingDeserializer2(new DeserializerResourceMetricDTO())); 
+    } 
+    
+    
+    
+    
+    
+    
   
     @SuppressWarnings({ "deprecation" })
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, BenchmarkReportDTO> benchmarkReportDTOListener() { 
         ConcurrentKafkaListenerContainerFactory<String, BenchmarkReportDTO> factory = new ConcurrentKafkaListenerContainerFactory<>(); 
         factory.setConsumerFactory(benchmarkReportDTOConsumer()); 
+        factory.setErrorHandler(new SeekToCurrentErrorHandler(1));
+        return factory; 
+    } 
+    
+    
+    @SuppressWarnings({ "deprecation" })
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ResourceMetricDTO> resourceMetricDTOListener() { 
+        ConcurrentKafkaListenerContainerFactory<String, ResourceMetricDTO> factory = new ConcurrentKafkaListenerContainerFactory<>(); 
+        factory.setConsumerFactory(resourceMetricDTOConsumer()); 
         factory.setErrorHandler(new SeekToCurrentErrorHandler(1));
         return factory; 
     } 

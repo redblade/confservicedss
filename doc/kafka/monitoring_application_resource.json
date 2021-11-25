@@ -1,0 +1,31 @@
+{
+    "Version": 1,
+    "MA": "ma-005700",
+    "TimeStamp": "2021-11-24T09:44:05.403230+01:00",
+    "DocumentType": "AppResourceMonitoring",
+    "InfrastructureProvider": "FILL",
+    "InfrastructureName": "UC3-edge",
+    "NodeName": "server-FILL",
+    "DocumentBody": {
+        "Service": [
+            {
+                "id": "ef71226392250cd3f02015890c3675a289fa971bebe76e5e854180d1e6b57962",
+                "short_id": "ef71226392",
+                "name": "basic-analytics-rabbitmq",
+                "created": "2021-11-24T09:27:50.626383Z",
+                "platform": "linux",
+                "image": "rabbitmq:3.9-management",
+                "image_id": "sha256:6358b95a6e6c2ca8636469660dde8b0ba132dcefee2b5db7fe00aef5c40e0da8",
+                "status": "running",
+                "memory_stats": {
+                    "usage_megabyte": 200.798208,
+                    "limit_megabyte": 53844.791296
+                },
+                "cpu_stats": {
+                    "usage_millicore": 0.3842397003745318,
+                    "limit_millicore": 1.1492074534161492
+                }
+            }
+        ]
+    }
+}

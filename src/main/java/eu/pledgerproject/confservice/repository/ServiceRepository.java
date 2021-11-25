@@ -2,6 +2,7 @@ package eu.pledgerproject.confservice.repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,9 @@ import eu.pledgerproject.confservice.domain.ServiceProvider;
  */
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, Long> {
+	
+	@Query(value = "select service from Service service where service.name = :name")
+	Optional<Service> findByName(@Param("name") String name);
 	
 	@Query(value = "select service from Service service where service.status = 'RUNNING' ")
 	List<Service> findAllRunning();

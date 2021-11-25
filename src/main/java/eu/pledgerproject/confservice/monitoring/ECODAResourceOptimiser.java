@@ -32,10 +32,10 @@ See EcodaOptimiser for ECODA algorithm
 
 
 @Component
-public class EcodaResourceOptimiser {
+public class ECODAResourceOptimiser {
 	public static final String DEFAULT_AUTOSCALE_PERCENTAGE = "10";
 
-	private final Logger log = LoggerFactory.getLogger(EcodaResourceOptimiser.class);
+	private final Logger log = LoggerFactory.getLogger(ECODAResourceOptimiser.class);
 	
 	private final ResourceDataReader resourceDataReader;
 	private final EcodaHelper ecodaHelper;
@@ -50,7 +50,7 @@ public class EcodaResourceOptimiser {
 	//One service can belong to multiple Sets, which means it can be offloaded to multiple "infrastructures".
 	//So, the Groups are built as all the possible Node sets for all the services. Then, Group by Group, the optimisation decides where a service could go
 
-	public EcodaResourceOptimiser(ResourceDataReader resourceDataReader, EcodaHelper ecodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
+	public ECODAResourceOptimiser(ResourceDataReader resourceDataReader, EcodaHelper ecodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
 		this.resourceDataReader = resourceDataReader;
 		this.ecodaHelper = ecodaHelper;
 		this.serviceProviderRepository = serviceProviderRepository;

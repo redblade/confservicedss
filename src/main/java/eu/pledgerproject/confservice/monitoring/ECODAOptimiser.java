@@ -59,13 +59,13 @@ services are sorted using the score: when the thresholds are not met, those with
 
 
 @Component
-public class EcodaOptimiser {
+public class ECODAOptimiser {
 	public static final int LATENCY_CHECK_PERIOD_SEC = 7 * 24 * 60 * 60; //7d 
 
 	public static final int MAX_PERC_THRESHOLD_BEFORE_OFFLOAD_TO_WORSE = 80;
 	public static final int MIN_PERC_THRESHOLD_BEFORE_OFFLOAD_TO_BETTER = 60;
 	
-	private final Logger log = LoggerFactory.getLogger(EcodaOptimiser.class);
+	private final Logger log = LoggerFactory.getLogger(ECODAOptimiser.class);
 
 	
 	private final ResourceDataReader resourceDataReader;
@@ -80,7 +80,7 @@ public class EcodaOptimiser {
 	//One service can belong to multiple Sets, which means it can be offloaded to multiple "infrastructures".
 	//So, the Groups are built as all the possible Node sets for all the services. Then, Group by Group, the optimisation decides where a service could go
 
-	public EcodaOptimiser(ResourceDataReader resourceDataReader, EcodaHelper ecodaHelper, ServiceRepository serviceRepository, ServiceProviderRepository serviceProviderRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, EventRepository eventRepository) {
+	public ECODAOptimiser(ResourceDataReader resourceDataReader, EcodaHelper ecodaHelper, ServiceRepository serviceRepository, ServiceProviderRepository serviceProviderRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, EventRepository eventRepository) {
 		this.resourceDataReader = resourceDataReader;
 		this.ecodaHelper = ecodaHelper;
 		this.serviceRepository = serviceRepository;

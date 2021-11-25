@@ -14,13 +14,13 @@ import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.scheduler.OrchestratorKubernetes;
 
 @Component
-public class CredentialService {
-    private final Logger log = LoggerFactory.getLogger(CredentialService.class);
+public class CredentialManager {
+    private final Logger log = LoggerFactory.getLogger(CredentialManager.class);
 
     private final OrchestratorKubernetes orchestratorKubernetes;
     private final ProjectRepository projectRepository;
     
-    public CredentialService(OrchestratorKubernetes orchestratorKubernetes, ProjectRepository projectRepository) {
+    public CredentialManager(OrchestratorKubernetes orchestratorKubernetes, ProjectRepository projectRepository) {
     	this.orchestratorKubernetes = orchestratorKubernetes;
     	this.projectRepository = projectRepository;
     }
@@ -30,11 +30,11 @@ public class CredentialService {
 		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
 			log.info("DSS just started, initialising credentialService..");
 			updateCredentials();
-			log.info("credentialService initialising completed");
+			log.info("credentialManager initialising completed");
 		}
 	}
 	
-	@Scheduled(cron = "0 */5 * * * *")
+	@Scheduled(cron = "0 */1 * * * *")
 	public void executeTask() {
 		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
 			updateCredentials();
@@ -49,13 +49,13 @@ public class CredentialService {
 				String namespace = projectProperties.get("namespace");
 				String secretName = projectProperties.get("secret_name");
 				
-				if(namespace != null && secretName != null) {
+				if(namespace != null && secretName != null)  {
 					String token = orchestratorKubernetes.getKubernetesToken(project.getInfrastructure(), namespace, secretName);
 					project.setCredentials(token);
 					projectRepository.save(project);
 				}
 			}
 		}
-		log.info("credentialService updates completed");
+		log.info("credentialManager updates completed");
 	}
 }
