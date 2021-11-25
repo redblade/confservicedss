@@ -1,8 +1,0 @@
----
-app_name: holo-app
-
----
-service_name: holo-app-service
-service_type: CUSTOM
-service_descriptor:
-data: holo-app example

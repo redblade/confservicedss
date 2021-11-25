@@ -30,12 +30,12 @@ public class ApplicationPostConstruct {
 		event.setDetails("started");
 		eventRepository.save(event);
 		if(ControlFlag.READ_ONLY_MODE_ENABLED) {
-			log.warn("READ ONLY MODE is ACTIVE");
-			Event eventWarning = new Event();
-			eventWarning.setSeverity(Event.WARNING);
-			eventWarning.setCategory("READ ONLY MODE");
-			eventWarning.setDetails("ACTIVE");
-			eventRepository.save(eventWarning);
+			log.error("READ ONLY MODE is ACTIVE");
+			Event eventAlert = new Event();
+			eventAlert.setSeverity(Event.ERROR);
+			eventAlert.setCategory("READ ONLY MODE");
+			eventAlert.setDetails("ACTIVE");
+			eventRepository.save(eventAlert);
 		}
 	}
 }
