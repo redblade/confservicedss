@@ -1,4 +1,4 @@
-#ConfService and DSS main scenarios
+#ConfService and DSS Pledger integration scenarios
 
 Note: actions listed with [A] are done automatically
 

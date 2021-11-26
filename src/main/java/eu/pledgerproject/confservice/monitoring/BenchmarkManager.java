@@ -109,13 +109,13 @@ public class BenchmarkManager {
 			}
 			if(nodeFound != null) {
 				if(ENABLE_BENCHMARK_FILTER) {
-					log.info("Found best node using Benchmarks using category. Node: " + nodeFound.getName());
-					saveInfoEvent("Found best node using Benchmarks using category. Node: " + nodeFound.getName());
+					log.info("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
+					saveInfoEvent("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
 
 					return nodeFound;
 				}
 				else {
-					log.warn("Found best node using Benchmarks using category but FILTER is not enabled. Node: " + nodeFound.getName());
+					log.warn("Found best node using Benchmarks using labels but FILTER is not enabled. Node: " + nodeFound.getName());
 				}
 			}
 		}
@@ -123,7 +123,7 @@ public class BenchmarkManager {
 		//here, we just return the Node with more capacity left as no match was found above
 		Node nodeFound = resourceDataReader.getNodeWithMoreCapacityLeft(nodeSet);
 		
-		log.info("Found best node using left capacity. Node: " + nodeFound.getName());
+		log.info("Found best node using remaining capacity. Node: " + nodeFound.getName());
 		
 		return nodeFound;
 	}

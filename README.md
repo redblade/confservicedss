@@ -1,7 +1,6 @@
 # ConfServiceDSS
 
-This file contains the main instruction to build and run ConfService and DSS components.
-The general architecture is described in this [doc](doc/architecture/readme.md)
+This file contains the main instruction to build and run ConfService and DSS core components of the [Pledger system](http://pledger-project.eu/)
 
 
 ### Development
@@ -129,6 +128,11 @@ For remote debugging you can attach to remote session after launching ConfServic
 ```
 java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
 ```
+
+### Documentation
+Some documentation is provided in the "doc" folder. More details are provided in the [Pledger project](http://pledger-project.eu/) deliverables section
+
+
 
 
 ###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.

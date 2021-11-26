@@ -37,7 +37,7 @@ public class ConsumerResourceMetricsDTO {
     	this.nodeReportRepository = nodeReportRepository;
     	this.serviceReportRepository = serviceReportRepository;
     }
-    @KafkaListener(topics = "metrics", groupId = "id", containerFactory = "resourceMetricDTOListener") 
+    @KafkaListener(topics = "UC-metrics", groupId = "id", containerFactory = "resourceMetricDTOListener") 
     public void consume(ResourceMetricDTO message) { 
     	log.info("New ResourceMetricDTO received: " + message);
     	
