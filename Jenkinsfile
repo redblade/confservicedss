@@ -20,9 +20,6 @@ node {
         sh "chmod +x mvnw"
         sh "./mvnw -ntp clean -P-webpack"
     }
-    stage('nohttp') {
-        sh "./mvnw -ntp checkstyle:check"
-    }
 
     stage('install tools') {
         sh "./mvnw -ntp com.github.eirslett:frontend-maven-plugin:install-node-and-npm -DnodeVersion=v12.16.1 -DnpmVersion=6.14.5"
