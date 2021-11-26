@@ -11,7 +11,7 @@
             {
                 "id": "ef71226392250cd3f02015890c3675a289fa971bebe76e5e854180d1e6b57962",
                 "short_id": "ef71226392",
-                "name": "basic-analytics-rabbitmq",
+                "name": "air-consumption",
                 "created": "2021-11-24T09:27:50.626383Z",
                 "platform": "linux",
                 "image": "rabbitmq:3.9-management",

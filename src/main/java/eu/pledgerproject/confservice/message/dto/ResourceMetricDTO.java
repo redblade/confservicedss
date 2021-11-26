@@ -31,6 +31,13 @@ public class ResourceMetricDTO {
 			this.serviceLimitMemoryMB = serviceLimitMemoryMB;
 			this.serviceUsedMemoryMB = serviceUsedMemoryMB;
 		}
+		@Override
+		public String toString() {
+			return "ResourceAppMetricDTO [serviceName=" + serviceName + ", serviceLimitCpuMillicore="
+					+ serviceLimitCpuMillicore + ", serviceUsedCpuMillicore=" + serviceUsedCpuMillicore
+					+ ", serviceLimitMemoryMB=" + serviceLimitMemoryMB + ", serviceUsedMemoryMB=" + serviceUsedMemoryMB
+					+ "]";
+		}
 		
 	}
 	
@@ -53,12 +60,14 @@ public class ResourceMetricDTO {
 
 	@Override
 	public String toString() {
-		return "ResourceMetricDTO [documentType=" + documentType + ", timestamp=" + timestamp
+		StringBuilder result = new StringBuilder("ResourceMetricDTO [documentType=" + documentType + ", timestamp=" + timestamp
 				+ ", infrastructureProvider=" + infrastructureProvider + ", infrastructureName=" + infrastructureName
-				+ ", nodeName=" + nodeName + ", totalCapacityCpuMillicore=" + totalCapacityCpuMillicore
-				+ ", totalUsedCpuMillicore=" + totalUsedCpuMillicore + ", totalCapacityMemoryMB="
-				+ totalCapacityMemoryMB + ", totalUsedMemoryMB=" + totalUsedMemoryMB + ", appMetrics.size()=" + appMetrics.size()
-				+ "]";
+				+ ", nodeName=" + nodeName + "[");
+		for(ResourceAppMetricDTO appMetric : appMetrics) {
+			result.append("{"+appMetric+"},");
+		}
+		result.append("]");
+		return result.toString();
 	}
 
 	
