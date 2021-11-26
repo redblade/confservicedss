@@ -1,6 +1,6 @@
 # ConfServiceDSS
 
-This file contains the main instruction to build and run ConfService and DSS core components of the [Pledger system](http://pledger-project.eu/)
+This file contains the main instruction to build and run ConfService and DSS core components of the [Pledger system](https://pledger-project.eu/)
 
 
 ### Development
@@ -119,7 +119,7 @@ mysql -h localhost -D confservice -u root -proot -e "create table db_lock(id INT
 
 ### Login
 
-Finally, when the 'dump_base.sql' configuration is loaded, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
+Finally, when the 'dump_base.sql' configuration is loaded, navigate to localhost:8080 and login with root/test
 
 
 ### Remote debugging
@@ -130,7 +130,7 @@ java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspen
 ```
 
 ### Documentation
-Some documentation is provided in the "doc" folder. More details are provided in the [Pledger project](http://pledger-project.eu/) deliverables section
+Some documentation is provided in the "doc" folder. More details are provided in the Pledger project deliverables section
 
 
 
