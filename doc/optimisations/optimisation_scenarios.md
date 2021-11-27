@@ -261,3 +261,6 @@ get the requests and put them in the ECODA spreadsheet
 result#3: the ECODA edge/cloud offloads are coherent
 
 
+**Note**: videos about these optimisations can be found on the official [Pledger YouTube channel](https://www.youtube.com/channel/UCXV6V9rJ0ZvWhXeoWvDsArQ)
+
+

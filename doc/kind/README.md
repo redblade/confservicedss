@@ -1,5 +1,6 @@
 ##HOWTO test ConfService/DSS with KinD (Kubernetes in Docker)
 
+### 1) Create the test environment
 First, install [Kind tool](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 1) load the MySQL dump dump_kind.sql
@@ -62,7 +63,8 @@ open http://localhost:30091
 open http://localhost:30092
 
 
-##HOWTO do tests and see the DSS optimisation at work
+### 2) Load the test configuration and optionally add latency to the network or change the applications startup times
+
 
 The configuration file "dump_kind.sql" has:
 
@@ -88,7 +90,7 @@ APPs
 - app4 with cpu/mem request 200/200 initial startup 20
 
 
-TEST.1 add latency to the cluster1 cloud worker and check the values on GoldPinger (response-time measured is latency*2)
+option.1 add latency to the cluster1 cloud worker and check the values on GoldPinger (response-time measured is latency*2)
 
 ```
 docker exec -it `docker ps --format '{{.Names}}' | grep cluster1-worker | grep -v worker2 | grep -v worker3` bash
@@ -106,7 +108,7 @@ remove latency
 tc qdisc del dev eth0 root
 ```
 
-TEST.2 change startup time
+option.2 change startup time
 
 this adds 60s to normal startup time
 
@@ -117,4 +119,8 @@ readinessProbe:
     - ls
   initialDelaySeconds: 55
   periodSeconds: 5
-```  
+```
+
+### 3) Test the DSS optimisations
+The optimisation scenarios are described in the **"doc/optimisations"** folder
+

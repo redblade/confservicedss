@@ -1,0 +1,40 @@
+@startuml
+
+title ConfService main data model
+
+Interface User
+
+class Infrastructure
+class Node{
+  labels
+}
+
+User <|-down- Administrator
+User <|-down- ServiceProvider
+User <|-down- InfrastructureProvider
+
+Infrastructure "1" *-down- "N" Node
+
+class App
+class Service {
+  descriptor
+}
+App "1" *-down- "N" Service
+
+class SLA
+class SLAViolation
+class Guarantee {
+  metric
+  threshold_warning
+  threshold_severe
+}
+SLA "1" *-down- "N" Guarantee
+SLA "1" *-down- "N" SLAViolation
+Service "1" *-down- "N" SLA
+
+class Project{
+  quota
+}
+Infrastructure "1" o-down- "N" Project
+ServiceProvider "1" o-down- "N" Project
+@enduml
