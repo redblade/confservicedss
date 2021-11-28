@@ -1,8 +1,10 @@
-#ConfService and DSS Pledger integration scenarios
+# ConfService and DSS Pledger integration scenarios
+
 
 Note: actions listed with [A] are done automatically
 
-##ConfService component
+### ConfService component
+
 >Pledger components integrated: Orchestrator, Benchmarking, SLA Lite
 
 
@@ -12,25 +14,25 @@ user roles:
 - **service providers**: configure their Apps, the related SLA and Guarantees with metrics and thresholds
 
 #### administrators
-#####user configuration
+##### user configuration
 - manage users and roles (API access, Service Provider, Infrastructure Provider)
 
-#####log management
+##### log management
 - check the system and audit logs
 
 #### infrastructure providers
-#####configuration
+##### configuration
 - configure their Infrastructure and Nodes 
 - [A] ConfService automatically extracts and adds "hardware label" to the Nodes automatically, if the Infrastructure supports it
 - label the Nodes with "domain labels" (eg. location, **security capabilities**)
 
-#####basic monitoring
+##### basic monitoring
 - read the Benchmarks
 - read the reports about Infrastructure, Node and Benchmark
 
 #### service providers
 
-#####configuration of App/SLA/Guarantee
+##### configuration of App/SLA/Guarantee
 
 - configure **Projects** to define the quota available on a specific Infrastructure
 - configure **CatalogApps** with descriptors to be possibly used during the App creation stage
@@ -46,7 +48,7 @@ user roles:
 - configures the **App profile** with labels
 - [A] for any update to the configuration entities, ConfService sends messages on Kafka to let the **Orchestrator**, **Benchmarking** and **SLA Lite** synchronise with configuration
 
-#####configuration of DSS options
+##### configuration of DSS options
 
 - configure the DSS **ServiceConstraints** for each Service to define the deployment priorities based on the Node "hardware" and "domain" labels
 - [A] the DSS create **DeploymentOptions** with different options where a Service can be deployed, with **ranking**
@@ -57,16 +59,16 @@ user roles:
     - **webhook**: the DSS invokes an external URL when a violation is received to allow custom automations
 
 
-##DSS component
+## DSS component
 
 >Pledger components integrated: Orchestrator, ConfService, Benchmarking, MonitoringEngine, AppProfiler, SLA Lite
    
-#####App start/stop
+##### App start/stop
 
 - Service provider starts/stops an App
 - [A] the DSS sends messages on Kafka about App start/stop for the **Orchestrator**
 
-#####monitoring activities
+##### monitoring activities
 - [A] the DSS synchronizes with the **ConfService** and uses the same configuration
 - [A] the DSS receives messages on Kafka, by the **Benchmarking**, and stores Benchmarks and BenchmarkReports
 - [A] the DSS receives messages on Kafka, by the **MonitoringEngine**, about system metrics and application resource metrics for Infrastructures which do not support Prometheus and stores them in NodeReport and ServiceReport
@@ -75,7 +77,7 @@ user roles:
 - [A] the DSS receives messages on Kafka, by the **SLA Lite**, with SLA Violations and categorizes them
 
 
-#####optimisation activities
+##### optimisation activities
 - [A] the DSS, for SLA of type **active** and for which the Service has not received violations on SLA of type **suspend** for some time, decides whether to **increase reserved resources** or not depending on the **actual Service resource usage** being close to the Service reserved resources configured
 - [A] the DSS, for Services that have not received SLA violations for some time, decides whether to **reduce reserved resources** or not
 - [A] the DSS optimises Services based on their ServiceOptimisation configured:

@@ -1,4 +1,4 @@
-##Confservice and DSS architecture within Pledger project
+## Confservice and DSS architecture within Pledger project
 
 This file introduces the ConfService and DSS architecture with respect to the [Pledger project](http://www.pledger-project.eu/) core components. 
 
