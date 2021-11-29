@@ -42,11 +42,12 @@ To take its decisions and have them applied, the DSS needs:
 2. to retrieve monitoring data about Apps and Infrastructure usage from the Monitoring Engine component;
 3. to retrieve SLA violations coming from SLA Lite component. 
 
-In Pledger, all the data above is shared through the StreamHandler component using the Kafka protocol. The high-level architecture is shown in [this picture](confservicedss.drawio.png)
+In Pledger, all the data above is shared through the StreamHandler component using the Kafka protocol. The high-level architecture is shown in [this picture](confservice_dss.drawio.png)
 
 To facilitate the system integrators activities and limit the dependencies to run demos, the ConfService and DSS also offer direct support to some specific infrastructures, in particular:
-1. support to Kubernetes, without the need to have the Orchestrator running
-2. support (work in progress) to Prometheus AlertManager to get SLA violations, without the need to have the SLA Manager running.
-3. support to Kubernetes metrics-server and Goldpinger services for the system and application metrics retrieval, without the need to have the Monitoring Engine running.
+1. support to opensource Kafka, without the need to have the **StreamHandler**
+2. support to Kubernetes, without the need to have the **Orchestrator**
+3. support (work in progress) to Prometheus AlertManager to get SLA violations, without the need to have the **SLA Lite** 
+4. support to Kubernetes metrics-server and Goldpinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
 
 More details for the system integrators demo are provided in the **"doc/kind"** folder
