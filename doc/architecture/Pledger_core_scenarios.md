@@ -14,11 +14,11 @@ user roles:
 - **service providers**: configure their Apps, the related SLA and Guarantees with metrics and thresholds
 
 #### administrators
-##### user configuration
+##### user configuration activities
 - create, manage, enable/disable users and their roles (API access, Service Provider, Infrastructure Provider)
 - [A] In case of creation, ConfService automatically sends an email to the provided address to request for activation
 
-##### log management
+##### log management activities
 - check the system and audit logs, changes the logs level
 
 #### infrastructure providers
