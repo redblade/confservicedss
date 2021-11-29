@@ -15,7 +15,7 @@ user roles:
 
 #### administrators
 ##### user configuration
-- manage users and roles (API access, Service Provider, Infrastructure Provider)
+- create and manage users and their roles (API access, Service Provider, Infrastructure Provider)
 
 ##### log management
 - check the system and audit logs
@@ -25,6 +25,11 @@ user roles:
 - configure their Infrastructure and Nodes 
 - [A] ConfService automatically extracts and adds "hardware label" to the Nodes automatically, if the Infrastructure supports it
 - label the Nodes with "domain labels" (eg. location, **security capabilities**)
+- configure whether he/she wants to benchmark an infrastructure
+- [A] ConfService automatically sends a msg on StreamHandler using Kafka to alert the other Pledger core components:
+    - Benchmarking Suite: gets the Infrastructure and Nodes from the ConfService
+    - SLA Lite: gets the Infrastructure and Nodes from the ConfService
+    - Orchestrator:  gets the Infrastructure and Nodes from the ConfService
 
 ##### basic monitoring
 - read the Benchmarks
@@ -44,9 +49,11 @@ user roles:
     - **suspend**: used by the DSS to suspend Service resource management on the Service - a SLA violation of this type is expected to be generated when a major issue occurs and no resource increase would improve the Service behavior
     - **ignore**: not used by the DSS - a SLA violation of this type is ignored by the DSS, it could be used by other components (eg. smart contract)
 - configure **Guarantees** for each SLA, with the **metric** to monitor and the different **thresholds** 
+- [A] ConfService automatically sends a msg on StreamHandler using Kafka to alert the other Pledger core components:
+     - SLA Lite: gets the Project, App, Service, SLA, Guarantee from the ConfService
 - read the **ServiceReports**
 - configures the **App profile** with labels
-- [A] for any update to the configuration entities, ConfService sends messages on Kafka to let the **Orchestrator**, **Benchmarking** and **SLA Lite** synchronise with configuration
+
 
 ##### configuration of DSS options
 
