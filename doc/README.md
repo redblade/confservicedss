@@ -1,6 +1,6 @@
 This folder contains:
 
-- architecture: documentation about ConfService and DSS architecture and integration scenarios with Pledger components
+- architecture: documentation about ConfService and DSS architecture and the Pledger core components scenarios
 - env: environment variables used for the correct execution of ConfService and DSS
 - kind: documentation about the setup of a test environment with KinD 
 - kafka: scripts to send Kafka messages and test the integration with the Pledger components
