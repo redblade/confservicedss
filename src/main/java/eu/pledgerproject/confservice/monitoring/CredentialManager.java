@@ -45,14 +45,21 @@ public class CredentialManager {
 		for(Project project : projectRepository.findAll()) {
 			if(project.getInfrastructure().getType().equals("K8S")) {
 
-				Map<String, String> projectProperties = ConverterJSON.convertToMap(project.getProperties());
-				String namespace = projectProperties.get("namespace");
-				String secretName = projectProperties.get("secret_name");
+				if(project.getCredentials() == null || project.getCredentials().trim().length() == 0) {
 				
-				if(namespace != null && secretName != null)  {
-					String token = orchestratorKubernetes.getKubernetesToken(project.getInfrastructure(), namespace, secretName);
-					project.setCredentials(token);
-					projectRepository.save(project);
+					Map<String, String> projectProperties = ConverterJSON.convertToMap(project.getProperties());
+					String namespace = projectProperties.get("namespace");
+					String secretName = projectProperties.get("secret_name");
+					
+					if(namespace != null && secretName != null)  {
+						String token = orchestratorKubernetes.getKubernetesToken(project.getInfrastructure(), namespace, secretName);
+						project.setCredentials(token);
+						projectRepository.save(project);
+					}
+					else if(project.getInfrastructure().getCredentials() != null) {
+						project.setCredentials(project.getInfrastructure().getCredentials());
+						projectRepository.save(project);
+					}
 				}
 			}
 		}

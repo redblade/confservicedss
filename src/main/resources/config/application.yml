@@ -149,7 +149,7 @@ jhipster:
     #default-include-pattern: /api/app-constraints.*
     title: confservice API
     description: confservice API documentation
-    version: 2.4.6
+    version: 2.4.7
     terms-of-service-url:
     contact-name:
     contact-url:

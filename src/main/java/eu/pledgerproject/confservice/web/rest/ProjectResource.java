@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.pledgerproject.confservice.domain.Project;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 import eu.pledgerproject.confservice.repository.CustomAuditEventRepository;
 import eu.pledgerproject.confservice.service.ProjectService;
 import eu.pledgerproject.confservice.web.rest.errors.BadRequestAlertException;
@@ -56,6 +57,20 @@ public class ProjectResource {
     public ProjectResource(ProjectService projectService, CustomAuditEventRepository customAuditEventRepository) {
         this.projectService = projectService;
         this.customAuditEventRepository = customAuditEventRepository;
+    }
+    
+    /**
+     * {@code POST  /projects/provision} : Create a new project.
+     *
+     * @param project the project to provision.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/projects/provision")
+    public ResponseEntity<Void> provisionProject(@Valid @RequestBody Project project) throws URISyntaxException {
+        log.debug("REST request to provision Project : {}", project);
+        projectService.provision(project);
+        return ResponseEntity.noContent().build();
     }
 
     /**

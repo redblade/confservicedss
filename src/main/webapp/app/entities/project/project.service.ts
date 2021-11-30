@@ -19,6 +19,10 @@ export class ProjectService {
     return this.http.post<IProject>(this.resourceUrl, project, { observe: 'response' });
   }
 
+  provision(project: IProject): Observable<EntityResponseType> {
+    return this.http.post<IProject>(this.resourceUrl+"/provision", project, { observe: 'response' });
+  }
+
   update(project: IProject): Observable<EntityResponseType> {
     return this.http.put<IProject>(this.resourceUrl, project, { observe: 'response' });
   }

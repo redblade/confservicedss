@@ -20,6 +20,15 @@ public interface ProjectService {
      */
     Project save(Project project);
 
+    
+    /**
+     * Provision a project.
+     *
+     * @param project the entity to save.
+     * @return the persisted entity.
+     */
+    void provision(Project project);
+    
     /**
      * Get all the projects.
      *

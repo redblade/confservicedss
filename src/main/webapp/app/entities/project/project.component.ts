@@ -83,6 +83,12 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.eventSubscriber = this.eventManager.subscribe('projectListModification', () => this.loadPage());
   }
 
+  provision(project: IProject): void {
+	this.projectService.provision(project).subscribe(() => {
+		
+    });    
+  }
+
   delete(project: IProject): void {
     const modalRef = this.modalService.open(ProjectDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.project = project;
@@ -94,6 +100,13 @@ export class ProjectComponent implements OnInit, OnDestroy {
       result.push('id');
     }
     return result;
+  }
+
+  public isProvisioningVisible(project: IProject) : boolean {
+	if(project.properties != null){
+		return JSON.parse(project.properties.replace(/'/g, '"')).slice_name != null;
+	}
+	return false;
   }
 
   protected onSuccess(data: IProject[] | null, headers: HttpHeaders, page: number, navigate: boolean): void {
