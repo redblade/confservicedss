@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.pledgerproject.confservice.domain.Project;
-import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 import eu.pledgerproject.confservice.repository.CustomAuditEventRepository;
 import eu.pledgerproject.confservice.service.ProjectService;
 import eu.pledgerproject.confservice.web.rest.errors.BadRequestAlertException;
