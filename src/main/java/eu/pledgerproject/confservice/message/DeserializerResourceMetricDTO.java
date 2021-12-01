@@ -82,7 +82,7 @@ public class DeserializerResourceMetricDTO implements Deserializer<ResourceMetri
 							}
 						}
 					}catch(Exception e) {
-						log.error("Unable to parse resource metric message " + source, e);
+						log.error("ERROR: resource metric message has a wrong format. " + source, e);
 					}
 				}
 			}
