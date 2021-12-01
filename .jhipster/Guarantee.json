@@ -11,7 +11,7 @@
       "fieldValidateRules": [
         "maxlength"
       ],
-      "fieldValidateRulesMaxlength": "200"
+      "fieldValidateRulesMaxlength": "20000"
     },
     {
       "fieldName": "thresholdWarning",
