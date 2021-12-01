@@ -80,7 +80,7 @@ public class ServiceMonitor {
 	
 	@Scheduled(cron = "0 */1 * * * *")
 	public void executeTask() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 			Event event = new Event();
 			event.setCategory("ServiceMonitor");

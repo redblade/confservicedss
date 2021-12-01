@@ -26,7 +26,7 @@ public class SLAViolationManager {
     
 	@Scheduled(cron = "15/30 * * * * *")
 	public void executeTask() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 			log.info("SLAViolationManager started");
 	

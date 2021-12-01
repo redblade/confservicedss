@@ -38,7 +38,7 @@ public class ReportCleanerService {
 	@Scheduled(cron = "0 0 */1 * * *")
 	@Transactional
 	public void executeTask() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 	
 			log.info("LogCleaner removed events older than " + REPORT_CLEAN_HOUR + " h");
 			

@@ -22,7 +22,7 @@ import eu.pledgerproject.confservice.domain.Authority;
 import eu.pledgerproject.confservice.domain.InfrastructureProvider;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.User;
-import eu.pledgerproject.confservice.monitoring.ControlFlag;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
 import eu.pledgerproject.confservice.repository.AuthorityRepository;
 import eu.pledgerproject.confservice.repository.InfrastructureProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
@@ -335,7 +335,7 @@ public class UserService {
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 	        userRepository
 	            .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))

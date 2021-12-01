@@ -113,13 +113,15 @@ public class TTODAOptimiser {
 	
 	@Scheduled(cron = "30 */1 * * * *")
 	public void doOptimise() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 			log.info("EcodaOptimiser started");
 	
 			//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
 			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
 				
 				//by SP: the list of Services to optimise and the Node set where they could be allocated
+				//HERE we assume a SP DOES one TTODA on ALL the services which are labelled with TTODA.
+				//Nodes preferences in ServiceConstraints are considered for ALL the services (in AND)
 				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.latency.name());
 				doOptimise(serviceProvider, serviceList);
 			}
@@ -127,52 +129,55 @@ public class TTODAOptimiser {
 	}
 	
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
-		List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacity(serviceProvider);
-		int totalCpu4SP = 0;
-		int totalMem4SP = 0;
-		
-		for(NodeGroup nodeGroup : nodeGroupList) {
-			Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeGroup.nodes);
-			totalCpu4SP += total4SP[0];
-			totalMem4SP += total4SP[1];
-		}
-			
-		if(nodeGroupList.size() > 0 && totalCpu4SP > 0 && totalMem4SP > 0) {
-			Set<Node> nodeSetOnEdge = nodeGroupList.get(0).nodes;
-			
-			List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
-			for(Service service: serviceList) {
+		if(serviceList.size() > 0) {
 
-				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-				int requestCpuMillicore = ResourceDataReader.getServiceRuntimeCpuRequest(service);
-				int requestMemoryMB = ResourceDataReader.getServiceRuntimeMemRequest(service);
-				
-				ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
-				serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-				serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge, totalCpu4SP, totalMem4SP);
-				log.info("Service " + service.getName() + " has ECODA score " + serviceData.score);
-				serviceDataList.add(serviceData);
- 			}
-			Collections.sort(serviceDataList);
+			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+			int totalCpu4SP = 0;
+			int totalMem4SP = 0;
 			
-			//the allocation plan, based on the optimised ServiceData list
-			Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
-			if(serviceOptimisedAllocationPlan == null) {
-				log.error("EcodaOptimiser error: not enough resources on the worse option(cloud)");
-				saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
+			for(NodeGroup nodeGroup : nodeGroupList) {
+				Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeGroup.nodes);
+				totalCpu4SP += total4SP[0];
+				totalMem4SP += total4SP[1];
 			}
-			else { 
-				if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
-					log.info("EcodaOptimiser: no offloadings needed");
+				
+			if(nodeGroupList.size() > 0 && totalCpu4SP > 0 && totalMem4SP > 0) {
+				Set<Node> nodeSetOnEdge = nodeGroupList.get(0).nodes;
+				
+				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
+				for(Service service: serviceList) {
+	
+					//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
+					int requestCpuMillicore = ResourceDataReader.getServiceRuntimeCpuRequest(service);
+					int requestMemoryMB = ResourceDataReader.getServiceRuntimeMemRequest(service);
+					
+					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
+					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
+					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge, totalCpu4SP, totalMem4SP);
+					log.info("Service " + service.getName() + " has ECODA score " + serviceData.score);
+					serviceDataList.add(serviceData);
+	 			}
+				Collections.sort(serviceDataList);
+				
+				//the allocation plan, based on the optimised ServiceData list
+				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
+				if(serviceOptimisedAllocationPlan == null) {
+					log.error("EcodaOptimiser error: not enough resources on the worse option(cloud)");
+					saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 				}
-				else {
-					for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
-						NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
-						log.info("EcodaResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
-						Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
-
-						serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
-						saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode);
+				else { 
+					if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
+						log.info("EcodaOptimiser: no offloadings needed");
+					}
+					else {
+						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
+							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
+							log.info("EcodaResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
+							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
+	
+							serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
+							saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode);
+						}
 					}
 				}
 			}

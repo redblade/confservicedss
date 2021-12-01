@@ -27,7 +27,7 @@ public class CredentialManager {
     
 	@EventListener(ApplicationReadyEvent.class)
 	public void initialiseCredentials() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 			log.info("DSS just started, initialising credentialService..");
 			updateCredentials();
 			log.info("credentialManager initialising completed");
@@ -36,7 +36,7 @@ public class CredentialManager {
 	
 	@Scheduled(cron = "0 */1 * * * *")
 	public void executeTask() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 			updateCredentials();
 		}
 	}

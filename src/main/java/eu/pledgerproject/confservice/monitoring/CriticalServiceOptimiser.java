@@ -80,7 +80,7 @@ public class CriticalServiceOptimiser {
     
 	@Scheduled(cron = "30 */1 * * * *")
 	public void executeTask() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 			log.info("CriticalServiceOptimiser started");
 	

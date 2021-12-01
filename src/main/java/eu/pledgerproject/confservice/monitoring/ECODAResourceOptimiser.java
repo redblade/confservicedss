@@ -84,7 +84,7 @@ public class ECODAResourceOptimiser {
 	//Each group has its resource capability
 	@Scheduled(cron = "30 */1 * * * *")
 	public void doOptimise() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 			log.info("EcodaResourceOptimiser started");
 			
@@ -106,6 +106,8 @@ public class ECODAResourceOptimiser {
 				}
 				
 				//then we optimise the services
+				//HERE we assume a SP DOES one ECODA on ALL the services which are labelled with ECODA.
+				//Nodes preferences in ServiceConstraints are considered for ALL the services (in AND)
 				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
 				doOptimise(serviceProvider, serviceList);
 			}
@@ -113,49 +115,52 @@ public class ECODAResourceOptimiser {
 	}
 	
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
-		List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacity(serviceProvider);
-		int totalCpu4SP = 0;
-		int totalMem4SP = 0;
-		
-		for(NodeGroup nodeGroup : nodeGroupList) {
-			Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeGroup.nodes);
-			totalCpu4SP += total4SP[0];
-			totalMem4SP += total4SP[1];
-		}
-			
-		if(nodeGroupList.size() > 0 && totalCpu4SP > 0 && totalMem4SP > 0) {
-			Set<Node> nodeSetOnEdge = nodeGroupList.get(0).nodes;
-			
-			List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
-			for(Service service: serviceList) {
+		if(serviceList.size() > 0) {
 
-				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-				int[] cpuMemServiceResourcePlan = getServiceResourcePlan(service);
-				
-				ServiceData serviceData = new ServiceData(service, cpuMemServiceResourcePlan[0], cpuMemServiceResourcePlan[1]);
-				serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-				serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge, totalCpu4SP, totalMem4SP);
-				log.info("Service " + service.getName() + " has ECODA score " + serviceData.score);
-				serviceDataList.add(serviceData);
- 			}
-			Collections.sort(serviceDataList);
+			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+			int totalCpu4SP = 0;
+			int totalMem4SP = 0;
 			
-			//the allocation plan, based on the optimised ServiceData list
-			Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
-			if(serviceOptimisedAllocationPlan == null) {
-				log.error("EcodaResourceOptimiser error: not enough resources on the worse option(cloud)");
-				saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
+			for(NodeGroup nodeGroup : nodeGroupList) {
+				Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeGroup.nodes);
+				totalCpu4SP += total4SP[0];
+				totalMem4SP += total4SP[1];
 			}
-			else { 
-				if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
-					log.info("EcodaResourceOptimiser: no offloadings needed");
+				
+			if(nodeGroupList.size() > 0 && totalCpu4SP > 0 && totalMem4SP > 0) {
+				Set<Node> nodeSetOnEdge = nodeGroupList.get(0).nodes;
+				
+				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
+				for(Service service: serviceList) {
+	
+					//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
+					int[] cpuMemServiceResourcePlan = getServiceResourcePlan(service);
+					
+					ServiceData serviceData = new ServiceData(service, cpuMemServiceResourcePlan[0], cpuMemServiceResourcePlan[1]);
+					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
+					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge, totalCpu4SP, totalMem4SP);
+					log.info("Service " + service.getName() + " has ECODA score " + serviceData.score);
+					serviceDataList.add(serviceData);
+	 			}
+				Collections.sort(serviceDataList);
+				
+				//the allocation plan, based on the optimised ServiceData list
+				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
+				if(serviceOptimisedAllocationPlan == null) {
+					log.error("EcodaResourceOptimiser error: not enough resources on the worse option(cloud)");
+					saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 				}
-				else {
-					for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
-						NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
-						log.info("EcodaResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
-						Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
-						serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
+				else { 
+					if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
+						log.info("EcodaResourceOptimiser: no offloadings needed");
+					}
+					else {
+						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
+							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
+							log.info("EcodaResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
+							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
+							serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
+						}
 					}
 				}
 			}

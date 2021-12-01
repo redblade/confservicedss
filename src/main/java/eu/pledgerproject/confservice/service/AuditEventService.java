@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import eu.pledgerproject.confservice.config.audit.AuditEventConverter;
-import eu.pledgerproject.confservice.monitoring.ControlFlag;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
 import eu.pledgerproject.confservice.repository.PersistenceAuditEventRepository;
 import io.github.jhipster.config.JHipsterProperties;
 
@@ -51,7 +51,7 @@ public class AuditEventService {
      */
     @Scheduled(cron = "0 0 12 * * ?")
     public void removeOldAuditEvents() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 	        persistenceAuditEventRepository
 	            .findByAuditEventDateBefore(Instant.now().minus(jHipsterProperties.getAuditEvents().getRetentionPeriod(), ChronoUnit.DAYS))

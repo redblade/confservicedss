@@ -60,7 +60,7 @@ public class NodeDataReader {
 	
 	@Scheduled(cron = "0 */1 * * * *")
 	public void scheduleTask() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 			log.info("NodeDataReader started");
 			Event event = new Event();

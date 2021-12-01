@@ -60,7 +60,7 @@ public class CustomServiceOptimiser {
     
 	@Scheduled(cron = "0 */1 * * * *")
 	public void executeTask() {
-		if(!ControlFlag.READ_ONLY_MODE_ENABLED){
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
 			List<ServiceOptimisation> serviceOptimisationList = serviceOptimisationRepository.findServiceOptimisationOnRunningServices(ServiceOptimisationType.webhook.name());
 			

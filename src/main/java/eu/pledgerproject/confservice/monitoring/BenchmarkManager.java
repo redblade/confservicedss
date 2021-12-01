@@ -22,9 +22,9 @@ import eu.pledgerproject.confservice.repository.ServiceRepository;
 public class BenchmarkManager {
 	private final Logger log = LoggerFactory.getLogger(BenchmarkManager.class);
 
-	private static final boolean ENABLE_BENCHMARK_FILTER = false;
 	public static final String DEFAULT_METRIC = "performance_index";
 	public static final int DEFAULT_SEC_CHECK_BENCHMARK_REPORT = 60*60*24*7;
+	
 	private final BenchmarkReportRepository benchmarkReportRepository;
 	private final ResourceDataReader resourceDataReader;
 	private final EventRepository eventRepository;
@@ -64,7 +64,7 @@ public class BenchmarkManager {
 	*/
 	public Node getBestNodeUsingBenchmark(Service service, Set<Node> nodeSet) {
 		
-		//here, we expect service.getProfile() has been populated with the matching benchmarkName by the AppProfiler
+		//here, we check IF service.getProfile() is configured (either manually or by the AppProfiler) with the matching benchmarkName
 		String benchmarkName = service.getProfile();
 		List<Object> nodeMeanByBenchmarkNameList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndTimestampAndNodeSet(benchmarkName, DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
 		if(nodeMeanByBenchmarkNameList.size() > 0) {
@@ -80,7 +80,7 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				if(ENABLE_BENCHMARK_FILTER) {
+				if(!ControlFlags.NO_BENCHMARK_FILTER_ENABLED) {
 					log.info("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
 					saveInfoEvent("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
 
@@ -92,7 +92,7 @@ public class BenchmarkManager {
 			}
 		}
 		
-		//here, we expect service.getProfile() has a been populated with a category with matches with those in the Benchmark
+		//IF NOT, we check IF service.getProfile() is configured (manually) with a category with matches with those in the Benchmark
 		String categoryLike = "%\""+service.getProfile()+"\"%";
 		List<Object> nodeMeanByBenchmarkCategoryList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByCategoryMetricAndTimestampAndNodeSet(categoryLike, DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
 		if(nodeMeanByBenchmarkCategoryList.size()  > 0) {
@@ -108,7 +108,7 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				if(ENABLE_BENCHMARK_FILTER) {
+				if(!ControlFlags.NO_BENCHMARK_FILTER_ENABLED) {
 					log.info("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
 					saveInfoEvent("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
 
@@ -120,7 +120,7 @@ public class BenchmarkManager {
 			}
 		}
 
-		//here, we just return the Node with more capacity left as no match was found above
+		//IF NOT, we return the Node with more capacity left
 		Node nodeFound = resourceDataReader.getNodeWithMoreCapacityLeft(nodeSet);
 		
 		log.info("Found best node using remaining capacity. Node: " + nodeFound.getName());
@@ -128,7 +128,7 @@ public class BenchmarkManager {
 		return nodeFound;
 	}
 	
-	//this is exposed via REST, mostly for testing
+	//this is exposed via REST, for testing purposes
 	public Optional<String> getBestNodeUsingBenchmark(long serviceID, long infrastructureID) {
 		String result = null;
 		Optional<Service> service = serviceRepository.findById(serviceID);

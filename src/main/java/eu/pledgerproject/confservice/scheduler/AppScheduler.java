@@ -75,7 +75,7 @@ public class AppScheduler {
 						ServiceOptimisationType.resources_latency.name().equals(service.getServiceOptimisation().getOptimisation())
 					)
 			) {
-				List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithRemainingCapacityThatCanHostRequests(service.getApp().getServiceProvider(), initialRequestCpu, initialRequestMem);
+				List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithRemainingCapacityThatCanHostRequestsAndFilterByServiceContraints(service.getApp().getServiceProvider(), service, initialRequestCpu, initialRequestMem);
 				if(nodeGroupList.size() > 0) {
 					Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeGroupList.get(0).nodes);
 					

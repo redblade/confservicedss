@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import org.springframework.stereotype.Component;
 
 import eu.pledgerproject.confservice.domain.Node;
+import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 
@@ -39,35 +40,58 @@ public class EcodaHelper {
 	private final NodeRepository nodeRepository;
 	private final GoldPingerReader goldPingerReader;
 	private final QuotaMonitoringReader quotaMonitoringReader;
+	private final DeploymentOptionsManager deploymentOptionsManager;
 	
-	public EcodaHelper(ResourceDataReader resourceDataReader, NodeRepository nodeRepository, GoldPingerReader goldPingerReader, QuotaMonitoringReader quotaMonitoringReader) {
+	public EcodaHelper(ResourceDataReader resourceDataReader, NodeRepository nodeRepository, GoldPingerReader goldPingerReader, QuotaMonitoringReader quotaMonitoringReader, DeploymentOptionsManager deploymentOptionsManager) {
 		this.resourceDataReader = resourceDataReader;
 		this.nodeRepository = nodeRepository;
 		this.goldPingerReader = goldPingerReader;
 		this.quotaMonitoringReader = quotaMonitoringReader;
+		this.deploymentOptionsManager = deploymentOptionsManager;
 	}
 	
+	//FIRST we check if the Node is mentioned in AT LEAST one service.
+	//THEN we check if ALL services HAS the same Node
+	private boolean isNodeValidForServiceConstraints(Node node, List<Service> serviceList) {
+		for(Service service : serviceList) {
+			if(!isNodeValidForServiceConstraints(node, service)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	private boolean isNodeValidForServiceConstraints(Node node, Service service) {
+		for(Set<Node> nodeSet : deploymentOptionsManager.getServiceDeploymentOptions(service.getId()).values()) {
+			if(nodeSet.contains(node)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	
 	/*
 	 this returns the prioritized nodeGroups (first edge, than cloud etc.) 
 	 creates aggregation by node_type and excludes those with node_master=true
 	 */
-	public List<NodeGroup> getNodeGroupListForSPWithTotalCapacity(ServiceProvider serviceProvider){
+	public List<NodeGroup> getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(ServiceProvider serviceProvider, List<Service> serviceList){
 		List<NodeGroup> result = new ArrayList<NodeGroup>();
 
 		Map<Integer, List<Node>> nodeMap = new TreeMap<Integer, List<Node>>();
 		for(Node node : nodeRepository.findBySP(serviceProvider.getName())) {
-			Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
-			String nodeType = nodeProperties.get("node_type");
-			NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
-			
-			if(nodeGroupPriority != null) {
-				String nodeMaster = nodeProperties.get("node_master");
-				if(nodeMaster != null && nodeMaster.equals("false")) {
-					if(!nodeMap.containsKey(nodeGroupPriority.priority)) {
-						nodeMap.put(nodeGroupPriority.priority, new ArrayList<Node>());
+			if(isNodeValidForServiceConstraints(node, serviceList)) {
+				Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
+				String nodeType = nodeProperties.get("node_type");
+				NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
+				
+				if(nodeGroupPriority != null) {
+					String nodeMaster = nodeProperties.get("node_master");
+					if(nodeMaster != null && nodeMaster.equals("false")) {
+						if(!nodeMap.containsKey(nodeGroupPriority.priority)) {
+							nodeMap.put(nodeGroupPriority.priority, new ArrayList<Node>());
+						}
+						nodeMap.get(nodeGroupPriority.priority).add(node);
 					}
-					nodeMap.get(nodeGroupPriority.priority).add(node);
 				}
 			}
 		}
@@ -83,32 +107,26 @@ public class EcodaHelper {
 
 		return result;
 	}
-	
-	public Integer[] getTotalCapacityForSPOnNodeSet(ServiceProvider serviceProvider, Set<Node> nodeSet){
-		return quotaMonitoringReader.getTotalCapacityForSPOnNodes(serviceProvider, nodeSet);
-	}
-	public Integer[] getRemainingCapacityForSPOnNodeSet(ServiceProvider serviceProvider, Set<Node> nodeSet){
-		return quotaMonitoringReader.getRemainingCapacityForSPOnNodes(serviceProvider, nodeSet);
-	}
 
-	
-	public List<NodeGroup> getNodeGroupListForSPWithRemainingCapacity(ServiceProvider serviceProvider){
 
-		List<NodeGroup> result = new ArrayList<NodeGroup>();
+	public List<NodeGroup> getNodeGroupListForSPWithRemainingCapacityThatCanHostRequestsAndFilterByServiceContraints(ServiceProvider serviceProvider, Service service, int requestCpu, int requestMem){
+		List<NodeGroup> tempResult = new ArrayList<NodeGroup>();
 
 		Map<Integer, List<Node>> nodeMap = new TreeMap<Integer, List<Node>>();
 		for(Node node : nodeRepository.findBySP(serviceProvider.getName())) {
-			Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
-			String nodeType = nodeProperties.get("node_type");
-			NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
-			
-			if(nodeGroupPriority != null) {
-				String nodeMaster = nodeProperties.get("node_master");
-				if(nodeMaster != null && nodeMaster.equals("false")) {
-					if(!nodeMap.containsKey(nodeGroupPriority.priority)) {
-						nodeMap.put(nodeGroupPriority.priority, new ArrayList<Node>());
+			if(isNodeValidForServiceConstraints(node, service)) {
+				Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
+				String nodeType = nodeProperties.get("node_type");
+				NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
+				
+				if(nodeGroupPriority != null) {
+					String nodeMaster = nodeProperties.get("node_master");
+					if(nodeMaster != null && nodeMaster.equals("false")) {
+						if(!nodeMap.containsKey(nodeGroupPriority.priority)) {
+							nodeMap.put(nodeGroupPriority.priority, new ArrayList<Node>());
+						}
+						nodeMap.get(nodeGroupPriority.priority).add(node);
 					}
-					nodeMap.get(nodeGroupPriority.priority).add(node);
 				}
 			}
 		}
@@ -117,21 +135,26 @@ public class EcodaHelper {
 			Integer[] spRemainingCapacity = quotaMonitoringReader.getRemainingCapacityForSPOnNodes(serviceProvider, nodeSet);
 			int spRemainingCapacityForNodesCPU = spRemainingCapacity[0];
 			int spRemainingCapacityForNodesMEM = spRemainingCapacity[1];
-			result.add(new NodeGroup("nodeGroup#"+priority, nodeSet, spRemainingCapacityForNodesCPU, spRemainingCapacityForNodesMEM));
-		}
-
-		return result;
-	}
-	
-	public List<NodeGroup> getNodeGroupListForSPWithRemainingCapacityThatCanHostRequests(ServiceProvider serviceProvider, int requestCpu, int requestMem){
+			tempResult.add(new NodeGroup("nodeGroup#"+priority, nodeSet, spRemainingCapacityForNodesCPU, spRemainingCapacityForNodesMEM));
+		}		
+		
+		
 		List<NodeGroup> result = new ArrayList<NodeGroup>();
 		
-		for(NodeGroup nodeGroup : getNodeGroupListForSPWithRemainingCapacity(serviceProvider)) {
+		for(NodeGroup nodeGroup : tempResult) {
 			if(nodeGroup.availabilityCpuMillicore > requestCpu && nodeGroup.availabilityMemoryMB > requestMem) {
 				result.add(nodeGroup);
 			}
 		}
 		return result;
+	}
+	
+	
+	public Integer[] getTotalCapacityForSPOnNodeSet(ServiceProvider serviceProvider, Set<Node> nodeSet){
+		return quotaMonitoringReader.getTotalCapacityForSPOnNodes(serviceProvider, nodeSet);
+	}
+	public Integer[] getRemainingCapacityForSPOnNodeSet(ServiceProvider serviceProvider, Set<Node> nodeSet){
+		return quotaMonitoringReader.getRemainingCapacityForSPOnNodes(serviceProvider, nodeSet);
 	}
 	
 	public Set<Node> getEdgeNodesBySP(ServiceProvider serviceProvider){
