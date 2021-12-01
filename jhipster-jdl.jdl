@@ -241,7 +241,7 @@ entity Sla {
 entity Guarantee {
 	id Long
     name String
-	constraint String maxlength(200) //responseTime < 100
+	constraint String maxlength(20000) //responseTime < 100
     thresholdWarning String maxlength(200) //responseTime > 90
     thresholdMild String maxlength(200) //responseTime > 100
     thresholdSerious String maxlength(200) //responseTime > 200

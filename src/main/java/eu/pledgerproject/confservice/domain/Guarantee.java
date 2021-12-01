@@ -23,8 +23,8 @@ public class Guarantee implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @Size(max = 200)
-    @Column(name = "jhi_constraint", length = 200)
+    @Size(max = 20000)
+    @Column(name = "jhi_constraint", length = 20000)
     private String constraint;
 
     @Size(max = 200)

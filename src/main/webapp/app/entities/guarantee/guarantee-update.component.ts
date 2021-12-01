@@ -21,7 +21,7 @@ export class GuaranteeUpdateComponent implements OnInit {
   editForm = this.fb.group({
     id: [],
     name: [],
-    constraint: [null, [Validators.maxLength(200)]],
+    constraint: [null, [Validators.maxLength(20000)]],
     thresholdWarning: [null, [Validators.maxLength(200)]],
     thresholdMild: [null, [Validators.maxLength(200)]],
     thresholdSerious: [null, [Validators.maxLength(200)]],
