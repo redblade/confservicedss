@@ -83,20 +83,23 @@ public class ProjectServiceImpl implements ProjectService {
 	        		JSONObject bodyJSON = new JSONObject();
 	        		int cpuCore = project.getQuotaCpuMillicore() / 1000;
 	        		int memGB = project.getQuotaMemMB() / 1024;
-	        		bodyJSON.put("k8s_ns_name", namespace);
-	        		bodyJSON.put("k8s_resource_quota_name", sliceName);
-	        		bodyJSON.put("limits_cpu", "\""+cpuCore+"\"");
-	        		bodyJSON.put("limits_memory", "\""+memGB + "Gi\"");
-	        		bodyJSON.put("requests_cpu", "\""+cpuCore+"\"");
-	        		bodyJSON.put("requests_memory", "\""+memGB + "Gi\"");
-
-	        		RequestBody body = RequestBody.create(mediaType, bodyJSON.toString());
-	        		Request request = new Request.Builder()
-	        				  .url(soeEndpoint + "/k8s_compute_chunk")
-	        				  .method("POST", body)
-	        				  .addHeader("Content-Type", "application/json")
-	        				  .build();
-	        		client.newCall(request).execute();
+	        		if(cpuCore >= 0 && memGB >= 0) {
+		        		bodyJSON.put("k8s_ns_name", namespace);
+		        		bodyJSON.put("k8s_resource_quota_name", sliceName);
+		        		bodyJSON.put("limits_cpu", "\""+cpuCore+"\"");
+		        		bodyJSON.put("limits_memory", "\""+memGB + "Gi\"");
+		        		bodyJSON.put("requests_cpu", "\""+cpuCore+"\"");
+		        		bodyJSON.put("requests_memory", "\""+memGB + "Gi\"");
+	
+		        		log.info("Creating slice sending a post msg: " + bodyJSON);
+		        		RequestBody body = RequestBody.create(mediaType, bodyJSON.toString());
+		        		Request request = new Request.Builder()
+		        				  .url(soeEndpoint + "/k8s_compute_chunk")
+		        				  .method("POST", body)
+		        				  .addHeader("Content-Type", "application/json")
+		        				  .build();
+		        		client.newCall(request).execute();
+	        		}
         		}catch(Exception e) {
             		log.error("Provisioning SOE slice", e);
         			saveErrorEvent("SOE provisioning", e.getMessage());
