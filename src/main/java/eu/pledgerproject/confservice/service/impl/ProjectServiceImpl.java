@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -35,7 +34,7 @@ import okhttp3.RequestBody;
 @Service
 @Transactional
 public class ProjectServiceImpl implements ProjectService {
-
+	private static final String REST_TEMPLATE = "{\n  \"k8s_ns_name\": \"PLACEHOLDER_NAMESPACE\",\n  \"k8s_resource_quota_name\": \"PLACEHOLDER_SLICE\",\n  \"limits_cpu\": \"PLACEHOLDER_CPU\",\n  \"limits_memory\": \"PLACEHOLDER_MEMGi\",\n  \"requests_cpu\": \"PLACEHOLDER_CPU\",\n  \"requests_memory\": \"PLACEHOLDER_MEMGi\"\n}";
     private final Logger log = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     private final ProjectRepository projectRepository;
@@ -80,19 +79,17 @@ public class ProjectServiceImpl implements ProjectService {
         		try {
 	        		OkHttpClient client = new OkHttpClient().newBuilder().build();
 	        		MediaType mediaType = MediaType.parse("application/json");
-	        		JSONObject bodyJSON = new JSONObject();
 	        		int cpuCore = project.getQuotaCpuMillicore() / 1000;
 	        		int memGB = project.getQuotaMemMB() / 1024;
 	        		if(cpuCore >= 0 && memGB >= 0) {
-		        		bodyJSON.put("k8s_ns_name", namespace);
-		        		bodyJSON.put("k8s_resource_quota_name", sliceName);
-		        		bodyJSON.put("limits_cpu", "\""+cpuCore+"\"");
-		        		bodyJSON.put("limits_memory", "\""+memGB + "Gi\"");
-		        		bodyJSON.put("requests_cpu", "\""+cpuCore+"\"");
-		        		bodyJSON.put("requests_memory", "\""+memGB + "Gi\"");
-	
-		        		log.info("Creating slice sending a post msg: " + bodyJSON);
-		        		RequestBody body = RequestBody.create(mediaType, bodyJSON.toString());
+	        			RequestBody body = RequestBody.create(mediaType, REST_TEMPLATE
+	        					.replace("PLACEHOLDER_SLICE", sliceName)
+	        					.replace("PLACEHOLDER_NAMESPACE", namespace)
+	        					.replace("PLACEHOLDER_CPU", ""+cpuCore)
+	        					.replace("PLACEHOLDER_MEM", ""+memGB)
+	        					);
+	        			
+		        		log.info("Creating a slice with name " + sliceName + " on namespace " + namespace);
 		        		Request request = new Request.Builder()
 		        				  .url(soeEndpoint + "/k8s_compute_chunk")
 		        				  .method("POST", body)

@@ -2,7 +2,7 @@
 
 <h3> Note on Optimisation and SLA </h3>
 
-Optimisations are of three types:
+Optimisations available are the following:
 
 - 'resources': this optimisation manages resource allocation using requests limits
     - whenever a SLA violation is received about a SLA which is dependent on resources, if used resources are close to the request limits they are increased
