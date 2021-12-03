@@ -96,11 +96,11 @@ public class ECODAResourceOptimiser {
 				Instant stopTime = Instant.now();
 				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
 				
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_add_more_resources.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
 					slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
 					slaViolationRepository.save(slaViolation);
 				}
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
 					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
 					slaViolationRepository.save(slaViolation);
 				}

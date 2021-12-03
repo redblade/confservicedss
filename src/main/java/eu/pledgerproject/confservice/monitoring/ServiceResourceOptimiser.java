@@ -35,7 +35,7 @@ public class ServiceResourceOptimiser {
     	this.rankingManager = rankingManager;
     	this.benchmarkManager = benchmarkManager;
     }
-	
+    
 	public String optimise(Service service, boolean increaseResources) {
 		String message = "Nothing to do, neither horizontal or vertical scaling is configured";
 		
@@ -70,14 +70,14 @@ public class ServiceResourceOptimiser {
 				newMemRequested = (int) (maxServiceReservedMem * (1+Integer.parseInt(autoscalePercentage)/100.0));
 			}
 			else {
-				newMemRequested = (int) (maxServiceReservedMem * (1-Integer.parseInt(autoscalePercentage)/100.0));
+				newMemRequested = (int) (maxServiceReservedMem / (1+Integer.parseInt(autoscalePercentage)/100.0));
 			}
 			int newCpuRequested;
 			if(increaseResources) {
 				newCpuRequested = (int) (maxServiceReservedCpu * (1+Integer.parseInt(autoscalePercentage)/100.0));
 			}
 			else {
-				newCpuRequested = (int) (maxServiceReservedCpu * (1-Integer.parseInt(autoscalePercentage)/100.0));
+				newCpuRequested = (int) (maxServiceReservedCpu / (1+Integer.parseInt(autoscalePercentage)/100.0));
 			}
 
 			//get the currentRanking...

@@ -79,7 +79,7 @@ public class CustomServiceOptimiser {
 				Instant stopTime = Instant.now();
 				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
 				
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_taken.name(), ServiceOptimisationType.webhook.name(), startTime)) {
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.webhook.name(), startTime)) {
 					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
 					slaViolationRepository.save(slaViolation);
 					doOptimise(serviceProvider, slaViolation.getSla().getService());

@@ -38,4 +38,5 @@ From here, Jenkins build number was restarted
 2.4.5b30:pledgerui_v32   - fixed service initialisation and mandatory fields on the UI
 2.4.6b38:pledgerui_v32   - added resource monitoring management on "metric" topic
 2.4.7b42:pledgerui_v32   - added SOE provisioning features from Project entity
+2.4.8b43:pledgerui_v32   - added scaling and offloading optimisations
 

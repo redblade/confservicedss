@@ -350,8 +350,9 @@ public class ServiceScheduler {
 		}
 	}
 	
-	public void migrateToNextRanking(Service service, boolean toLowerRanking) {
-
+	public Node migrateToRanking(Service service, boolean isBetterRanking) {
+		Node bestNode = null;
+		
 		//get max resource requests for the current service
 		Integer requestMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service);
 		Integer requestCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service);
@@ -361,16 +362,18 @@ public class ServiceScheduler {
 		int currentRanking = deploymentOptionsManager.getRankingInDeploymentOptions(service.getId());
 
 		//do the offload to the next better/worse ranking IF it exists (eg. currentRanking is 4: better means 3, if no priority like that exists, it does nothing
-		if(toLowerRanking && rankingMap.containsKey(currentRanking-1)) {
+		if(isBetterRanking && rankingMap.containsKey(currentRanking-1)) {
 			Set<Node> nodeSet = rankingMap.get(currentRanking-1);
-			Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeSet);
+			bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeSet);
 			migrate(service, bestNode, requestCpu, requestMem);
 		}
-		else if(!toLowerRanking && rankingMap.containsKey(currentRanking+1)) {
+		else if(!isBetterRanking && rankingMap.containsKey(currentRanking+1)) {
 			Set<Node> nodeSet = rankingMap.get(currentRanking+1);
-			Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeSet);
+			bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeSet);
 			migrate(service, bestNode, requestCpu, requestMem);
 		}
+		
+		return bestNode;
 	}
 	
 	public void migrate(Service service, Node bestNode, Integer requestCpu, Integer requestMem) {

@@ -57,7 +57,7 @@ public class DeploymentOptionsManager {
 				for(Node node : appDeploymentOptions.get(service).get(priority)) {
 					String nodeType = ConverterJSON.convertToMap(node.getProperties()).get("node_type");
 					
-					result.append("\n     -- node#" + node.getId()+ " '" + node.getName() + "' ["+nodeType+"] on infrastructure '" + node.getInfrastructure().getName()+"'");
+					result.append("\n     -- node#" + node.getId()+ " '" + node.getName() + "' ["+nodeType+"] on infrastructure '" + node.getInfrastructure().getName()+"' with id:" + node.getInfrastructure().getId());
 				}
 			}
 		}

@@ -102,10 +102,10 @@ public class ServiceResource {
 		        	serviceResourceOptimiser.optimise(service, false);
 		        }
 		        else if(service.getStatus().equals(ExecStatus.OFFLOADING_BETTER_RANKING)){
-		        	serviceScheduler.migrateToNextRanking(service, true);
+		        	serviceScheduler.migrateToRanking(service, true);
 		        }
 		        else if(service.getStatus().equals(ExecStatus.OFFLOADING_WORSE_RANKING)){
-		        	serviceScheduler.migrateToNextRanking(service, false);
+		        	serviceScheduler.migrateToRanking(service, false);
 		        }
 		        service.setStatus(ExecStatus.RUNNING);
         	}

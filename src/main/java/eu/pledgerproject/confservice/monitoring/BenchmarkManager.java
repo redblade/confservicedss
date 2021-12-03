@@ -80,7 +80,7 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				if(!ControlFlags.NO_BENCHMARK_FILTER_ENABLED) {
+				if(!ControlFlags.FILTER_NO_BENCHMARK_ENABLED) {
 					log.info("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
 					saveInfoEvent("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
 
@@ -108,7 +108,7 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				if(!ControlFlags.NO_BENCHMARK_FILTER_ENABLED) {
+				if(!ControlFlags.FILTER_NO_BENCHMARK_ENABLED) {
 					log.info("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
 					saveInfoEvent("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
 

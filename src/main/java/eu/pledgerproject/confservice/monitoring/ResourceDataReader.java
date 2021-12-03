@@ -68,8 +68,8 @@ public class ResourceDataReader {
 		Integer maxServiceReservedCpu = getServiceMaxResourceReservedCpuSoFar(service);
 		
 		//get the max resource used in the last period
-		Integer maxServiceUsedMem = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), SteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
-		Integer maxServiceUsedCpu = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), SteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
+		Integer maxServiceUsedMem = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
+		Integer maxServiceUsedCpu = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
 
 		if(maxServiceUsedMem == null) {
 			maxServiceUsedMem = maxServiceReservedMem/2;

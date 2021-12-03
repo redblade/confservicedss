@@ -1,15 +1,43 @@
 package eu.pledgerproject.confservice.message.dto;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ResourceMetricDTO {
-	public static final String DOCUMENT_TYPE_SYSTEM_METRIC = "SystemMonitoring";
-	public static final String DOCUMENT_TYPE_APPLICATION_RESOURCE_METRIC = "AppResourceMonitoring";
+	
+	public static class ResourceSystemMetricDTO{
+		public static final String DOCUMENT_TYPE_SYSTEM_METRIC = "SystemMonitoring";
+		
+		public Double totalCapacityCpuMillicore;
+		public Double totalUsedCpuMillicore;
+		public Double totalCapacityMemoryMB;
+		public Double totalUsedMemoryMB;
+		
+		public ResourceSystemMetricDTO() {}
+		public ResourceSystemMetricDTO(
+				Double totalCapacityCpuMillicore, 
+				Double totalUsedCpuMillicore, 
+				Double totalCapacityMemoryMB, 
+				Double totalUsedMemoryMB
+		) {
+			this();
+
+			this.totalCapacityCpuMillicore = totalCapacityCpuMillicore;
+			this.totalUsedCpuMillicore = totalUsedCpuMillicore;
+			this.totalCapacityMemoryMB = totalCapacityMemoryMB;
+			this.totalUsedMemoryMB = totalUsedMemoryMB;
+		}
+		@Override
+		public String toString() {
+			return "ResourceSystemMetricDTO [totalCapacityCpuMillicore=" + totalCapacityCpuMillicore
+					+ ", totalUsedCpuMillicore=" + totalUsedCpuMillicore + ", totalCapacityMemoryMB="
+					+ totalCapacityMemoryMB + ", totalUsedMemoryMB=" + totalUsedMemoryMB + "]";
+		}
+		
+	}
 	
 	public static class ResourceAppMetricDTO {
-		
+		public static final String DOCUMENT_TYPE_APPLICATION_RESOURCE_METRIC = "AppResourceMonitoring";
+
 		public String serviceName;
 		public Double serviceLimitCpuMillicore;
 		public Double serviceUsedCpuMillicore;
@@ -47,24 +75,20 @@ public class ResourceMetricDTO {
 	public String infrastructureName;
 	public String nodeName;
 
-	public Double totalCapacityCpuMillicore;
-	public Double totalUsedCpuMillicore;
-	public Double totalCapacityMemoryMB;
-	public Double totalUsedMemoryMB;
-
-	public List<ResourceAppMetricDTO> appMetrics;
+	public ResourceSystemMetricDTO systemMetric;
+	public ResourceAppMetricDTO appMetric;
 	
-	public ResourceMetricDTO() {
-		this.appMetrics = new ArrayList<ResourceAppMetricDTO>();
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder("ResourceMetricDTO [documentType=" + documentType + ", timestamp=" + timestamp
 				+ ", infrastructureProvider=" + infrastructureProvider + ", infrastructureName=" + infrastructureName
 				+ ", nodeName=" + nodeName + "[");
-		for(ResourceAppMetricDTO appMetric : appMetrics) {
-			result.append("{"+appMetric+"},");
+		if(this.systemMetric != null) {
+			result.append(this.systemMetric);
+		}
+		result.append(" ");
+		if(this.appMetric != null) {
+			result.append(this.appMetric);
 		}
 		result.append("]");
 		return result.toString();

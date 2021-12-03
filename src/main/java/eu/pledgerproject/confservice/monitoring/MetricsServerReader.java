@@ -27,6 +27,7 @@ import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.scheduler.TokenKubernetes;
+import eu.pledgerproject.confservice.util.DoubleFormatter;
 import io.kubernetes.client.Metrics;
 import io.kubernetes.client.custom.ContainerMetrics;
 import io.kubernetes.client.custom.NodeMetrics;
@@ -99,11 +100,11 @@ public class MetricsServerReader {
 		for(String key : rawMetrics.keySet()) {
 
 			if(key.equals(MonitoringService.CPU)) {
-				double value = (int)((1000 * rawMetrics.get(key).doubleValue()));
+				double value = DoubleFormatter.format(((1000 * rawMetrics.get(key).doubleValue())));
 				formattedMetrics.put(MonitoringService.CPU_LABEL, value);
 			}
 			else if(key.equals(MonitoringService.MEMORY)) {
-				double value = (int)((rawMetrics.get(key).doubleValue()/(1024*1024)));
+				double value = DoubleFormatter.format(((rawMetrics.get(key).doubleValue()/(1024*1024))));
 				formattedMetrics.put(MonitoringService.MEMORY_LABEL, value);
 			}
 		}

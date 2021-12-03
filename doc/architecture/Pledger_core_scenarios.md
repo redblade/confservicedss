@@ -64,6 +64,8 @@ user roles:
     - [A] the DSS create **DeploymentOptions** with different options where a Service can be deployed, with **ranking**
 
 - configure the DSS **ServiceOptimisation** policy for each Service:
+    - **scaling**: the DSS scales either horizontally or vertically based on the SLA violations received. More details in the DSS component.
+    - **offloading**: the DSS offloads to the cloud or to the edge based on the SLA violations received. More details in the DSS component.
     - **resource**: the DSS dynamically changes the Service reserved resources. More details in the DSS component.
     - **latency**: the DSS optimises the edge-to-cloud latency according to ECODA algorithm
     - **resource_latency**: the DSS dynamically changes the Service resource reserved AND also optimises the edge-to-cloud latency according to ECODA algorithm 
@@ -89,12 +91,14 @@ user roles:
 
 
 ##### optimisation activities
-- [A] the DSS, for SLA of type **active** and for which the Service has not received violations on SLA of type **suspend** for some time, decides whether to **increase reserved resources** or not depending on the **actual Service resource usage** being close to the Service reserved resources configured
-- [A] the DSS, for Services that have not received SLA violations for some time, decides whether to **reduce reserved resources** or not
+- [A] the DSS, for SLA of type **active** and for which the Service has not received violations on SLA of type **suspend** for some time, decides whether to activate and **directly scale up/out** or **directly offload to the cloud** or **increase reserved resources** or not depending on the **actual Service resource usage** being close to the Service reserved resources configured, or takes no action
+- [A] the DSS, for Services that have not received SLA violations for some time, decides whether to activate and **scale down/in** or **offload to the edge** or **reduce reserved resources** or takes no actions
 - [A] the DSS optimises Services based on their ServiceOptimisation configured:
     - **resource**: it changes the Service reserved resources values like follows: 
        - if the decision is to **increase reserved resources** and the current DeploymentOptions has enough resources, depending on the **severity score** it triggers a scaling up/out, otherwise it triggers an offloading to a worse ranking (edge to cloud). Both actions send messages on Kafka for the **Orchestrator**
        - if the decision is to **decrease reserved resources** and there is a better DeploymentOptions with enough resources, depending on the **severity score** it triggers an offload (cloud to edge), otherwise it triggers a scaling down/in. Both actions send messages on Kafka for the **Orchestrator**
+    - **scaling**: it directly scales up/out or down/in as with **resource** BUT without dynamically changing the resources reserved
+    - **offloading**: it directly offloads to the cloud or edge as with **resource** BUT without dynamically changing the resources reserved
     - **latency**: periodically checks the ECODA monitoring metrics. Depending on the new deployment plan updates and on the **severity score**, the DSS triggers the offloading sending messages on Kafka for the **Orchestrator**
     - **resource_latency**: works as with **resource** and also checking the ECODA monitoring metrics. Eventually the DSS triggers the scaling/offloading sending messages on Kafka for the **Orchestrator**
     - **webhook**: invokes an external URL to allow custom automation

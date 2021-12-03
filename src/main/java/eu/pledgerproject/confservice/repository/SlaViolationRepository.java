@@ -24,6 +24,9 @@ public interface SlaViolationRepository extends JpaRepository<SlaViolation, Long
 
 	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.status = :status and slaViolation.sla.service =:service and slaViolation.timestamp > :timestamp order by slaViolation.timestamp")
 	List<SlaViolation> findAllByServiceAndStatusSinceTimestampRegardlessOfOptimisationType(@Param("service") Service service, @Param("status") String status, @Param("timestamp") Instant timestamp);
+
+	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.status = :status and slaViolation.sla.service =:service and slaViolation.timestamp > :timestamp order by slaViolation.timestamp")
+	List<SlaViolation> findAllByServiceAndStatusAndSinceTimestamp(@Param("service") Service service, @Param("status") String status, @Param("timestamp") Instant timestamp);
 	
 	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.status = :status and slaViolation.sla.service.serviceOptimisation.optimisation = :optimisationType and slaViolation.sla.serviceProvider.name =:serviceProviderName and slaViolation.timestamp > :timestamp order by slaViolation.timestamp")
 	List<SlaViolation> findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(@Param("serviceProviderName") String serviceProviderName, @Param("status") String status, @Param("optimisationType") String optimisationType, @Param("timestamp") Instant timestamp);

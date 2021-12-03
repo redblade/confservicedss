@@ -38,7 +38,7 @@ public class ApplicationPostConstruct {
 			eventAlert.setDetails("ACTIVE");
 			eventRepository.save(eventAlert);
 		}
-		if(ControlFlags.NO_BENCHMARK_FILTER_ENABLED) {
+		if(ControlFlags.FILTER_NO_BENCHMARK_ENABLED) {
 			log.error("NO_BENCHMARK_FILTER is ACTIVE");
 			Event eventAlert = new Event();
 			eventAlert.setSeverity(Event.ERROR);

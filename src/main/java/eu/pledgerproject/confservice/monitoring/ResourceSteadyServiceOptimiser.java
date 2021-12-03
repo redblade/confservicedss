@@ -27,9 +27,9 @@ import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.repository.SteadyServiceRepository;
 
 @Component
-public class SteadyServiceOptimiser {
+public class ResourceSteadyServiceOptimiser {
 	public static final String NO_ACTION_TAKEN = "No action taken - score within limits";
-    private final Logger log = LoggerFactory.getLogger(SteadyServiceOptimiser.class);
+    private final Logger log = LoggerFactory.getLogger(ResourceSteadyServiceOptimiser.class);
     
     public static final String RESOURCE_USAGE_CATEGORY = "resource-usage";
     
@@ -44,7 +44,7 @@ public class SteadyServiceOptimiser {
     private final EventRepository eventRepository;
     private final SlaViolationRepository slaViolationRepository;
     
-    public SteadyServiceOptimiser(ResourceDataReader resourceDataReader, ServiceProviderRepository serviceProviderRepository, SteadyServiceRepository steadyServiceRepository, ServiceReportRepository serviceReportRepository, ServiceResourceOptimiser serviceResourceOptimiser, ServiceRepository serviceRepository, EventRepository eventRepository, SlaViolationRepository slaViolationRepository) {
+    public ResourceSteadyServiceOptimiser(ResourceDataReader resourceDataReader, ServiceProviderRepository serviceProviderRepository, SteadyServiceRepository steadyServiceRepository, ServiceReportRepository serviceReportRepository, ServiceResourceOptimiser serviceResourceOptimiser, ServiceRepository serviceRepository, EventRepository eventRepository, SlaViolationRepository slaViolationRepository) {
     	this.resourceDataReader = resourceDataReader;
     	this.serviceProviderRepository = serviceProviderRepository;
         this.steadyServiceRepository = steadyServiceRepository;
@@ -60,7 +60,7 @@ public class SteadyServiceOptimiser {
 	public void executeTask() {
 		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
-			log.info("SteadyServiceOptimiser started");
+			log.info("ResourceSteadyServiceOptimiser started");
 			
 			//first, we create steadyServices and delete old ones
 			List<SteadyService> newSteadyServiceList = new ArrayList<SteadyService>();
@@ -77,14 +77,14 @@ public class SteadyServiceOptimiser {
 			if(newSteadyServiceList.size() > 0) {
 				//an event to track activities
 				Event event = new Event();
-				event.setCategory("SteadyServiceOptimiser");
+				event.setCategory("ResourceSteadyServiceOptimiser");
 				event.setDetails("started");
 				eventRepository.save(event);
 			}
 			
 			//then, we check what to do with them
 			for(SteadyService steadyService : steadyServiceRepository.getAllOrderedByScoreDesc()) {
-				log.info("SteadyService " + steadyService + " has score " + steadyService.getScore());
+				log.info("ResourceSteadyService " + steadyService + " has score " + steadyService.getScore());
 				
 				//is the service is stopped, we can close the steadyService entry
 				if(steadyService.getService().getStatus().equals(ExecStatus.STOPPED)) {
@@ -144,7 +144,7 @@ public class SteadyServiceOptimiser {
 	
 			//prepare the timestamp for the range of time to check for slaViolations before now() 
 			Instant timestampSteady = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
-			log.info("SteadyOptimizer started for serviceProvider " + serviceProvider.getName());
+			log.info("ResourceSteadyOptimizer started for serviceProvider " + serviceProvider.getName());
 			
 			List<Service> runningServiceList = serviceRepository.findServiceListByServiceProviderServiceOptimisationSinceTimestamp(serviceProvider, ServiceOptimisationType.resources.name(), timestampSteady);
 			for(Service service : runningServiceList) {
@@ -155,11 +155,11 @@ public class SteadyServiceOptimiser {
 					String scaling = serviceInitialConfigurationProperties.get("scaling");
 					//and skip the check if scaling is not "horizontal" or "vertical"
 					if(ServiceResourceOptimiser.SCALING_VERTICAL.equals(scaling)) {
-						log.info("SteadyOptimizer found a steady service with vertical scaling to be checked " + service.getName());
+						log.info("ResourceSteadyOptimizer found a steady service with vertical scaling to be checked " + service.getName());
 						addSteadyServiceForVerticalScaling(timestampSteady, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
 					}
 					else if(ServiceResourceOptimiser.SCALING_HORIZONTAL.equals(scaling)) {
-						log.info("SteadyOptimizer found a steady service with horizontal scaling to be checked " + service.getName());
+						log.info("ResourceSteadyOptimizer found a steady service with horizontal scaling to be checked " + service.getName());
 						addSteadyServiceForHorizontalScaling(timestampSteady, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
 					}
 				}
@@ -203,7 +203,7 @@ public class SteadyServiceOptimiser {
 
 			//compute score
 			long score = getScoreScalingVertical(service, Integer.parseInt(resourceUsedSteadyPercentage), Integer.parseInt(autoscalePercentage), minConfiguredServiceMem, minConfiguredServiceCpu, maxServiceUsedMem, maxServiceUsedCpu, maxServiceReservedMem, maxServiceReservedCpu);
-			log.info("SteadyOptimizer computed the steady service " + service.getName() + " score " + score);
+			log.info("ResourceSteadyOptimizer computed the steady service " + service.getName() + " score " + score);
 
 			//create a steadyService per Service if score is above threshold
 			if(score > SCORE_THRESHOLD) {
@@ -227,7 +227,7 @@ public class SteadyServiceOptimiser {
 		//compute percentage of resources used
 		int percMemUsed =  (int) (100.0 * maxServiceUsedMem / (maxServiceReservedMem));
 		int percCpuUsed =  (int) (100.0 * maxServiceUsedCpu / (maxServiceReservedCpu));
-		log.info("SteadyServiceOptimiser.getScoreScalingVertical(" + service.getName() + ") : percMemUsed: "+percMemUsed+", percCpuUsed:"+percCpuUsed+". [maxServiceUsedMem:"+maxServiceUsedMem+", maxServiceReservedMem:"+maxServiceReservedMem + ", maxServiceUsedCpu:"+maxServiceUsedCpu + ", maxServiceReservedCpu:"+maxServiceReservedCpu+"]");
+		log.info("ResourceSteadyServiceOptimiser.getScoreScalingVertical(" + service.getName() + ") : percMemUsed: "+percMemUsed+", percCpuUsed:"+percCpuUsed+". [maxServiceUsedMem:"+maxServiceUsedMem+", maxServiceReservedMem:"+maxServiceReservedMem + ", maxServiceUsedCpu:"+maxServiceUsedCpu + ", maxServiceReservedCpu:"+maxServiceReservedCpu+"]");
 
 		//we consider STEADY a service that uses less than the min percentage (eg. min is 70%, if it is currently 75%, then we skip steady optimisation)
 		if(	percMemUsed > resourceUsedSteadyPerc || percCpuUsed > resourceUsedSteadyPerc ) {
@@ -269,7 +269,7 @@ public class SteadyServiceOptimiser {
 
 			//compute score
 			long score = getScoreScalingHorizontal(service, Integer.parseInt(resourceUsedSteadyPercentage), Integer.parseInt(replicas), maxServiceUsedMem, maxServiceReservedMem, maxServiceUsedCpu, maxServiceReservedCpu);
-			log.info("SteadyOptimizer computed the steady service " + service.getName() + " score " + score);
+			log.info("ResourceSteadyOptimizer computed the steady service " + service.getName() + " score " + score);
 
 			//create a steadyService per Service if score is above threshold
 			if(score > SCORE_THRESHOLD) {
@@ -292,7 +292,7 @@ public class SteadyServiceOptimiser {
 		//compute percentage of resources used
 		int percMemUsed =  (int) (100.0 * maxServiceUsedMem / (maxServiceReservedMem*replicas));
 		int percCpuUsed =  (int) (100.0 * maxServiceUsedCpu / (maxServiceReservedCpu*replicas));
-		log.info("SteadyServiceOptimiser.getScoreScalingHorizontal(" + service.getName() + ") : percMemUsed: "+percMemUsed+", percCpuUsed:"+percCpuUsed+". [maxServiceUsedMem:"+maxServiceUsedMem+", maxServiceReservedMem:"+maxServiceReservedMem + ", maxServiceUsedCpu:"+maxServiceUsedCpu + ", maxServiceReservedCpu:"+maxServiceReservedCpu+", replicas:"+replicas+"]");
+		log.info("ResourceSteadyServiceOptimiser.getScoreScalingHorizontal(" + service.getName() + ") : percMemUsed: "+percMemUsed+", percCpuUsed:"+percCpuUsed+". [maxServiceUsedMem:"+maxServiceUsedMem+", maxServiceReservedMem:"+maxServiceReservedMem + ", maxServiceUsedCpu:"+maxServiceUsedCpu + ", maxServiceReservedCpu:"+maxServiceReservedCpu+", replicas:"+replicas+"]");
 		
 		//we DO NOT consider STEADY a service that uses more than minimal margin
 		if(	percMemUsed > resourceUsedSteadyPerc || percCpuUsed > resourceUsedSteadyPerc ) {

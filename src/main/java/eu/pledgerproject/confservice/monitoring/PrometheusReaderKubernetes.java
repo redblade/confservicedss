@@ -36,6 +36,7 @@ import eu.pledgerproject.confservice.repository.NodeRepository;
 import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
+import eu.pledgerproject.confservice.util.DoubleFormatter;
 
 
 /*
@@ -167,7 +168,7 @@ public class PrometheusReaderKubernetes {
 		Map<String, Double> formattedMetrics = new HashMap<String, Double>();
 		for(String key : rawMetrics.keySet()) {
 
-			double value = (int)(1000 * rawMetrics.get(key).doubleValue());
+			double value = DoubleFormatter.format((1000 * rawMetrics.get(key).doubleValue()));
 			formattedMetrics.put(key, value);
 		}
 		return formattedMetrics;
@@ -177,7 +178,7 @@ public class PrometheusReaderKubernetes {
 		Map<String, Double> formattedMetrics = new HashMap<String, Double>();
 		for(String key : rawMetrics.keySet()) {
 
-			double value = (int)(rawMetrics.get(key).doubleValue()/(1024*1024));
+			double value = DoubleFormatter.format((rawMetrics.get(key).doubleValue()/(1024*1024)));
 			formattedMetrics.put(key, value);
 		}
 		return formattedMetrics;

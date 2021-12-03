@@ -137,7 +137,7 @@ public class GoldPingerReader {
 				}
 			}
 		}catch(Exception e) {
-			log.error("GoldPingerReader", e);
+			log.error("GoldPingerReader", e.getMessage());
 			saveErrorEvent("GoldPingerReader error " + e.getClass() + " " + e.getMessage());
 		}
 
