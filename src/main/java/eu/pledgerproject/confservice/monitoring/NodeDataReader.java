@@ -65,7 +65,7 @@ public class NodeDataReader {
 			log.info("NodeDataReader started");
 			Event event = new Event();
 			event.setCategory("NodeDataReader");
-			event.setDetails("started");
+			event.setDetails("monitoring started");
 			eventRepository.save(event);
 			
 			for (Infrastructure infrastructure : infrastructureRepository.findAll()) {

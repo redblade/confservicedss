@@ -65,47 +65,6 @@ public class DeploymentOptionsManager {
 		return result.toString(); 
 	}
 	
-	/*
-	
-	
-    {
-     "app": "app1",
-     "services": [ 
-        {
-          "service": "service1",
-          "options": [
-            {
-              "ranking": "1",
-              "nodes": [
-                {
-                  "name": "node1",
-                  "infrastructure": "infra1"
-                },
-                {
-                  "name": "node2",
-                  "infrastructure": "infra2"
-                }
-              ]
-            },
-            {
-              "ranking": "2",
-              "nodes": [
-                {
-                  "name": "node3",
-                  "infrastructure": "infra3"
-                },
-                {
-                  "name": "node4",
-                  "infrastructure": "infra4"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-	
-	*/
 	public String getAppDeploymentOptionsJSON(App app) {
 		JSONObject result = new JSONObject();
 		result.put("app", app.getName());
@@ -167,32 +126,6 @@ public class DeploymentOptionsManager {
 		return result;
 	}
 	
-	
-	/*
-	 * replaced, as it works ONLY with K8S
-	//for a Service, it returns the deploymentOption ranking that contains the Node where the Service is actually deployed. It scans the priority tree from TOP to BOTTOM, the first Set that contains the Node wins 
-	public int getRankingInDeploymentOptions(Long serviceId) {
-		
-		Optional<Service> serviceOptional = serviceRepository.findById(serviceId);
-		if(serviceOptional.isPresent()) {
-			String node_deployed = ConverterJSON.convertToMap(serviceOptional.get().getRuntimeConfiguration()).get(ServiceScheduler.NODE_HOSTING);
-			if(node_deployed != null) {
-				Optional<Node> nodeDeployed = nodeRepository.findByName(node_deployed);
-				if(nodeDeployed.isPresent()) {
-					SortedMap<Integer, Set<Node>> serviceDeploymentOptions = getServiceDeploymentOptions(serviceId);
-					for(int ranking : serviceDeploymentOptions.keySet()) {
-						Set<Node> candidateNodeSet = serviceDeploymentOptions.get(ranking);
-						if(candidateNodeSet.contains(nodeDeployed.get())){
-							return ranking;
-						}
-					}
-				}
-			}
-		}
-		
-		return -1;
-	}
-	*/
 	public int getRankingInDeploymentOptions(Long serviceId) {
 		
 		Optional<Service> serviceOptional = serviceRepository.findById(serviceId);
@@ -211,6 +144,26 @@ public class DeploymentOptionsManager {
 		}
 		
 		return -1;
+	}
+	
+	public Set<Node> getCurrentNodeSet(Long serviceId) {
+		
+		Optional<Service> serviceOptional = serviceRepository.findById(serviceId);
+		if(serviceOptional.isPresent()) {
+			Node currentNode = resourceDataReader.getCurrentNode(serviceOptional.get());
+
+			if(currentNode != null) {
+				SortedMap<Integer, Set<Node>> serviceDeploymentOptions = getServiceDeploymentOptions(serviceId);
+				for(int ranking : serviceDeploymentOptions.keySet()) {
+					Set<Node> candidateNodeSet = serviceDeploymentOptions.get(ranking);
+					if(candidateNodeSet.contains(currentNode)){
+						return candidateNodeSet;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	

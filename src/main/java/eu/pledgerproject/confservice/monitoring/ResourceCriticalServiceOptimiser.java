@@ -100,7 +100,7 @@ public class ResourceCriticalServiceOptimiser {
 				//an event to track activities
 				Event event = new Event();
 				event.setCategory("ResourceCriticalServiceOptimiser");
-				event.setDetails("started");
+				event.setDetails("monitoring started");
 				eventRepository.save(event);
 			}
 	

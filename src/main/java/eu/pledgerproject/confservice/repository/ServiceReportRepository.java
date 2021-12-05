@@ -30,8 +30,8 @@ public interface ServiceReportRepository extends JpaRepository<ServiceReport, Lo
 	@Query(value = "select serviceReport from ServiceReport serviceReport where serviceReport.service.id = :serviceId and serviceReport.category = :category and serviceReport.key = :key order by serviceReport.timestamp desc")
 	List<ServiceReport> findLastByServiceIdCategoryKey(@Param("serviceId") long serviceId, @Param("category") String category, @Param("key") String key);
 	
-	@Query(value = "select serviceReport from ServiceReport serviceReport where serviceReport.service.id = :serviceId and serviceReport.category = :category and serviceReport.key = :name order by serviceReport.id desc")
-	List<ServiceReport> findServiceReportByServiceIdCategoryName(@Param("serviceId") long serviceId, @Param("category") String category, @Param("name") String name);
+	@Query(value = "select serviceReport from ServiceReport serviceReport where serviceReport.service.id = :serviceId and serviceReport.category = :category and serviceReport.key = :name and serviceReport.timestamp >= :timestamp order by serviceReport.id desc")
+	List<ServiceReport> findServiceReportByServiceIdCategoryNameInPeriod(@Param("serviceId") long serviceId, @Param("category") String category, @Param("name") String name, @Param("timestamp") Instant timestamp);
 
 	@Modifying
 	@Query(value = "delete from ServiceReport serviceReport where serviceReport.timestamp < :timestamp")

@@ -1,6 +1,5 @@
 package eu.pledgerproject.confservice.message;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;

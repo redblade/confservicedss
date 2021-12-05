@@ -19,7 +19,10 @@ import eu.pledgerproject.confservice.domain.SlaViolation;
 @Repository
 public interface SlaViolationRepository extends JpaRepository<SlaViolation, Long> {
 
-	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.sla.serviceProvider.name = :serviceProviderName order by slaViolation.timestamp")
+	@Query(value = "select slaViolation from SlaViolation slaViolation order by slaViolation.timestamp desc")
+	Page<SlaViolation> findAll(Pageable pageable);
+	
+	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.sla.serviceProvider.name = :serviceProviderName order by slaViolation.timestamp desc")
 	Page<SlaViolation> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 
 	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.status = :status and slaViolation.sla.service =:service and slaViolation.timestamp > :timestamp order by slaViolation.timestamp")
@@ -37,4 +40,10 @@ public interface SlaViolationRepository extends JpaRepository<SlaViolation, Long
 	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.status = :status")
 	List<SlaViolation> findAllByStatus(@Param("status") String status);
 	
+	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.status not like 'closed%' and slaViolation.sla.service =:service") 
+	List<SlaViolation> findAllNotClosed(@Param("service") Service service);
+
+	@Query(value = "select slaViolation from SlaViolation slaViolation where slaViolation.status not like 'closed%' and slaViolation.sla.service =:service and slaViolation.sla.service.serviceOptimisation.optimisation =:optimisationType") 
+	List<SlaViolation> findAllNotClosedByServiceOptimisationType(@Param("service") Service service, @Param("optimisationType") String optimisationType);
+
 }

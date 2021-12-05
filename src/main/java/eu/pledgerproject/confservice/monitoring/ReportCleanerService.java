@@ -44,7 +44,7 @@ public class ReportCleanerService {
 			
 			Event event = new Event();
 			event.setCategory("ReportCleaner");
-			event.setDetails("started");
+			event.setDetails("monitoring started");
 			eventRepository.save(event);
 			
 			Instant timestampClean = Instant.now().minusSeconds(REPORT_CLEAN_HOUR*60*60);

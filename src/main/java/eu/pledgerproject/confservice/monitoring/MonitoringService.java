@@ -63,7 +63,7 @@ public class MonitoringService {
 			
 			Event event = new Event();
 			event.setCategory("MonitoringService");
-			event.setDetails("started");
+			event.setDetails("monitoring started");
 			eventRepository.save(event);
 			
 			for (Infrastructure infrastructure : infrastructureRepository.findAllWithNodes()) {

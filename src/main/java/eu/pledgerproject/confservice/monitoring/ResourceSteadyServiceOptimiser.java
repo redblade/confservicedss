@@ -31,7 +31,7 @@ public class ResourceSteadyServiceOptimiser {
 	public static final String NO_ACTION_TAKEN = "No action taken - score within limits";
     private final Logger log = LoggerFactory.getLogger(ResourceSteadyServiceOptimiser.class);
     
-    public static final String RESOURCE_USAGE_CATEGORY = "resource-usage";
+    public static final String RESOURCE_USAGE_CATEGORY = "resource-used";
     
     public static int SCORE_THRESHOLD = 100;
     
@@ -78,7 +78,7 @@ public class ResourceSteadyServiceOptimiser {
 				//an event to track activities
 				Event event = new Event();
 				event.setCategory("ResourceSteadyServiceOptimiser");
-				event.setDetails("started");
+				event.setDetails("monitoring started");
 				eventRepository.save(event);
 			}
 			
@@ -172,26 +172,16 @@ public class ResourceSteadyServiceOptimiser {
 	private void addSteadyServiceForVerticalScaling(Instant timestamp, List<SteadyService> result, Service service, Map<String, String> serviceInitialConfigurationProperties, int slaViolationMonitoringPeriodSec) {
 		
 		//get the resource requested
-		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service);
-		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service);
+		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
+		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
 		
 		//get the max resource used in the last period
 		Integer maxServiceUsedMem = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
 		Integer maxServiceUsedCpu = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
 
-		//get the min memory configured
-		String minConfiguredServiceMemString = serviceInitialConfigurationProperties.get("min_memory_mb");
-		if(minConfiguredServiceMemString == null) {
-			minConfiguredServiceMemString = serviceInitialConfigurationProperties.get("initial_memory_mb");
-		}
-		Integer minConfiguredServiceMem = Integer.parseInt(minConfiguredServiceMemString);  
-
-		//get the min cpu configured
-		String minConfiguredServiceCpuString = serviceInitialConfigurationProperties.get("min_cpu_millicore");
-		if(minConfiguredServiceCpuString == null) {
-			minConfiguredServiceCpuString = serviceInitialConfigurationProperties.get("initial_cpu_millicore");
-		}
-		Integer minConfiguredServiceCpu = Integer.parseInt(minConfiguredServiceCpuString);  
+		//get min requests
+		Integer minConfiguredServiceMem  = ResourceDataReader.getServiceMinMemRequest(service);
+		Integer minConfiguredServiceCpu = ResourceDataReader.getServiceMinCpuRequest(service);
 		
 		//finally compute the score
 		if(maxServiceReservedMem!=null && maxServiceReservedCpu!=null && maxServiceUsedMem != null && maxServiceUsedCpu != null) {
@@ -253,12 +243,12 @@ public class ResourceSteadyServiceOptimiser {
 	
 	private void addSteadyServiceForHorizontalScaling(Instant timestamp, List<SteadyService> result, Service service, Map<String, String> serviceInitialConfigurationProperties, int slaViolationMonitoringPeriodSec) {
 		//get the resource requested
-		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service);
-		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service);
+		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
+		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
 		
 		//get the max resource used in the last period
-		Integer maxServiceUsedMem = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
-		Integer maxServiceUsedCpu = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
+		Integer maxServiceUsedMem = resourceDataReader.getServiceMaxMemUsedInPeriod(service, timestamp);
+		Integer maxServiceUsedCpu = resourceDataReader.getServiceMaxCpuUsedInPeriod(service, timestamp);
 
 		//finally compute the score
 		if(maxServiceReservedMem!=null && maxServiceReservedCpu!=null && maxServiceUsedMem != null && maxServiceUsedCpu != null) {

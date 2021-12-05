@@ -32,7 +32,7 @@ public class LogCleanerService {
 			
 			Event event = new Event();
 			event.setCategory("LogCleaner");
-			event.setDetails("started");
+			event.setDetails("monitoring started");
 			eventRepository.save(event);
 			
 			eventRepository.deleteOld(Instant.now().minusSeconds(REPORT_CLEAN_HOUR*60*60));

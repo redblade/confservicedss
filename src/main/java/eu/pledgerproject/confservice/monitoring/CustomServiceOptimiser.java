@@ -68,7 +68,7 @@ public class CustomServiceOptimiser {
 				//an event to track activities
 				Event event = new Event();
 				event.setCategory("CustomServiceOptimiser");
-				event.setDetails("started");
+				event.setDetails("monitoring started");
 				eventRepository.save(event);
 			}
 			

@@ -9,4 +9,6 @@ public enum SlaViolationStatus {
 	elab_no_action_needed,    //this means the SLA Violation has been verified and NO actions are necessary and no resources are needed
 	closed_critical,		  //this means the SLA Violation is considered in future DSS decisions
 	closed_not_critical,	  //this means the SLA Violation is NOT considered in future DSS decisions
+	closed_just_updated,	  //this means the SLA Violation is NOT considered as the Service has been recently updated
+	closed_app_stop	          //this means the SLA Violation is closed because the Service was stopped
 }

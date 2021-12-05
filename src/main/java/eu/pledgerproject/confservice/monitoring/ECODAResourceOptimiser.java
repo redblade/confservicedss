@@ -195,8 +195,8 @@ public class ECODAResourceOptimiser {
 
 			List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampSteady);
 			if(service.getLastChangedStatus().isBefore(timestampSteady) && slaViolationCriticalList.size() == 0) {
-				int minCpuRequest = ResourceDataReader.getServiceInitialMinCpuRequest(service);
-				int minMemRequest = ResourceDataReader.getServiceInitialMinMemRequest(service);
+				int minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
+				int minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 				
 				int cpuRequestTemp = (int) (result[0] * (100.0 - autoscalePercentageInt)/100.0);
 				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageInt)/100.0); 

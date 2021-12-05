@@ -23,6 +23,7 @@ import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.ServiceReport;
 import eu.pledgerproject.confservice.domain.enumeration.DeployType;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
+import eu.pledgerproject.confservice.domain.enumeration.ManagementType;
 import eu.pledgerproject.confservice.repository.AppRepository;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.NodeRepository;
@@ -84,19 +85,20 @@ public class ServiceMonitor {
 
 			Event event = new Event();
 			event.setCategory("ServiceMonitor");
-			event.setDetails("started");
+			event.setDetails("monitoring started");
 			eventRepository.save(event);
 			Instant timestamp = Instant.now().minusSeconds(60);
 			for(Service service : serviceRepository.findAllOldRunning(timestamp)) {
-					
-				if(service.getDeployType().equals(DeployType.KUBERNETES)){
-					Node currentNode = resourceDataReader.getCurrentNode(service);
-					
-					if(currentNode != null) {
-						Infrastructure infrastructure = currentNode.getInfrastructure();
+				if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
+					if(service.getDeployType().equals(DeployType.KUBERNETES)){
+						Node currentNode = resourceDataReader.getCurrentNode(service);
 						
-						updateServiceRuntimeData(infrastructure, service);
-						updateStartupTimes(infrastructure, service);
+						if(currentNode != null) {
+							Infrastructure infrastructure = currentNode.getInfrastructure();
+							
+							updateServiceRuntimeData(infrastructure, service);
+							updateStartupTimes(infrastructure, service);
+						}
 					}
 				}
 			}

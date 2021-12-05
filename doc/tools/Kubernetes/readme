@@ -1,3 +1,8 @@
+HOWTO create secrets from configfiles
+kubectl create secret generic my-secret --from-file=my-file-name=path/to/myfile
+eg. kubectl create secret generic kubeconfig-xxx --from-file=pledger-xxx.kubeconfig=/var/kubeconfig_xxx/pledger-xxx.kubeconfig
+
+
 HOWTO get secrets from service account
 
 export sa=$1

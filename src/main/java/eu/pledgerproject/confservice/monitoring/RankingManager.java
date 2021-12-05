@@ -39,8 +39,6 @@ public class RankingManager {
 		return result;
     }
     
-	
-
 	/*
 	 * it returns the best ranking possible (and associated set of nodes) which can host the requested resources.
 	 * The priority requested by the SP is used to FIRST choose a set of nodes, then they are filtered according to the Performance.

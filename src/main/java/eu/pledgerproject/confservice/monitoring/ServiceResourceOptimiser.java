@@ -1,5 +1,6 @@
 package eu.pledgerproject.confservice.monitoring;
 
+import java.time.Instant;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 public class ServiceResourceOptimiser {
     private final Logger log = LoggerFactory.getLogger(ServiceResourceOptimiser.class);
     
-    public static final String RESOURCE_USAGE_CATEGORY = "resource-usage";
+    public static final String RESOURCE_USAGE_CATEGORY = "resource-used";
     public static int SCORE_THRESHOLD = 100;
     
     public static final String SCALING_HORIZONTAL = "horizontal";
@@ -58,9 +59,13 @@ public class ServiceResourceOptimiser {
 		Map<String, String> serviceProviderPreferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
 		String autoscalePercentage = serviceProviderPreferences.get("autoscale.percentage");
 		
+    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
+		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
+
 		//get max resource requests for the current service
-		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service);
-		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service);
+		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
+		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
 		
 		if(maxServiceReservedMem != null && maxServiceReservedCpu != null) {
 			
@@ -126,9 +131,13 @@ public class ServiceResourceOptimiser {
 		String replicasString = ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
 		int replicas = replicasString == null ? 1 : Integer.parseInt(replicasString);
 		
+    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
+		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
+
 		//get max resource requests for the current service
-		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service) * replicas;
-		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service) * replicas;
+		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp) * replicas;
+		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp) * replicas;
 
 		int newMemRequested = maxServiceReservedMem*replicas;
 		int newCpuRequested = maxServiceReservedCpu*replicas;

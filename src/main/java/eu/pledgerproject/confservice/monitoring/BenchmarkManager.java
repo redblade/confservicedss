@@ -120,8 +120,8 @@ public class BenchmarkManager {
 			}
 		}
 
-		//IF NOT, we return the Node with more capacity left
-		Node nodeFound = resourceDataReader.getNodeWithMoreCapacityLeft(nodeSet);
+		//IF NOT, we return the Node with more availability
+		Node nodeFound = resourceDataReader.getNodeWithMoreAvailability(nodeSet);
 		
 		log.info("Found best node using remaining capacity. Node: " + nodeFound.getName());
 		

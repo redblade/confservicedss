@@ -367,7 +367,7 @@ public class PrometheusReaderKubernetes {
 								serviceReport.setTimestamp(timestamp);
 								serviceReport.setService(serviceFound);
 								serviceReport.setKey(key);
-								serviceReport.setCategory("resource-usage");
+								serviceReport.setCategory(RESOURCE_USED);
 								serviceReport.setGroup(appGroup);
 								serviceReport.setValue(formattedMetricApp.get(key));
 								serviceReportRepository.save(serviceReport);

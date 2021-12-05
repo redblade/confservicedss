@@ -18,7 +18,6 @@ import eu.pledgerproject.confservice.domain.ServiceReport;
 import eu.pledgerproject.confservice.repository.NodeReportRepository;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
-import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 
 @Component
@@ -26,7 +25,6 @@ public class ResourceDataReader {
     
 	private final NodeReportRepository nodeReportRepository;
 	private final NodeRepository nodeRepository;
-	private final ServiceRepository serviceRepository;
 	private final ServiceReportRepository serviceReportRepository;
 	
 	public static String MAX_REQUEST_LABEL = "max_request";
@@ -34,10 +32,9 @@ public class ResourceDataReader {
 	
 	public static final int PERCENTAGE_USED_IF_NO_DATA = 10;
 	
-	public ResourceDataReader(NodeReportRepository nodeReportRepository, NodeRepository nodeRepository, ServiceRepository serviceRepository, ServiceReportRepository serviceReportRepository) {
+	public ResourceDataReader(NodeReportRepository nodeReportRepository, NodeRepository nodeRepository, ServiceReportRepository serviceReportRepository) {
 		this.nodeReportRepository = nodeReportRepository;
 		this.nodeRepository = nodeRepository; 
-		this.serviceRepository = serviceRepository;
 		this.serviceReportRepository = serviceReportRepository;
 	}
 	
@@ -64,20 +61,13 @@ public class ResourceDataReader {
 		String scaling = serviceInitialConfigurationProperties.get("scaling");
 
 		//get the max resource reserved
-		Integer maxServiceReservedMem = getServiceMaxResourceReservedMemSoFar(service);
-		Integer maxServiceReservedCpu = getServiceMaxResourceReservedCpuSoFar(service);
+		Integer maxServiceReservedMem = getServiceMaxResourceReservedMemInPeriod(service, timestamp);
+		Integer maxServiceReservedCpu = getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
 		
 		//get the max resource used in the last period
-		Integer maxServiceUsedMem = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
-		Integer maxServiceUsedCpu = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
+		Integer maxServiceUsedMem = getServiceMaxMemUsedInPeriod(service, timestamp);
+		Integer maxServiceUsedCpu = getServiceMaxCpuUsedInPeriod(service, timestamp);
 
-		if(maxServiceUsedMem == null) {
-			maxServiceUsedMem = maxServiceReservedMem/2;
-		}
-		if(maxServiceUsedCpu == null) {
-			maxServiceUsedCpu = maxServiceReservedCpu/2;
-		}
-	
 		if(ServiceResourceOptimiser.SCALING_VERTICAL.equals(scaling)) {			
 			//compute percentage of resources used
 			int percMemUsed =  (int) (100.0 * maxServiceUsedMem / (maxServiceReservedMem));
@@ -119,9 +109,13 @@ public class ResourceDataReader {
 	}
 	
 	public Integer getServiceStartupTimeSec(Service service) {
-		List<ServiceReport> serviceReportStartupTime = serviceReportRepository.findServiceReportByServiceIdCategoryName(service.getId(), ServiceMonitor.STARTUP_TIME, ServiceMonitor.KEY);
+    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
+		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
 
-		Integer result = 0; try{result = serviceReportStartupTime.get(0).getValue().intValue();}catch(Exception e) {}
+		List<ServiceReport> serviceReportStartupTime = serviceReportRepository.findServiceReportByServiceIdCategoryNameInPeriod(service.getId(), ServiceMonitor.STARTUP_TIME, ServiceMonitor.KEY, timestamp);
+
+		Integer result = 1000; try{result = serviceReportStartupTime.get(0).getValue().intValue();}catch(Exception e) {}
 		return result;
 	}
 	
@@ -136,27 +130,57 @@ public class ResourceDataReader {
 		return result;
 	}
 	
-	public static int getServiceInitialMinCpuRequest(Service service) {
+	public static int getServiceInitialCpuRequest(Service service) {
 		int result = 0; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_CPU_MILLICORE));}catch(Exception e) {}
+		return result;
+	}
+	public static int getServiceInitialMemRequest(Service service) {
+		int result = 0; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_MEMORY_MB));}catch(Exception e) {}
+		return result;
+	}
+	public static Integer getServiceMinCpuRequest(Service service) {
+		Integer result = 0; 
 		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.MIN_CPU_MILLICORE));}catch(Exception e) {}
 		return result;
 	}
-	public static int getServiceInitialMinMemRequest(Service service) {
-		int result = 0; 
+	public static Integer getServiceMinMemRequest(Service service) {
+		Integer result = 0; 
 		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.MIN_MEMORY_MB));}catch(Exception e) {}
 		return result;
 	}
-
-	public Integer getServiceMaxResourceReservedMemSoFar(Service service) {
-		List<ServiceReport> serviceReportMem = serviceReportRepository.findServiceReportByServiceIdCategoryName(service.getId(), MAX_REQUEST_LABEL, MonitoringService.MEMORY_LABEL);
-
-		Integer result = null; try{result = serviceReportMem.get(0).getValue().intValue();}catch(Exception e) {}
+	public Integer getServiceMaxCpuUsedInPeriod(Service service, Instant timestamp) {
+		Integer result = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
+		if(result == null) {
+			result = ResourceDataReader.getServiceMinCpuRequest(service);
+		}
 		return result;
 	}
-	public Integer getServiceMaxResourceReservedCpuSoFar(Service service) {
-		List<ServiceReport> serviceReportCpu = serviceReportRepository.findServiceReportByServiceIdCategoryName(service.getId(), MAX_REQUEST_LABEL, MonitoringService.CPU_LABEL);
+	public Integer getServiceMaxMemUsedInPeriod(Service service, Instant timestamp) {
+		Integer result = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
+		if(result == null) {
+			result = ResourceDataReader.getServiceMinMemRequest(service);
+		}
+		return result;
+	}
+
+	public Integer getServiceMaxResourceReservedCpuInPeriod(Service service, Instant timestamp) {
+		List<ServiceReport> serviceReportCpu = serviceReportRepository.findServiceReportByServiceIdCategoryNameInPeriod(service.getId(), MAX_REQUEST_LABEL, MonitoringService.CPU_LABEL, timestamp);
 		
 		Integer result = null; try{result = serviceReportCpu.get(0).getValue().intValue();}catch(Exception e) {}
+		if(result == null) {
+			result = ResourceDataReader.getServiceInitialCpuRequest(service);
+		}
+		return result;
+	}
+	public Integer getServiceMaxResourceReservedMemInPeriod(Service service, Instant timestamp) {
+		List<ServiceReport> serviceReportMem = serviceReportRepository.findServiceReportByServiceIdCategoryNameInPeriod(service.getId(), MAX_REQUEST_LABEL, MonitoringService.MEMORY_LABEL, timestamp);
+
+		Integer result = null; try{result = serviceReportMem.get(0).getValue().intValue();}catch(Exception e) {}
+		if(result == null) {
+			result = ResourceDataReader.getServiceInitialMemRequest(service);
+		}
 		return result;
 	}
 	
@@ -171,29 +195,22 @@ public class ResourceDataReader {
 		return capacityCpuMem;
 	}
 	
-	public Map<Node, Integer[]> getTotalNodeCapacityCpuMemLeft(Collection<Node> nodeSet) {
-		Map<Node, Integer[]> capacityCpuMemLeft = new HashMap<Node, Integer[]>();
+	public Map<Node, Integer[]> getTotalNodeAvailabilityCpuMem(Collection<Node> nodeSet) {
+		Map<Node, Integer[]> result = new HashMap<Node, Integer[]>();
 		for(Node node : nodeSet) {
 			int totalCapacityCpu = getNodeCpuCapacityMillicore(node);
 			int totalCapacityMem = getNodeMemCapacityMb(node);
-			capacityCpuMemLeft.put(node, new Integer[] {totalCapacityCpu, totalCapacityMem});
+			int totalAvailabilityCpu = totalCapacityCpu - getNodeCpuUsedMillicore(node);
+			int totalAvailabilityMem = totalCapacityMem - getNodeMemUsedMb(node);
+			
+			result.put(node, new Integer[] {totalAvailabilityCpu, totalAvailabilityMem});
 		}
-		for(Service service : serviceRepository.findAllRunning()) {
-			Node currentNode = getCurrentNode(service);
-			int usedCapacityCpu = getServiceRuntimeCpuRequest(service);
-			int usedCapacityMem = getServiceRuntimeMemRequest(service);
-			Integer[] capacityLeft = capacityCpuMemLeft.get(currentNode);
-			if(capacityLeft != null) {
-				capacityLeft[0] = capacityLeft[0] - usedCapacityCpu < 0 ? 0 :capacityLeft[0] - usedCapacityCpu;
-				capacityLeft[1] = capacityLeft[1] - usedCapacityMem < 0 ? 0 :capacityLeft[1] - usedCapacityMem;
-				
-			}
-		}
-		return capacityCpuMemLeft;
+		
+		return result;
 	}
 	
-	public Node getNodeWithMoreCapacityLeft(Set<Node> nodeSet) {
-		Map<Node, Integer[]> capacityCpuMemLeft = getTotalNodeCapacityCpuMemLeft(nodeSet);
+	public Node getNodeWithMoreAvailability(Set<Node> nodeSet) {
+		Map<Node, Integer[]> capacityCpuMemLeft = getTotalNodeAvailabilityCpuMem(nodeSet);
 		Node resultFound = null;
 		int maxCpuFound = 0;
 		int maxMemFound = 0;
@@ -214,7 +231,7 @@ public class ResourceDataReader {
 		return result;
 	}
 	public int getNodeCpuUsedMillicore(Node node) {
-		List<NodeReport> nodeReportList = nodeReportRepository.findNodeResourceUsedByIdAndKey(node.getId(), MonitoringService.CPU_LABEL);
+		List<NodeReport> nodeReportList = nodeReportRepository.findNodeReportByNodeIdAndKey(node.getId(), MonitoringService.CPU_LABEL);
 		
 		int result = 0; 
 		try{
@@ -238,7 +255,7 @@ public class ResourceDataReader {
 	}
 	
 	public int getNodeMemUsedMb(Node node) {
-		List<NodeReport> nodeReportList = nodeReportRepository.findNodeResourceUsedByIdAndKey(node.getId(), MonitoringService.MEMORY_LABEL);
+		List<NodeReport> nodeReportList = nodeReportRepository.findNodeReportByNodeIdAndKey(node.getId(), MonitoringService.MEMORY_LABEL);
 		
 		int result = 0; 
 		try{

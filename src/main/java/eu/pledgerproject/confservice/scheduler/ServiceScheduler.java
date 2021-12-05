@@ -18,6 +18,7 @@ import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Project;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceReport;
+import eu.pledgerproject.confservice.domain.SlaViolation;
 import eu.pledgerproject.confservice.domain.SteadyService;
 import eu.pledgerproject.confservice.domain.enumeration.DeployType;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
@@ -29,10 +30,12 @@ import eu.pledgerproject.confservice.monitoring.DeploymentOptionsManager;
 import eu.pledgerproject.confservice.monitoring.MonitoringService;
 import eu.pledgerproject.confservice.monitoring.RankingManager;
 import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
+import eu.pledgerproject.confservice.monitoring.SlaViolationStatus;
 import eu.pledgerproject.confservice.repository.CriticalServiceRepository;
 import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
+import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.repository.SteadyServiceRepository;
 
 @org.springframework.stereotype.Service
@@ -67,7 +70,9 @@ public class ServiceScheduler {
 	private final RankingManager rankingManager;
 	private final PublisherOrchestrationUpdate publisherOrchestrationUpdate;
 	private final BenchmarkManager benchmarkManager;
-	public ServiceScheduler(DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager) {
+	private final SlaViolationRepository slaViolationRepository;
+	
+	public ServiceScheduler(DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager, SlaViolationRepository slaViolationRepository) {
 		this.deploymentOptionsManager = deploymentOptionsManager;
 		this.projectRepository = projectRepository;
 		this.serviceRepository = serviceRepository;
@@ -79,6 +84,7 @@ public class ServiceScheduler {
 		this.rankingManager = rankingManager;
 		this.publisherOrchestrationUpdate = publisherOrchestrationUpdate;
 		this.benchmarkManager = benchmarkManager;
+		this.slaViolationRepository = slaViolationRepository;
 
 	}
 	
@@ -198,13 +204,18 @@ public class ServiceScheduler {
 				if(project.isPresent()) {
 					String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
 
+			    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
+			    	int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+					Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
+
+					
 					//save resources and replicas in initConfiguration
 					Map<String, String> initialConfigurationMap = ConverterJSON.convertToMap(service.getInitialConfiguration());
-					Integer serviceMaxResourceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service);
+					Integer serviceMaxResourceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
 					if(serviceMaxResourceReservedCpu != null) {
 						initialConfigurationMap.put(MonitoringService.INITIAL_CPU_MILLICORE, ""+serviceMaxResourceReservedCpu);
 					}
-					Integer serviceMaxResourceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service);
+					Integer serviceMaxResourceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
 					if(serviceMaxResourceReservedMem != null) {
 						initialConfigurationMap.put(MonitoringService.INITIAL_MEMORY_MB, ""+serviceMaxResourceReservedMem);
 					}
@@ -250,6 +261,10 @@ public class ServiceScheduler {
 					Optional<CriticalService> criticalServiceDB = criticalServiceRepository.getByServiceID(service.getId());
 					if(criticalServiceDB.isPresent()) {
 						criticalServiceRepository.delete(criticalServiceDB.get());
+					}
+					for(SlaViolation slaViolation : slaViolationRepository.findAllNotClosed(service)) {
+						slaViolation.setStatus(SlaViolationStatus.closed_app_stop.name());
+						slaViolationRepository.save(slaViolation);
 					}
 				}
 		}
@@ -353,24 +368,28 @@ public class ServiceScheduler {
 	public Node migrateToRanking(Service service, boolean isBetterRanking) {
 		Node bestNode = null;
 		
+    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
+    	int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
+		
 		//get max resource requests for the current service
-		Integer requestMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(service);
-		Integer requestCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service);
+		Integer maxRequestMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
+		Integer maxRequestCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
 
 		//compute the currentRanking
-		SortedMap<Integer, Set<Node>> rankingMap = rankingManager.getAvailableRankingMapForRequestedResources(service, requestCpu, requestMem);
+		SortedMap<Integer, Set<Node>> rankingMap = rankingManager.getAvailableRankingMapForRequestedResources(service, maxRequestCpu, maxRequestMem);
 		int currentRanking = deploymentOptionsManager.getRankingInDeploymentOptions(service.getId());
 
 		//do the offload to the next better/worse ranking IF it exists (eg. currentRanking is 4: better means 3, if no priority like that exists, it does nothing
 		if(isBetterRanking && rankingMap.containsKey(currentRanking-1)) {
 			Set<Node> nodeSet = rankingMap.get(currentRanking-1);
 			bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeSet);
-			migrate(service, bestNode, requestCpu, requestMem);
+			migrate(service, bestNode, maxRequestCpu, maxRequestMem);
 		}
 		else if(!isBetterRanking && rankingMap.containsKey(currentRanking+1)) {
 			Set<Node> nodeSet = rankingMap.get(currentRanking+1);
 			bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeSet);
-			migrate(service, bestNode, requestCpu, requestMem);
+			migrate(service, bestNode, maxRequestCpu, maxRequestMem);
 		}
 		
 		return bestNode;
@@ -395,10 +414,14 @@ public class ServiceScheduler {
 							Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
 							if(project.isPresent()) {
 		
+						    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
+						    	int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+								Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
+
 								//save resources and replicas in initConfiguration
 								Map<String, String> initialConfigurationMap = ConverterJSON.convertToMap(service.getInitialConfiguration());
-								initialConfigurationMap.put(MonitoringService.INITIAL_CPU_MILLICORE, ""+resourceDataReader.getServiceMaxResourceReservedCpuSoFar(service));
-								initialConfigurationMap.put(MonitoringService.INITIAL_MEMORY_MB, ""+resourceDataReader.getServiceMaxResourceReservedMemSoFar(service));
+								initialConfigurationMap.put(MonitoringService.INITIAL_CPU_MILLICORE, ""+resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp));
+								initialConfigurationMap.put(MonitoringService.INITIAL_MEMORY_MB, ""+resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp));
 								
 								String replicasFromRuntimeConfiguration = (String) ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
 								initialConfigurationMap.put("replicas", replicasFromRuntimeConfiguration);

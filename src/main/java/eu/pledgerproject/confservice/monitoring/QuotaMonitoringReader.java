@@ -35,13 +35,15 @@ public class QuotaMonitoringReader {
 	private final InfrastructureReportRepository infrastructureReportRepository;
 	private final ServiceRepository serviceRepository;
 	private final ResourceDataReader resourceDataReader;
+	private final DeploymentOptionsManager deploymentOptionsManager;
 	private final EventRepository eventRepository;
 
-	public QuotaMonitoringReader(ProjectRepository projectRepository, InfrastructureReportRepository infrastructureReportRepository, ServiceRepository serviceRepository, ResourceDataReader resourceDataReader, EventRepository eventRepository) {
+	public QuotaMonitoringReader(ProjectRepository projectRepository, InfrastructureReportRepository infrastructureReportRepository, ServiceRepository serviceRepository, ResourceDataReader resourceDataReader, DeploymentOptionsManager deploymentOptionsManager, EventRepository eventRepository) {
 		this.projectRepository = projectRepository;
 		this.infrastructureReportRepository = infrastructureReportRepository;
 		this.serviceRepository = serviceRepository;
 		this.resourceDataReader = resourceDataReader;
+		this.deploymentOptionsManager = deploymentOptionsManager;
 		this.eventRepository = eventRepository;
 	}
 	
@@ -72,11 +74,25 @@ public class QuotaMonitoringReader {
 		return result;
 	}
 	
+	public Integer[] getRemainingCapacityForSPCurrentRankingNodes(ServiceProvider serviceProvider, Service service) {
+		Set<Node> currentRankingNodeSet = deploymentOptionsManager.getCurrentNodeSet(service.getId());
+		if(currentRankingNodeSet != null) {
+			return getRemainingCapacityForSPOnNodes(serviceProvider, currentRankingNodeSet);
+		}
+		else {
+			String errorMessage = "Service " + service.getName() + " does not have a currentRanking";
+			log.error(errorMessage);
+			saveErrorEvent(errorMessage);
+			return new Integer[] {0, 0};
+		}
+	}
+	
 	public Integer[] getRemainingCapacityForSPOnNodes(ServiceProvider serviceProvider, Collection<Node> nodeSet) {
 		int cpu = 0;
 		int mem = 0;
 
-		Map<Node, Integer[]> nodesCapacityLeft = resourceDataReader.getTotalNodeCapacityCpuMemLeft(nodeSet);		
+		//this is the actual Node capacity left
+		Map<Node, Integer[]> nodesCapacityLeft = resourceDataReader.getTotalNodeAvailabilityCpuMem(nodeSet);		
 		for(Node node : nodeSet) {
 			Integer[] nodeCapacityLeft = nodesCapacityLeft.get(node);
 			cpu +=nodeCapacityLeft[0];
@@ -85,6 +101,8 @@ public class QuotaMonitoringReader {
 
 		Infrastructure infrastructure = nodeSet.iterator().next().getInfrastructure();
 		Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(serviceProvider.getId(), infrastructure.getId());
+		
+		//if a project exists AND there are quotas, then the SP capacity left is based on the quota actually used. Then the min(quota used, node capacity left) is returned
 		if(project.isPresent() && project.get().getQuotaCpuMillicore() > 0 && project.get().getQuotaMemMB() > 0) {
 			int serviceProviderCapacityCPU = project.get().getQuotaCpuMillicore();
 			int serviceProviderCapacityMEM = project.get().getQuotaMemMB();
@@ -97,6 +115,7 @@ public class QuotaMonitoringReader {
 			cpu = Math.min(cpu, serviceProviderRemainingCPU);
 			mem = Math.min(mem, serviceProviderRemainingMEM);
 		}
+
 		return new Integer[] {cpu, mem};
 	}
 	

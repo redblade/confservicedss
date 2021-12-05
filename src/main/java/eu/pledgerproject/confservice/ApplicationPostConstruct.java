@@ -27,7 +27,7 @@ public class ApplicationPostConstruct {
 		eventRepository.deleteAll();
 		Event event = new Event();
 		event.setCategory("Init");
-		event.setDetails("started");
+		event.setDetails("Main controllers started");
 		eventRepository.save(event);
 		
 		if(ControlFlags.READ_ONLY_MODE_ENABLED) {

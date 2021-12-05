@@ -37,7 +37,7 @@ public interface NodeReportRepository extends JpaRepository<NodeReport, Long> {
 	Page<NodeReport> findAllAuthorizedIP(Pageable pageable, @Param("infrastructureProviderName") String infrastructureProviderName, @Param("categoryFilter") String categoryFilter);
 
 	@Query(value = "select nodeReport from NodeReport nodeReport where nodeReport.node.id = :nodeId and nodeReport.key = :key order by nodeReport.id desc")
-	List<NodeReport> findNodeResourceUsedByIdAndKey(@Param("nodeId") Long nodeId, @Param("key") String key);
+	List<NodeReport> findNodeReportByNodeIdAndKey(@Param("nodeId") Long nodeId, @Param("key") String key);
 
 	@Query(value = "select nodeReport from NodeReport nodeReport where nodeReport.key = 'latency' and nodeReport.node is not null and nodeReport.node in :nodeListSrc and nodeReport.nodeDestination is not null and nodeReport.nodeDestination in :nodeListDst and nodeReport.timestamp > :timestamp")
 	List<NodeReport> getAverageLatencyAmongTwoNodeGroups(@Param("nodeListSrc") Set<Node> nodeListSrc, @Param("nodeListDst") Set<Node> nodeListDst, @Param("timestamp") Instant timestamp);

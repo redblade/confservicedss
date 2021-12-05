@@ -68,7 +68,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 13), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-usage' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
+          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 13), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-used' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
           "refId": "A",
           "select": [
             [
@@ -97,7 +97,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 13), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-usage' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
+          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 13), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-used' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
           "refId": "B",
           "select": [
             [
@@ -212,7 +212,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 16), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-usage' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
+          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 16), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-used' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
           "refId": "A",
           "select": [
             [
@@ -241,7 +241,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 16), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-usage' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
+          "rawSql": "select UNIX_TIMESTAMP(STR_TO_DATE(substring(b.timestamp,1, 16), '%Y-%m-%d %H:%i:%s')) as time ,concat(a.name,' [cpu_millicore]'),round(avg(b.value)) as 'cpu_millicore' from service a,service_report b where a.id = b.service_id and b.category='resource-used' and jhi_key='cpu_millicore' group by time, a.name order by 1 asc,2,3",
           "refId": "B",
           "select": [
             [

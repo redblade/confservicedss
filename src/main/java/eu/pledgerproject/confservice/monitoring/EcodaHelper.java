@@ -175,17 +175,21 @@ public class EcodaHelper {
 	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnEdge, int edgeTotalCpu4SP, int edgeTotalMem4SP) {
 		double score = 0.0;
 
+    	Map<String, String> preferences = ConverterJSON.convertToMap(serviceData.service.getApp().getServiceProvider().getPreferences());
+		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
+		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
+		
 		Node currentNode = resourceDataReader.getCurrentNode(serviceData.service);
 		if(currentNode != null) {
-			int serviceRequestCpu = resourceDataReader.getServiceMaxResourceReservedCpuSoFar(serviceData.service);
-			int serviceRequestMem = resourceDataReader.getServiceMaxResourceReservedMemSoFar(serviceData.service);
+			int serviceRequestCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(serviceData.service, timestamp);
+			int serviceRequestMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(serviceData.service, timestamp);
 
 			double tN = 1.0 * serviceRequestCpu / edgeTotalCpu4SP + 1.0 * serviceRequestMem / edgeTotalMem4SP;
 			double wN = tN / serviceData.priority; 
 			double instantiationN_ms = resourceDataReader.getServiceStartupTimeSec(serviceData.service) * 1000;
 			
-			Instant timestamp = Instant.now().minusSeconds(LATENCY_CHECK_PERIOD_SEC);
-			long latencyN_ms = goldPingerReader.getAverageLatencyAmongTwoNodeGroups(currentNode, nodeSetOnEdge, timestamp);
+			Instant timestampLatency = Instant.now().minusSeconds(LATENCY_CHECK_PERIOD_SEC);
+			long latencyN_ms = goldPingerReader.getAverageLatencyAmongTwoNodeGroups(currentNode, nodeSetOnEdge, timestampLatency);
 			
 			long loadingN_ms = 0; //we assume images are already in the node, so it is 0
 			score = wN * (instantiationN_ms + (latencyN_ms + loadingN_ms) * (1 - 2/tN));
