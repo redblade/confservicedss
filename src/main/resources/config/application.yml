@@ -147,8 +147,8 @@ jhipster:
   swagger:
     default-include-pattern: /api/(app|benchmark|catalog|critical-service|event|guarantees|infrastructure|node|project|service|sla|steady-service).*
     #default-include-pattern: /api/app-constraints.*
-    title: confservice API
-    description: confservice API documentation
+    title: confservicedss API
+    description: confservicedss API documentation
     version: 2.4.8
     terms-of-service-url:
     contact-name:

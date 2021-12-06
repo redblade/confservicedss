@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import eu.pledgerproject.confservice.domain.Benchmark;
 import eu.pledgerproject.confservice.domain.BenchmarkReport;
 import eu.pledgerproject.confservice.domain.Node;
 
@@ -32,6 +33,10 @@ public interface BenchmarkReportRepository extends JpaRepository<BenchmarkReport
 
 	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.name = :benchmarkName and benchmarkReport.metric = :metric and benchmarkReport.time > :timestamp group by benchmarkReport.node having benchmarkReport.node in :nodeSet")
 	List<Object> findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndTimestampAndNodeSet(@Param("benchmarkName") String benchmarkName, @Param("metric") String metric, @Param("timestamp") Instant timestamp, @Param("nodeSet") Set<Node> nodeSet);
+
+	@Query(value = "select benchmarkReport.benchmark, benchmarkReport.node, max(benchmarkReport.mean) from BenchmarkReport benchmarkReport where benchmarkReport.metric = :metric and benchmarkReport.time > :timestamp group by benchmarkReport.benchmark,benchmarkReport.node having benchmarkReport.benchmark in :benchmarkSet")
+	List<Object> findBenchmarkNodeMeanFromBenchmarkReportMetricAndTimestampAndBenchmarkList(@Param("metric") String metric, @Param("timestamp") Instant timestamp, @Param("benchmarkSet") List<Benchmark> benchmarkList);
+
 	
 	@Modifying
 	@Query(value = "delete from BenchmarkReport benchmarkReport where benchmarkReport.time < :timestamp")

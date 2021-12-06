@@ -99,6 +99,10 @@ import { RouterModule } from '@angular/router';
         path: 'service-optimisation',
         loadChildren: () => import('./service-optimisation/service-optimisation.module').then(m => m.ConfserviceServiceOptimisationModule),
       },
+      {
+        path: 'benchmark-summary',
+        loadChildren: () => import('./benchmark-summary/benchmark-summary.module').then(m => m.ConfserviceBenchmarkSummaryModule),
+      },
       /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
     ]),
   ],

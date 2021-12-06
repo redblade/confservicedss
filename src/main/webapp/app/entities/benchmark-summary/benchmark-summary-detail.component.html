@@ -1,0 +1,36 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="benchmarkSummary">
+            <h2><span>Benchmark Summary</span> {{ benchmarkSummary.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Score</span></dt>
+                <dd>
+                    <span>{{ benchmarkSummary.score }}</span>
+                </dd>
+                <dt><span>Node</span></dt>
+                <dd>
+                    <div *ngIf="benchmarkSummary.node">
+                        <a [routerLink]="['/node', benchmarkSummary.node?.id, 'view']">{{ benchmarkSummary.node?.name }}</a>
+                    </div>
+                </dd>
+                <dt><span>Benchmark</span></dt>
+                <dd>
+                    <div *ngIf="benchmarkSummary.benchmark">
+                        <a [routerLink]="['/benchmark', benchmarkSummary.benchmark?.id, 'view']">{{ benchmarkSummary.benchmark?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+        </div>
+    </div>
+</div>

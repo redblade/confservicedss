@@ -95,6 +95,13 @@
                             <span>Benchmark Report</span>
                         </a>
                     </li>
+                    <li *jhiHasAnyAuthority="['ROLE_SP','ROLE_IP']">
+                        <a class="dropdown-item" routerLink="benchmark-summary" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                            <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
+                            <span>Benchmark Summary</span>
+                        </a>
+                    </li>
+                    
                 </ul>
              </li>
              <li *ngSwitchCase="true" ngbDropdown class="nav-item dropdown pointer" display="dynamic" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">

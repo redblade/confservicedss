@@ -1,0 +1,36 @@
+{
+  "fluentMethods": true,
+  "clientRootFolder": "",
+  "relationships": [
+    {
+      "relationshipName": "node",
+      "otherEntityName": "node",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": [],
+      "otherEntityField": "name",
+      "otherEntityRelationshipName": "benchmarkSummary"
+    },
+    {
+      "relationshipName": "benchmark",
+      "otherEntityName": "benchmark",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "name",
+      "otherEntityRelationshipName": "benchmarkSummary"
+    }
+  ],
+  "fields": [
+    {
+      "fieldName": "score",
+      "fieldType": "Double"
+    }
+  ],
+  "changelogDate": "20211206134437",
+  "dto": "no",
+  "searchEngine": false,
+  "service": "no",
+  "entityTableName": "benchmark_summary",
+  "databaseType": "sql",
+  "readOnly": true,
+  "jpaMetamodelFiltering": false,
+  "pagination": "pagination"
+}

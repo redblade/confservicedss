@@ -1,0 +1,51 @@
+<div>
+    <h2 id="page-heading">
+        <span>Benchmark Summary</span>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+    <div class="alert alert-warning" id="no-result" *ngIf="benchmarkSummaries?.length === 0">
+        <span>No benchmarkSummary found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="benchmarkSummaries && benchmarkSummaries.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="id"><span>Id</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="benchmark.name"><span>Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="node.name"><span>Node</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="score"><span>Score</span> <fa-icon icon="sort"></fa-icon></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let benchmarkSummary of benchmarkSummaries; trackBy: trackId">
+                    <td>{{ benchmarkSummary.id }}</td>
+                    <td>
+                        <div *ngIf="benchmarkSummary.benchmark">
+                            <a [routerLink]="['/benchmark', benchmarkSummary.benchmark?.id, 'view']" >{{ benchmarkSummary.benchmark?.name }}</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div *ngIf="benchmarkSummary.node">
+                            <a [routerLink]="['/node', benchmarkSummary.node?.id, 'view']" >{{ benchmarkSummary.node?.name }}</a>
+                        </div>
+                    </td>
+                    <td>{{ benchmarkSummary.score }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="benchmarkSummaries && benchmarkSummaries.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>
