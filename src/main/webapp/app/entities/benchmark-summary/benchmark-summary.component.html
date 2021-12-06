@@ -16,6 +16,7 @@
                 <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
                     <th scope="col"  jhiSortBy="id"><span>Id</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="benchmark.name"><span>Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="node.name"><span>Metric</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="node.name"><span>Node</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="score"><span>Score</span> <fa-icon icon="sort"></fa-icon></th>
                 </tr>
@@ -28,6 +29,7 @@
                             <a [routerLink]="['/benchmark', benchmarkSummary.benchmark?.id, 'view']" >{{ benchmarkSummary.benchmark?.name }}</a>
                         </div>
                     </td>
+                    <td>{{ benchmarkSummary.metric }}</td>
                     <td>
                         <div *ngIf="benchmarkSummary.node">
                             <a [routerLink]="['/node', benchmarkSummary.node?.id, 'view']" >{{ benchmarkSummary.node?.name }}</a>

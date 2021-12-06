@@ -1,0 +1,53 @@
+<div>
+    <h2 id="page-heading">
+        <span>Service -> Benchmark match</span>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="serviceBenchmarkMatches?.length === 0">
+        <span>No serviceBenchmarkMatches found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="serviceBenchmarkMatches && serviceBenchmarkMatches.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="service.name"><span>Service</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="benchmark.name"><span>Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="rationale"><span>Rationale</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let serviceBenchmarkMatch of serviceBenchmarkMatches ;trackBy: trackId">
+                    <td><a [routerLink]="['/service-benchmark-match', serviceBenchmarkMatch.id, 'view']">{{ serviceBenchmarkMatch.id }}</a></td>
+                    <td>
+                        <div *ngIf="serviceBenchmarkMatch.service">
+                            <a [routerLink]="['/service', serviceBenchmarkMatch.service?.id, 'view']" >{{ serviceBenchmarkMatch.service?.name }}</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div *ngIf="serviceBenchmarkMatch.benchmark">
+                            <a [routerLink]="['/benchmark', serviceBenchmarkMatch.benchmark?.id, 'view']" >{{ serviceBenchmarkMatch.benchmark?.name }}</a>
+                        </div>
+                    </td>
+                    <td>{{ serviceBenchmarkMatch.rationale }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="serviceBenchmarkMatches && serviceBenchmarkMatches.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>

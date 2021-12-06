@@ -1,0 +1,36 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="serviceBenchmarkMatch">
+            <h2><span>Service Benchmark Match</span> {{ serviceBenchmarkMatch.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Rationale</span></dt>
+                <dd>
+                    <span>{{ serviceBenchmarkMatch.rationale }}</span>
+                </dd>
+                <dt><span>Service</span></dt>
+                <dd>
+                    <div *ngIf="serviceBenchmarkMatch.service">
+                        <a [routerLink]="['/service', serviceBenchmarkMatch.service?.id, 'view']">{{ serviceBenchmarkMatch.service?.name }}</a>
+                    </div>
+                </dd>
+                <dt><span>Benchmark</span></dt>
+                <dd>
+                    <div *ngIf="serviceBenchmarkMatch.benchmark">
+                        <a [routerLink]="['/benchmark', serviceBenchmarkMatch.benchmark?.id, 'view']">{{ serviceBenchmarkMatch.benchmark?.name }}</a>
+                    </div>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+        </div>
+    </div>
+</div>

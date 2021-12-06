@@ -5,24 +5,26 @@ import java.io.Serializable;
 /**
  * A BenchmarkSummary.
  */
-public class BenchmarkSummary implements Serializable {
+public class BenchmarkSummary implements Serializable, Comparable<BenchmarkSummary> {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
     private Double score;
-
+    private String metric;
+    
     private Node node;
     private Benchmark benchmark;
     
     public BenchmarkSummary() {
     }
     
-    public BenchmarkSummary(Long id, Double score, Node node, Benchmark benchmark) {
+    public BenchmarkSummary(Long id, Double score, String metric, Node node, Benchmark benchmark) {
 		super();
 		this.id = id;
 		this.score = score;
+		this.metric = metric;
 		this.node = node;
 		this.benchmark = benchmark;
 	}
@@ -39,6 +41,13 @@ public class BenchmarkSummary implements Serializable {
 	}
 	public void setScore(Double score) {
 		this.score = score;
+	}
+
+	public String getMetric() {
+		return metric;
+	}
+	public void setMetric(String metric) {
+		this.metric = metric;
 	}
 
 	public Node getNode() {
@@ -77,8 +86,25 @@ public class BenchmarkSummary implements Serializable {
         return "Benchmark{" +
             "id=" + getId() +
             ", score='" + getScore() + "'" +
+            ", metric='" + getMetric() + "'" +
             ", node='" + getNode() + "'" +
             ", benchmark='" + getBenchmark() + "'" +
             "}";
     }
+
+	public int compareTo(BenchmarkSummary other) {
+		if(this.benchmark.getName().equals(other.benchmark.getName())) {
+			int scoreDiff = (int) (other.getScore() - this.getScore());
+			if(scoreDiff == 0) {
+				return this.node.getName().compareTo(other.node.getName());
+			}
+			else {
+				return scoreDiff;
+			}
+		}
+		else {
+			return this.benchmark.getName().compareTo(other.benchmark.getName());
+		}
+		
+	}
 }

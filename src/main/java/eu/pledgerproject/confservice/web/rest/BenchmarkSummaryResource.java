@@ -19,7 +19,7 @@ import eu.pledgerproject.confservice.service.BenchmarkSummaryService;
 import io.github.jhipster.web.util.PaginationUtil;
 
 /**
- * REST controller for managing {@link eu.pledgerproject.confservice.domain.Benchmark}.
+ * REST controller for managing {@link eu.pledgerproject.confservice.domain.BenchmarkSummary}.
  */
 @RestController
 @RequestMapping("/api")

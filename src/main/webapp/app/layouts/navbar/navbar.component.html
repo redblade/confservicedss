@@ -202,6 +202,13 @@
                             <span>Service Optimisation</span>
                         </a>
                     </li>
+                    <li *jhiHasAnyAuthority="['ROLE_SP']">
+                        <a class="dropdown-item" routerLink="service-benchmark-match" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                            <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
+                            <span>Service -> Benchmark</span>
+                        </a>
+                    </li>
+                    
                 	<li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="sla-violation" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>

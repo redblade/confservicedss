@@ -1,5 +1,6 @@
 package eu.pledgerproject.confservice.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -19,6 +20,9 @@ public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {
 	@Query(value = "select benchmark from Benchmark benchmark where benchmark.name =:name")
 	Optional<Benchmark> findByName(@Param("name") String name);
 
+	@Query(value = "select benchmark from Benchmark benchmark where benchmark.category like :category order by benchmark.name")
+	List<Benchmark> findByCategoryLike(@Param("category") String category);
+	
 	@Query(value = "select benchmark from Benchmark benchmark where benchmark.serviceProvider.name = :serviceProviderName")
 	Page<Benchmark> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 

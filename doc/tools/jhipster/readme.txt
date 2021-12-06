@@ -15,4 +15,8 @@ npm install -g jdlbridge
 #convert jdl in plantuml
 jdlbridge -u -f jhipster-jdl.jdl
 
+#add entity (eg. only client)
+jhipster entity <entityName> --[options]
+https://www.jhipster.tech/creating-an-entity/
+
 #view online at http://www.plantuml.com/ and download png

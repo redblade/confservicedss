@@ -3,36 +3,31 @@
   "clientRootFolder": "",
   "relationships": [
     {
-      "relationshipName": "node",
-      "otherEntityName": "node",
+      "relationshipName": "service",
+      "otherEntityName": "service",
       "relationshipType": "many-to-one",
-      "relationshipValidateRules": [],
       "otherEntityField": "name",
-      "otherEntityRelationshipName": "benchmarkSummary"
+      "otherEntityRelationshipName": "serviceBenchmarkMatch"
     },
     {
       "relationshipName": "benchmark",
       "otherEntityName": "benchmark",
       "relationshipType": "many-to-one",
       "otherEntityField": "name",
-      "otherEntityRelationshipName": "benchmarkSummary"
+      "otherEntityRelationshipName": "serviceBenchmarkMatch"
     }
   ],
   "fields": [
     {
-      "fieldName": "score",
-      "fieldType": "Double"
-    },
-    {
-      "fieldName": "metric",
+      "fieldName": "rationale",
       "fieldType": "String"
     }
   ],
-  "changelogDate": "20211206134437",
+  "changelogDate": "20211206172502",
   "dto": "no",
   "searchEngine": false,
   "service": "no",
-  "entityTableName": "benchmark_summary",
+  "entityTableName": "service_benchmark_match",
   "databaseType": "sql",
   "readOnly": true,
   "jpaMetamodelFiltering": false,

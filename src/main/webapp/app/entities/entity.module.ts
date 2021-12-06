@@ -103,6 +103,11 @@ import { RouterModule } from '@angular/router';
         path: 'benchmark-summary',
         loadChildren: () => import('./benchmark-summary/benchmark-summary.module').then(m => m.ConfserviceBenchmarkSummaryModule),
       },
+      {
+        path: 'service-benchmark-match',
+        loadChildren: () =>
+          import('./service-benchmark-match/service-benchmark-match.module').then(m => m.ConfserviceServiceBenchmarkMatchModule),
+      },
       /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
     ]),
   ],

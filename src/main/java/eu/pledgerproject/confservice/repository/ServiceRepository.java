@@ -34,6 +34,9 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
 	
 	@Query(value = "select service from Service service where service.app.serviceProvider.id =:serviceProviderId ")
 	List<Service> getServiceListByServiceProviderId(@Param("serviceProviderId") Long serviceProviderId);
+
+	@Query(value = "select service from Service service where service.app.serviceProvider.name =:serviceProviderName ")
+	List<Service> findAllAuthorizedSP(@Param("serviceProviderName") String serviceProviderName);
 	
 	@Query(value = "select service from Service service where service.app.serviceProvider.name =:serviceProviderName ")
 	Page<Service> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);

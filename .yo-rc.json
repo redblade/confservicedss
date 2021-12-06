@@ -45,6 +45,6 @@
     "ingressDomain": "",
     "monitoring": "no",
     "istio": false,
-    "lastLiquibaseTimestamp": 1638798277000
+    "lastLiquibaseTimestamp": 1638811502000
   }
 }
