@@ -69,8 +69,8 @@ public class ResourceSteadyServiceOptimiser {
 					newSteadyServiceList.add(steadyService);
 				}
 			}
-			for(SteadyService steadyService : newSteadyServiceList) {
-				saveOrMerge(steadyService);
+			for(SteadyService newSteadyService : newSteadyServiceList) {
+				saveOrMerge(newSteadyService);
 			}
 			keepOnlyThisListAndOldRecordsWithActions(newSteadyServiceList);
 			
@@ -127,7 +127,7 @@ public class ResourceSteadyServiceOptimiser {
 			serviceListToKeep.add(steadyService.getService());
 		}
 		for(SteadyService steadyService : steadyServiceRepository.findAll()) {
-			if(!serviceListToKeep.contains(steadyService.getService()) && steadyService.getActionTaken().equals(NO_ACTION_TAKEN)){
+			if(!serviceListToKeep.contains(steadyService.getService()) && steadyService.getActionTaken() != null && steadyService.getActionTaken().equals(NO_ACTION_TAKEN)){
 				steadyServiceRepository.delete(steadyService);
 			}
 		}

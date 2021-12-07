@@ -72,7 +72,7 @@ public class ResourceCriticalServiceOptimiser {
 			serviceListToKeep.add(criticalService.getService());
 		}
 		for(CriticalService criticalService : criticalServiceRepository.findAll()) {
-			if(!serviceListToKeep.contains(criticalService.getService()) && criticalService.getActionTaken().equals(NO_ACTION_TAKEN)){
+			if(!serviceListToKeep.contains(criticalService.getService()) && criticalService.getActionTaken() != null && criticalService.getActionTaken().equals(NO_ACTION_TAKEN)){
 				criticalServiceRepository.delete(criticalService);
 			}
 		}
@@ -91,8 +91,8 @@ public class ResourceCriticalServiceOptimiser {
 					newCriticalServiceList.add(criticalService);
 				}
 			}
-			for(CriticalService criticalService : newCriticalServiceList) {
-				saveOrMerge(criticalService);
+			for(CriticalService newCriticalService : newCriticalServiceList) {
+				saveOrMerge(newCriticalService);
 			}
 			keepOnlyThisListAndOldRecordsWithActions(newCriticalServiceList);
 	
