@@ -1,6 +1,6 @@
 <div>
     <h2 id="page-heading">
-        <span>Service -> Benchmark match</span>
+        <span>Service-Benchmark match</span>
     </h2>
 
     <jhi-alert-error></jhi-alert-error>
@@ -8,7 +8,7 @@
     <jhi-alert></jhi-alert>
 
     <div class="alert alert-warning" id="no-result" *ngIf="serviceBenchmarkMatches?.length === 0">
-        <span>No serviceBenchmarkMatches found</span>
+        <span>No Service-Benchmark matches found</span>
     </div>
 
     <div class="table-responsive" id="entities" *ngIf="serviceBenchmarkMatches && serviceBenchmarkMatches.length > 0">
@@ -18,7 +18,7 @@
                     <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="service.name"><span>Service</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="benchmark.name"><span>Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="rationale"><span>Rationale</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="rationale"><span>Match description</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"></th>
                 </tr>
             </thead>

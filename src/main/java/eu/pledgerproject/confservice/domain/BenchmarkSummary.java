@@ -94,12 +94,12 @@ public class BenchmarkSummary implements Serializable, Comparable<BenchmarkSumma
 
 	public int compareTo(BenchmarkSummary other) {
 		if(this.benchmark.getName().equals(other.benchmark.getName())) {
-			int scoreDiff = (int) (other.getScore() - this.getScore());
+			double scoreDiff = other.getScore() - this.getScore();
 			if(scoreDiff == 0) {
 				return this.node.getName().compareTo(other.node.getName());
 			}
 			else {
-				return scoreDiff;
+				return scoreDiff > 0 ? 1 : -1;
 			}
 		}
 		else {

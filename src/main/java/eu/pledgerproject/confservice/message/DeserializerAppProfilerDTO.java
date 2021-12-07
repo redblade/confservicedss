@@ -15,7 +15,7 @@ public class DeserializerAppProfilerDTO implements Deserializer<AppProfilerDTO> 
 		
 		AppProfilerDTO result = new AppProfilerDTO();
 		result.service_id = jsonObject.getLong("service_id");
-		result.benchmark_id = jsonObject.getLong("benchmark_id");
+		result.benchmark_name = jsonObject.getString("benchmark_name");
 
 		return result;
 	}

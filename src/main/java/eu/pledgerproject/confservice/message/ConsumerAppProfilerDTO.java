@@ -50,7 +50,7 @@ public class ConsumerAppProfilerDTO {
     	log.info("New AppProfilerDTO received: " + message); 
     	
     	Optional<Service> serviceOpt = serviceRepository.findById(message.service_id);
-    	Optional<Benchmark> benchmarkOpt = benchmarkRepository.findById(message.benchmark_id);
+    	Optional<Benchmark> benchmarkOpt = benchmarkRepository.findByName(message.benchmark_name);
     	if(serviceOpt.isPresent() && benchmarkOpt.isPresent()) {
     		Service serviceDB = serviceOpt.get();
     		serviceDB.setProfile(benchmarkOpt.get().getName());
@@ -58,8 +58,8 @@ public class ConsumerAppProfilerDTO {
     		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkOpt.get().getName() );
     	}
     	else {
-        	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(id) match: " + message.service_id + "->" + message.benchmark_id); 
-        	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(id) match: " + message.service_id + "->" + message.benchmark_id);
+        	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name); 
+        	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name);
     	}
     } 
     

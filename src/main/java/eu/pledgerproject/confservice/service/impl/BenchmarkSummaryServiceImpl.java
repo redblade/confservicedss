@@ -1,6 +1,5 @@
 package eu.pledgerproject.confservice.service.impl;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -71,7 +70,7 @@ public class BenchmarkSummaryServiceImpl implements BenchmarkSummaryService {
     private Page<BenchmarkSummary> createBenchmarkSummary(Pageable pageable, List<Benchmark> benchmarkList){
     	Set<BenchmarkSummary> result = new TreeSet<BenchmarkSummary>();
     	
-    	List<Object> objectList = benchmarkReportRepository.findBenchmarkNodeMeanFromBenchmarkReportMetricAndTimestampAndBenchmarkList(BenchmarkManager.DEFAULT_METRIC, Instant.now().minusSeconds(BenchmarkManager.DEFAULT_SEC_CHECK_BENCHMARK_REPORT), benchmarkList);
+    	List<Object> objectList = benchmarkReportRepository.findBenchmarkNodeMeanFromBenchmarkReportMetricAndBenchmarkList(BenchmarkManager.DEFAULT_METRIC, benchmarkList);
     	long i = 0;
     	for(Object object : objectList) {
     		Object[] elems = (Object[]) object;

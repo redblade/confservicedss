@@ -23,7 +23,6 @@ public class BenchmarkManager {
 	private final Logger log = LoggerFactory.getLogger(BenchmarkManager.class);
 
 	public static final String DEFAULT_METRIC = "performance_index";
-	public static final int DEFAULT_SEC_CHECK_BENCHMARK_REPORT = 60*60*24*7;
 	
 	private final BenchmarkReportRepository benchmarkReportRepository;
 	private final ResourceDataReader resourceDataReader;
@@ -66,7 +65,7 @@ public class BenchmarkManager {
 		
 		//here, we check IF service.getProfile() is configured (either manually or by the AppProfiler) with the matching benchmarkName
 		String benchmarkName = service.getProfile();
-		List<Object> nodeMeanByBenchmarkNameList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndTimestampAndNodeSet(benchmarkName, DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
+		List<Object> nodeMeanByBenchmarkNameList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndNodeSet(benchmarkName, DEFAULT_METRIC, nodeSet);
 		if(nodeMeanByBenchmarkNameList.size() > 0) {
 			
 			double maxFound = 0;
@@ -94,7 +93,7 @@ public class BenchmarkManager {
 		
 		//IF NOT, we check IF service.getProfile() is configured (manually) with a category with matches with those in the Benchmark
 		String categoryLike = "%\""+service.getProfile()+"\"%";
-		List<Object> nodeMeanByBenchmarkCategoryList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByCategoryMetricAndTimestampAndNodeSet(categoryLike, DEFAULT_METRIC, Instant.now().minusSeconds(DEFAULT_SEC_CHECK_BENCHMARK_REPORT), nodeSet);
+		List<Object> nodeMeanByBenchmarkCategoryList = benchmarkReportRepository.findNodeMeanFromBenchmarkReportByCategoryMetricAndNodeSet(categoryLike, DEFAULT_METRIC, nodeSet);
 		if(nodeMeanByBenchmarkCategoryList.size()  > 0) {
 			
 			double maxFound = 0;

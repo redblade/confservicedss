@@ -28,16 +28,18 @@ public interface BenchmarkReportRepository extends JpaRepository<BenchmarkReport
 	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider is null")
 	Page<BenchmarkReport> findAllPublic(Pageable pageable);
 	
-	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.category like :category and benchmarkReport.metric = :metric and benchmarkReport.time > :timestamp group by benchmarkReport.node having benchmarkReport.node in :nodeSet")
-	List<Object> findNodeMeanFromBenchmarkReportByCategoryMetricAndTimestampAndNodeSet(@Param("category") String category, @Param("metric") String metric, @Param("timestamp") Instant timestamp, @Param("nodeSet") Set<Node> nodeSet);
+	//USED by BenchmarkManager.getBestNodeUsingBenchmark
+	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean),max(benchmarkReport.time) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.name = :benchmarkName and benchmarkReport.metric = :metric group by benchmarkReport.node having benchmarkReport.node in :nodeSet")
+	List<Object> findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndNodeSet(@Param("benchmarkName") String benchmarkName, @Param("metric") String metric, @Param("nodeSet") Set<Node> nodeSet);
 
-	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.name = :benchmarkName and benchmarkReport.metric = :metric and benchmarkReport.time > :timestamp group by benchmarkReport.node having benchmarkReport.node in :nodeSet")
-	List<Object> findNodeMeanFromBenchmarkReportByBenchmarkNameMetricAndTimestampAndNodeSet(@Param("benchmarkName") String benchmarkName, @Param("metric") String metric, @Param("timestamp") Instant timestamp, @Param("nodeSet") Set<Node> nodeSet);
+	//USED by BenchmarkManager.getBestNodeUsingBenchmark
+	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean),max(benchmarkReport.time) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.category like :category and benchmarkReport.metric = :metric group by benchmarkReport.node having benchmarkReport.node in :nodeSet")
+	List<Object> findNodeMeanFromBenchmarkReportByCategoryMetricAndNodeSet(@Param("category") String category, @Param("metric") String metric, @Param("nodeSet") Set<Node> nodeSet);
 
-	@Query(value = "select benchmarkReport.benchmark, benchmarkReport.node, max(benchmarkReport.mean) from BenchmarkReport benchmarkReport where benchmarkReport.metric = :metric and benchmarkReport.time > :timestamp group by benchmarkReport.benchmark,benchmarkReport.node having benchmarkReport.benchmark in :benchmarkSet")
-	List<Object> findBenchmarkNodeMeanFromBenchmarkReportMetricAndTimestampAndBenchmarkList(@Param("metric") String metric, @Param("timestamp") Instant timestamp, @Param("benchmarkSet") List<Benchmark> benchmarkList);
+	//USED by BenchmarkSummaryServiceImpl.createBenchmarkSummary
+	@Query(value = "select benchmarkReport.benchmark, benchmarkReport.node, max(benchmarkReport.mean),max(benchmarkReport.time) from BenchmarkReport benchmarkReport where benchmarkReport.metric = :metric group by benchmarkReport.benchmark,benchmarkReport.node having benchmarkReport.benchmark in :benchmarkSet")
+	List<Object> findBenchmarkNodeMeanFromBenchmarkReportMetricAndBenchmarkList(@Param("metric") String metric, @Param("benchmarkSet") List<Benchmark> benchmarkList);
 
-	
 	@Modifying
 	@Query(value = "delete from BenchmarkReport benchmarkReport where benchmarkReport.time < :timestamp")
 	void deleteOld(@Param("timestamp") Instant timestamp);

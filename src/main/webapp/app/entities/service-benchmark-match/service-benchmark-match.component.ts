@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, ParamMap, Router, Data } from '@angular/router';
-import { Subscription, combineLatest } from 'rxjs';
+import { interval, Subscription, combineLatest } from 'rxjs';
 import { JhiEventManager } from 'ng-jhipster';
 
 import { IServiceBenchmarkMatch } from 'app/shared/model/service-benchmark-match.model';
@@ -22,13 +22,17 @@ export class ServiceBenchmarkMatchComponent implements OnInit, OnDestroy {
   predicate!: string;
   ascending!: boolean;
   ngbPaginationPage = 1;
+  source = interval(10000);
+  subscription: Subscription;
 
   constructor(
     protected serviceBenchmarkMatchService: ServiceBenchmarkMatchService,
     protected activatedRoute: ActivatedRoute,
     protected router: Router,
     protected eventManager: JhiEventManager
-  ) {}
+  ) {
+    this.subscription = this.source.subscribe(() => this.eventManager.broadcast('serviceBenchmarkMatchListModification'));	
+  }
 
   loadPage(page?: number, dontNavigate?: boolean): void {
     const pageToLoad: number = page || this.page || 1;
@@ -68,6 +72,7 @@ export class ServiceBenchmarkMatchComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.eventSubscriber) {
       this.eventManager.destroy(this.eventSubscriber);
+	  this.subscription.unsubscribe();
     }
   }
 
