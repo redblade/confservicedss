@@ -1,11 +1,8 @@
 {
   "sla_id": "6",
-  "infrastructure_id": "1",
   "guarantee_id": "8",
   "datetime": "2021-10-23T17:27:06Z",
   "importance_name": "Serious",
-  "service_id": "7",
-  "description": "guarantee violation",
   "values": [
     {
       "key": "data",

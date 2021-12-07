@@ -25,6 +25,7 @@ import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
 import eu.pledgerproject.confservice.domain.enumeration.ManagementType;
 import eu.pledgerproject.confservice.message.PublisherOrchestrationUpdate;
 import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 import eu.pledgerproject.confservice.monitoring.DeploymentOptionsManager;
 import eu.pledgerproject.confservice.monitoring.MonitoringService;
@@ -63,6 +64,7 @@ public class ServiceScheduler {
 	private final ProjectRepository projectRepository;
 	private final ServiceRepository serviceRepository;
 	private final OrchestratorKubernetes orchestratorKubernetes;
+	private final OrchestratorDocker orchestratorDocker;
 	private final ResourceDataReader resourceDataReader;
 	private final ServiceReportRepository serviceReportRepository;
 	private final SteadyServiceRepository steadyServiceRepository;
@@ -72,11 +74,12 @@ public class ServiceScheduler {
 	private final BenchmarkManager benchmarkManager;
 	private final SlaViolationRepository slaViolationRepository;
 	
-	public ServiceScheduler(DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager, SlaViolationRepository slaViolationRepository) {
+	public ServiceScheduler(DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, OrchestratorDocker orchestratorDocker, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager, SlaViolationRepository slaViolationRepository) {
 		this.deploymentOptionsManager = deploymentOptionsManager;
 		this.projectRepository = projectRepository;
 		this.serviceRepository = serviceRepository;
 		this.orchestratorKubernetes = orchestratorKubernetes;
+		this.orchestratorDocker = orchestratorDocker;
 		this.resourceDataReader = resourceDataReader;
 		this.serviceReportRepository = serviceReportRepository;
 		this.steadyServiceRepository = steadyServiceRepository;
@@ -164,19 +167,25 @@ public class ServiceScheduler {
 					
 			if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
 				
-				if(service.getDeployType().equals(DeployType.KUBERNETES)) {
-					String deploymentName = service.getName();
+				String deploymentName = service.getName();
+				
+				String deploymentDescriptor = service.getDeployDescriptor();
+				deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, node.getName(), replicasFromInitialConfiguration);
 					
-					String deploymentDescriptor = service.getDeployDescriptor();
-					deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, node.getName(), replicasFromInitialConfiguration);
-					
+				if(service.getDeployType().equals(DeployType.KUBERNETES)) {	
 					orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
-					service.setLastChangedStatus(Instant.now());
-					service.setStatus(ExecStatus.RUNNING);
-					serviceRepository.save(service);
 					result = true;
-
 				}
+				else if (service.getDeployType().equals(DeployType.DOCKER)) {
+					if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+						throw new RuntimeException("start not supported for DeployType " + service.getDeployType());
+					}
+					orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
+				}
+				service.setLastChangedStatus(Instant.now());
+				service.setStatus(ExecStatus.RUNNING);
+				serviceRepository.save(service);
+
 			}
 	
 			else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
@@ -232,18 +241,25 @@ public class ServiceScheduler {
 					serviceRepository.save(service);
 					
 					if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
+
+						String deploymentName = service.getName();
+						
+						String deploymentDescriptor = service.getDeployDescriptor();
+						deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, currentNode.getName(), replicasFromRuntimeConfiguration);
+
 						if(service.getDeployType().equals(DeployType.KUBERNETES)) {
-
-							String deploymentName = service.getName();
-							
-							String deploymentDescriptor = service.getDeployDescriptor();
-							deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, currentNode.getName(), replicasFromRuntimeConfiguration);
-
 							orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
-							service.setLastChangedStatus(Instant.now());
-							service.setStatus(ExecStatus.STOPPED);
-							serviceRepository.save(service);
 						}
+						else if (service.getDeployType().equals(DeployType.DOCKER)) {
+							if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+								throw new RuntimeException("stop not supported for DeployType " + service.getDeployType());
+							}
+							orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, infrastructure);
+						}
+						
+						service.setLastChangedStatus(Instant.now());
+						service.setStatus(ExecStatus.STOPPED);
+						serviceRepository.save(service);
 					}
 					else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
 						publisherOrchestrationUpdate.publish(service.getId(), "service", "stop", getMessageParameters(service, infrastructure), getMessagePlaceholders(service));
@@ -293,12 +309,13 @@ public class ServiceScheduler {
 					serviceRepository.save(service);
 						
 					if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
+						String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
+
 						if(service.getDeployType().equals(DeployType.KUBERNETES)) {
-							String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
 							orchestratorKubernetes.scale(namespace, service.getName(), newReplicas, project.get().getInfrastructure());
 						}
 						else {
-							throw new RuntimeException("DeployType not supported: " + service.getDeployType());
+							throw new RuntimeException("Scale horiz. not supported for DeployType " + service.getDeployType());
 						}
 					}
 					else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
@@ -343,15 +360,18 @@ public class ServiceScheduler {
 						saveOrUpdateServiceRequest(service, appGroup, MonitoringService.MEMORY_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestMem);
 										
 						if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
-							if(service.getDeployType().equals(DeployType.KUBERNETES)) {
 								
-								String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
-								String deploymentDescriptor = service.getDeployDescriptor();
-								String replicasFromRuntimeConfiguration = (String) ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
+							String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
+							String deploymentDescriptor = service.getDeployDescriptor();
+							String replicasFromRuntimeConfiguration = (String) ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
 
-								deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, requestCpu, requestMem, currentNode.getName(), replicasFromRuntimeConfiguration);
+							deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, requestCpu, requestMem, currentNode.getName(), replicasFromRuntimeConfiguration);
 
+							if(service.getDeployType().equals(DeployType.KUBERNETES)) {
 								orchestratorKubernetes.replace(namespace, service.getName(), deploymentDescriptor, project.get().getInfrastructure());
+							}
+							else {
+								throw new RuntimeException("Scale vert. not supported for DeployType " + service.getDeployType());
 							}
 						}
 						else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
@@ -402,7 +422,7 @@ public class ServiceScheduler {
 		serviceRepository.save(service);
 		
 		if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
-			if(service.getDeployType().equals(DeployType.KUBERNETES)) {
+			if(service.getDeployType().equals(DeployType.KUBERNETES) || service.getDeployType().equals(DeployType.DOCKER)) {
 
 				String runtimeConfiguration = service.getRuntimeConfiguration();
 				if(runtimeConfiguration != null && !runtimeConfiguration.isEmpty()) {
@@ -440,8 +460,16 @@ public class ServiceScheduler {
 								String deploymentDescriptor = service.getDeployDescriptor();
 								deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, bestNode.getName(), replicasFromRuntimeConfiguration);
 
-								orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
-								
+								if(service.getDeployType().equals(DeployType.KUBERNETES)) {
+									orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+								}
+								else if(service.getDeployType().equals(DeployType.DOCKER)) {
+									if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+										throw new RuntimeException("migrate not supported for DeployType " + service.getDeployType());
+									}
+									orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+								}
+
 								Optional<SteadyService> steadyServiceDB = steadyServiceRepository.getByServiceID(service.getId());
 								if(steadyServiceDB.isPresent()) {
 									steadyServiceRepository.delete(steadyServiceDB.get());
@@ -495,7 +523,16 @@ public class ServiceScheduler {
 					String deploymentDescriptor = service.getDeployDescriptor();
 					deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, bestNode.getName(), replicasFromInitialConfiguration);
 						
-					orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+					if(service.getDeployType().equals(DeployType.KUBERNETES)) {
+						orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+					}
+					else if(service.getDeployType().equals(DeployType.DOCKER)) {
+						if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+							throw new RuntimeException("migrate not supported for DeployType " + service.getDeployType());
+						}
+						orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+					}
+					
 				}
 			}
 		}

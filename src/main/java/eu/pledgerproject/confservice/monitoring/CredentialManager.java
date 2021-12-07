@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import eu.pledgerproject.confservice.domain.Project;
+import eu.pledgerproject.confservice.message.PublisherConfigurationUpdate;
 import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.scheduler.OrchestratorKubernetes;
 
@@ -17,10 +18,12 @@ import eu.pledgerproject.confservice.scheduler.OrchestratorKubernetes;
 public class CredentialManager {
     private final Logger log = LoggerFactory.getLogger(CredentialManager.class);
 
+    private final PublisherConfigurationUpdate publisherConfigurationUpdate;
     private final OrchestratorKubernetes orchestratorKubernetes;
     private final ProjectRepository projectRepository;
     
-    public CredentialManager(OrchestratorKubernetes orchestratorKubernetes, ProjectRepository projectRepository) {
+    public CredentialManager(PublisherConfigurationUpdate publisherConfigurationUpdate, OrchestratorKubernetes orchestratorKubernetes, ProjectRepository projectRepository) {
+    	this.publisherConfigurationUpdate = publisherConfigurationUpdate;
     	this.orchestratorKubernetes = orchestratorKubernetes;
     	this.projectRepository = projectRepository;
     }
@@ -55,10 +58,12 @@ public class CredentialManager {
 						String token = orchestratorKubernetes.getKubernetesToken(project.getInfrastructure(), namespace, secretName);
 						project.setCredentials(token);
 						projectRepository.save(project);
+						publisherConfigurationUpdate.publish(project.getId(), "project", "update");
 					}
-					else if(project.getInfrastructure().getCredentials() != null) {
+					else if(project.getInfrastructure().getCredentials() != null && (project.getInfrastructure().getCredentials() == null || project.getInfrastructure().getCredentials().trim().length()== 0)) {
 						project.setCredentials(project.getInfrastructure().getCredentials());
 						projectRepository.save(project);
+						publisherConfigurationUpdate.publish(project.getId(), "project", "update");
 					}
 				}
 			}

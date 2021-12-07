@@ -1,11 +1,8 @@
 {
   "sla_id": "2",
-  "infrastructure_id": "5",
   "guarantee_id": "2",
   "datetime": "2021-07-23T17:27:06Z",
   "importance_name": "Serious",
-  "service_id": "3",
-  "description": "This is a guarantee violation for risk-detector on ENG infrastructure",
   "values": [
     {
       "key": "scrape_duration_seconds{10.244.0.8:3000}",
