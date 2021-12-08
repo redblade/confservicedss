@@ -5,6 +5,7 @@ public enum ServiceOptimisationType {
 	offloading,
 	resources,
 	latency,
+	latency_faredge,
 	resources_latency,
 	webhook
 }

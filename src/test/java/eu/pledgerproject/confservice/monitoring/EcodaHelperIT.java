@@ -82,7 +82,7 @@ public class EcodaHelperIT {
         serviceData4.score = 4.0;
         Collections.sort(serviceDataList);
         
-        serviceOptimisationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
+        serviceOptimisationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
         assertNotNull(serviceOptimisationPlan);
         assertTrue(serviceOptimisationPlan.size() > 0);
         
@@ -147,7 +147,7 @@ public class EcodaHelperIT {
         serviceData3.score = 4.0;
         Collections.sort(serviceDataList);
         
-        serviceOptimisationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
+        serviceOptimisationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
         assertNotNull(serviceOptimisationPlan);
         assertTrue(serviceOptimisationPlan.size() > 0);
         

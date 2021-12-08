@@ -177,7 +177,7 @@ public class ServiceScheduler {
 					result = true;
 				}
 				else if (service.getDeployType().equals(DeployType.DOCKER)) {
-					if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+					if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
 						throw new RuntimeException("start not supported for DeployType " + service.getDeployType());
 					}
 					orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
@@ -251,7 +251,7 @@ public class ServiceScheduler {
 							orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 						}
 						else if (service.getDeployType().equals(DeployType.DOCKER)) {
-							if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+							if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
 								throw new RuntimeException("stop not supported for DeployType " + service.getDeployType());
 							}
 							orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, infrastructure);
@@ -464,7 +464,7 @@ public class ServiceScheduler {
 									orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 								}
 								else if(service.getDeployType().equals(DeployType.DOCKER)) {
-									if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+									if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
 										throw new RuntimeException("migrate not supported for DeployType " + service.getDeployType());
 									}
 									orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
@@ -527,7 +527,7 @@ public class ServiceScheduler {
 						orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 					}
 					else if(service.getDeployType().equals(DeployType.DOCKER)) {
-						if(!ControlFlags.DOCKER_ORCHESTRATION_ENABLED) {
+						if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
 							throw new RuntimeException("migrate not supported for DeployType " + service.getDeployType());
 						}
 						orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());

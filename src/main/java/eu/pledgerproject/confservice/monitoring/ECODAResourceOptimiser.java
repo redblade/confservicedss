@@ -26,8 +26,8 @@ import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 
 /*
 
-This optimiser combines ECODA with resource optimisation and is activated by ServiceOptimisation resources_latency
-See EcodaOptimiser for ECODA algorithm
+This optimiser combines ECODA algorithm with "resource" optimisation and is activated by ServiceOptimisation resources_latency
+See ECODAHelper.class for ECODA algorithm details
 */
 
 
@@ -38,7 +38,7 @@ public class ECODAResourceOptimiser {
 	private final Logger log = LoggerFactory.getLogger(ECODAResourceOptimiser.class);
 	
 	private final ResourceDataReader resourceDataReader;
-	private final EcodaHelper ecodaHelper;
+	private final ECODAHelper ecodaHelper;
 	private final ServiceProviderRepository serviceProviderRepository;
 	private final SlaViolationRepository slaViolationRepository;
 	private final BenchmarkManager benchmarkManager;
@@ -50,7 +50,7 @@ public class ECODAResourceOptimiser {
 	//One service can belong to multiple Sets, which means it can be offloaded to multiple "infrastructures".
 	//So, the Groups are built as all the possible Node sets for all the services. Then, Group by Group, the optimisation decides where a service could go
 
-	public ECODAResourceOptimiser(ResourceDataReader resourceDataReader, EcodaHelper ecodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
+	public ECODAResourceOptimiser(ResourceDataReader resourceDataReader, ECODAHelper ecodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
 		this.resourceDataReader = resourceDataReader;
 		this.ecodaHelper = ecodaHelper;
 		this.serviceProviderRepository = serviceProviderRepository;
@@ -86,7 +86,7 @@ public class ECODAResourceOptimiser {
 	public void doOptimise() {
 		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
-			log.info("EcodaResourceOptimiser started");
+			log.info("ECODAResourceOptimiser started");
 			
 			//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
 			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
@@ -139,25 +139,25 @@ public class ECODAResourceOptimiser {
 					ServiceData serviceData = new ServiceData(service, cpuMemServiceResourcePlan[0], cpuMemServiceResourcePlan[1]);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
 					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge, totalCpu4SP, totalMem4SP);
-					log.info("Service " + service.getName() + " has ECODA score " + serviceData.score);
+					log.info("ECODAResourceOptimiser: Service " + service.getName() + " has ECODA score " + serviceData.score);
 					serviceDataList.add(serviceData);
 	 			}
 				Collections.sort(serviceDataList);
 				
 				//the allocation plan, based on the optimised ServiceData list
-				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EcodaHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
+				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
 				if(serviceOptimisedAllocationPlan == null) {
-					log.error("EcodaResourceOptimiser error: not enough resources on the worse option(cloud)");
+					log.error("ECODAResourceOptimiser error: not enough resources on the worse option(cloud)");
 					saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 				}
 				else { 
 					if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
-						log.info("EcodaResourceOptimiser: no offloadings needed");
+						log.info("ECODAResourceOptimiser: no offloadings needed");
 					}
 					else {
 						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
 							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
-							log.info("EcodaResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
+							log.info("ECODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
 							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
 							serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
 						}

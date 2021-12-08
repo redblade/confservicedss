@@ -14,7 +14,7 @@ import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
 import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
-import eu.pledgerproject.confservice.monitoring.EcodaHelper;
+import eu.pledgerproject.confservice.monitoring.ECODAHelper;
 import eu.pledgerproject.confservice.monitoring.MonitoringService;
 import eu.pledgerproject.confservice.monitoring.NodeGroup;
 import eu.pledgerproject.confservice.monitoring.RankingData;
@@ -32,16 +32,16 @@ public class AppScheduler {
 	private final AppRepository appRepository;
 	private final ServiceRepository serviceRepository;
 	private final RankingManager rankingManager;
-	private final EcodaHelper ecodaHelper;
+	private final ECODAHelper eCODAHelper;
 	private final BenchmarkManager benchmarkManager;
 	private final EventRepository eventRepository;
 
-	public AppScheduler(ServiceScheduler serviceScheduler, AppRepository appRepository, ServiceRepository serviceRepository, RankingManager rankingManager, EcodaHelper ecodaHelper, BenchmarkManager benchmarkManager, EventRepository eventRepository) {
+	public AppScheduler(ServiceScheduler serviceScheduler, AppRepository appRepository, ServiceRepository serviceRepository, RankingManager rankingManager, ECODAHelper eCODAHelper, BenchmarkManager benchmarkManager, EventRepository eventRepository) {
 		this.serviceScheduler = serviceScheduler;
 		this.appRepository = appRepository;
 		this.serviceRepository = serviceRepository;
 		this.rankingManager = rankingManager;
-		this.ecodaHelper = ecodaHelper;
+		this.eCODAHelper = eCODAHelper;
 		this.benchmarkManager = benchmarkManager;
 		this.eventRepository = eventRepository;
 	}
@@ -75,7 +75,7 @@ public class AppScheduler {
 						ServiceOptimisationType.resources_latency.name().equals(service.getServiceOptimisation().getOptimisation())
 					)
 			) {
-				List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithRemainingCapacityThatCanHostRequestsAndFilterByServiceContraints(service.getApp().getServiceProvider(), service, initialRequestCpu, initialRequestMem);
+				List<NodeGroup> nodeGroupList = eCODAHelper.getNodeGroupListForSPWithRemainingCapacityThatCanHostRequestsAndFilterByServiceContraints(service.getApp().getServiceProvider(), service, initialRequestCpu, initialRequestMem);
 				if(nodeGroupList.size() > 0) {
 					Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeGroupList.get(0).nodes);
 					
