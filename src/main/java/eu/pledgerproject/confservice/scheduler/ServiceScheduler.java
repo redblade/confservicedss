@@ -177,10 +177,13 @@ public class ServiceScheduler {
 					result = true;
 				}
 				else if (service.getDeployType().equals(DeployType.DOCKER)) {
-					if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+					if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+						orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
+					}
+					else {
 						throw new RuntimeException("start not supported for DeployType " + service.getDeployType());
 					}
-					orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
+					
 				}
 				service.setLastChangedStatus(Instant.now());
 				service.setStatus(ExecStatus.RUNNING);
@@ -251,10 +254,13 @@ public class ServiceScheduler {
 							orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 						}
 						else if (service.getDeployType().equals(DeployType.DOCKER)) {
-							if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+							if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+								orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, infrastructure);
+							}
+							else {
 								throw new RuntimeException("stop not supported for DeployType " + service.getDeployType());
 							}
-							orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, infrastructure);
+							
 						}
 						
 						service.setLastChangedStatus(Instant.now());
@@ -464,10 +470,12 @@ public class ServiceScheduler {
 									orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 								}
 								else if(service.getDeployType().equals(DeployType.DOCKER)) {
-									if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+									if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+										orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+									}
+									else {
 										throw new RuntimeException("migrate not supported for DeployType " + service.getDeployType());
 									}
-									orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 								}
 
 								Optional<SteadyService> steadyServiceDB = steadyServiceRepository.getByServiceID(service.getId());
@@ -527,10 +535,12 @@ public class ServiceScheduler {
 						orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 					}
 					else if(service.getDeployType().equals(DeployType.DOCKER)) {
-						if(!ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+						if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+							orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+						}
+						else {
 							throw new RuntimeException("migrate not supported for DeployType " + service.getDeployType());
 						}
-						orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 					}
 					
 				}

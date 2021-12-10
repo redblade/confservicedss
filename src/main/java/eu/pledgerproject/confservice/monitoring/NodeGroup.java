@@ -10,6 +10,10 @@ import eu.pledgerproject.confservice.domain.Infrastructure;
 import eu.pledgerproject.confservice.domain.Node;
 
 public class NodeGroup {
+	public static final String NODE_TYPE = "node_type";
+	public static final String NODE_FAREDGE = "faredge";
+	public static final String NODE_EDGE= "edge";
+	public static final String NODE_CLOUD= "cloud";
 	
 	public class NodeData {
 		
@@ -25,6 +29,7 @@ public class NodeGroup {
 	
 	String name;
 	Infrastructure infrastructure;
+	String location;
 	public Set<Node> nodes;
 	List<NodeData> nodesData;
 	int capacityMemoryMB;
@@ -43,6 +48,21 @@ public class NodeGroup {
 			this.nodesData.add(new NodeData(node, nodeCapacityCpuMillicore, nodeCapacityMemoryMB));
 		}
 		this.infrastructure = nodes != null && nodes.size() > 0 ? nodes.iterator().next().getInfrastructure() : null;
+		this.location = "";
+		if(nodes != null && nodes.size() > 0) {
+			for(Node node : nodes) {
+				String nodeType = ConverterJSON.getProperty(node.getProperties(), NODE_TYPE);
+				if(nodeType != null) {
+					if(this.location == "") {
+						this.location = nodeType;
+					}
+					else if(!this.location.equals(nodeType)) {
+						this.location = "hybrid";
+					}
+				}
+			}
+			
+		}
 		this.capacityMemoryMB = capacityMemoryMB;
 		this.capacityCpuMillicore = capacityCpuMillicore;
 		

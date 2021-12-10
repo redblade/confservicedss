@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,8 +109,8 @@ public class ECODAOptimiser {
 				totalMem4SP += total4SP[1];
 			}
 				
-			if(nodeGroupList.size() > 0 && totalCpu4SP > 0 && totalMem4SP > 0) {
-				Set<Node> nodeSetOnEdge = nodeGroupList.get(0).nodes;
+			NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
+			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalCpu4SP > 0 && totalMem4SP > 0) {
 				
 				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
 				for(Service service: serviceList) {
@@ -122,7 +121,7 @@ public class ECODAOptimiser {
 					
 					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge, totalCpu4SP, totalMem4SP);
+					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalCpu4SP, totalMem4SP);
 					log.info("ECODAOptimiser: Service " + service.getName() + " has ECODA score " + serviceData.score);
 					serviceDataList.add(serviceData);
 	 			}

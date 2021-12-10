@@ -13,6 +13,7 @@ import eu.pledgerproject.confservice.domain.App;
 import eu.pledgerproject.confservice.domain.Infrastructure;
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.NodeGroup;
 import eu.pledgerproject.confservice.repository.InfrastructureRepository;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 import eu.pledgerproject.confservice.service.NetworkService;
@@ -38,8 +39,8 @@ public class NetworkServiceImpl implements NetworkService {
 	
 	private boolean isNodeCloud(Node node) {
 		Map<String, String> properties = ConverterJSON.convertToMap(node.getProperties());
-		String node_type = properties.get("node_type");
-		return node_type != null && node_type.equals("cloud");
+		String node_type = properties.get(NodeGroup.NODE_TYPE);
+		return node_type != null && node_type.equals(NodeGroup.NODE_CLOUD);
 	}
 	
 	public String getAllInfrastructuresJSON() {

@@ -30,7 +30,7 @@ public class ServiceData implements Comparable<ServiceData>{
 	}
 	
 	public int compareTo(ServiceData other) {
-		return (int) (this.score * ROUND) - (int) (other.score * ROUND);
+		return this.score == other.score ? 0 : this.score > other.score ? 1 : -1;
 	}
 	
 	public String toString() {

@@ -18,42 +18,35 @@ import eu.pledgerproject.confservice.repository.NodeRepository;
 /*
 TTODA algorithm
 
-R & M are percentage or 0..1 
+R & M are 0..1 
 
-//TODO check formula: total edge + faredge capacity?
-rN = percentage of CPU requested wrt total capacity (expressed as 0..1)
-mN = percentage of MEM requested wrt total capacity (expressed as 0..1)
-tN = rN + mN
+//TODO check formula: total capacity?
+Rn = percentage of CPU requested wrt total capacity (expressed as 0..1)
+Mn = percentage of MEM requested wrt total capacity (expressed as 0..1)
+Tn = Rn + Mn
 
 //TODO check formula: reverse?
-wN = tN / service priority
+Wn = service priority / Tn 
 
-instantiationN = time (ms) to load service image (0 if images are pre-loaded)
-latencyN = time (ms) to communicate from edge to cloud nodes
-loadingN = time (ms) to have a service ready
+R_caret & R_tilde are 0..1
 
-#for CPU/MEM constrained services
+R_caret = reserved/far edge capacity
+R_tilde = reserved/edge capacity
 
-from function (26) in ECODA in https://www.techrxiv.org/articles/preprint/An_Optimization_Framework_for_Edge-to-Cloud_Offloading_of_Kubernetes_Pods_in_V2X_Scenarios/16725643/1
+In = time (ms) to start a service (startup time)
+Lec = time (ms) to communicate from edge to cloud nodes (latency)
+Lne = time (ms) to communicate from far-edge to edge nodes (latency)
+Lnc = time (ms) to communicate from far-edge to cloud nodes (latency) = Lec+Lne
+Pne = time (ms) to have a service ready on the edge (0 if images are pre-loaded)
+Pnc = time (ms) to have a service ready on the cloud (0 if images are pre-loaded)
 
-for all service[i] compute score(service[i]) = wN * (instantiationN + (latencyN + loadingN) * (1 - 2/tN)	
-
-all infrastructures are organized as "node groups", ordered by position: far-edge(1), edge(2), finally cloud(3).
-for all nodegroups, check if all services fit: 
-- if (resources > capability max threshold), use score(i) with Max score to choose which service to offload to the node_group with worse position (eg., from 1->2)
-- else if (resources < capability min threshold) use (score(i) with Min score to choose which service to offloaded to the node_group with better position (eg., from 2->1)
-
-
-"capability max threshold" and "capability min threshold" are used to avoid too many back and forth. For example, 70% and 30%
-
-Implementation details:
-service deployment options are ignored, so nodes are organised in nodegroups with far-edge, edge, cloud (possibly more)
-services are sorted using the score: when the thresholds are not met, those with higher priority are kept on the far-edge (according to the thresholds) and so on
+WORK IN PROGRESS
 
 */
 
 @Component
 public class TTODAHelper {
+	public static final int SCORE_22_CONSTANT = 100000;
 
 	public static final int LATENCY_CHECK_PERIOD_SEC = 7 * 24 * 60 * 60; //7d 
 	
@@ -90,27 +83,43 @@ public class TTODAHelper {
 	 * returns the Service allocation score based on TTODA algorithm. See TTODAOptimiser class comment
 	 * 
 	 */
-	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnEdge, int edgeTotalCpu4SP, int edgeTotalMem4SP) {
+	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnFarEdge, int faredgeTotalCpu4SP, int faredgeTotalMem4SP, Set<Node> nodeSetOnEdge, int edgeTotalCpu4SP, int edgeTotalMem4SP, Set<Node> nodeSetOnCloud, int cloudTotalCpu4SP, int cloudTotalMem4SP) {
 		double score = 0.0;
 
-    	Map<String, String> preferences = ConverterJSON.convertToMap(serviceData.service.getApp().getServiceProvider().getPreferences());
-		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
-		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
-		
+		Node anyNodeOnFarEdge = nodeSetOnFarEdge.iterator().next();
+		Node anyNodeOnEdge = nodeSetOnEdge.iterator().next();
 		Node currentNode = resourceDataReader.getCurrentNode(serviceData.service);
 		if(currentNode != null) {
-			int serviceRequestCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(serviceData.service, timestamp);
-			int serviceRequestMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(serviceData.service, timestamp);
+			double serviceRequestCpu = 1.0 * ResourceDataReader.getServiceRuntimeCpuRequest(serviceData.service);
+			double serviceRequestMem = 1.0 * ResourceDataReader.getServiceRuntimeMemRequest(serviceData.service);
 
-			double tN = 1.0 * serviceRequestCpu / edgeTotalCpu4SP + 1.0 * serviceRequestMem / edgeTotalMem4SP;
-			double wN = tN / serviceData.priority; 
-			double instantiationN_ms = resourceDataReader.getServiceStartupTimeSec(serviceData.service) * 1000;
+			double Rn = 1.0 * serviceRequestCpu / (faredgeTotalCpu4SP + edgeTotalCpu4SP + cloudTotalCpu4SP);
+			double Mn = 1.0 * serviceRequestMem / (faredgeTotalMem4SP + edgeTotalMem4SP + cloudTotalMem4SP);
+			double Tn = Rn + Mn; 
+			
+			double Wn = Tn / serviceData.priority; 
+			double In = resourceDataReader.getServiceStartupTimeSec(serviceData.service) * 1000;
+
+			double R_caret = (serviceRequestCpu + serviceRequestMem) / (faredgeTotalCpu4SP + faredgeTotalMem4SP);
+			double R_tilde = (serviceRequestCpu + serviceRequestMem) / (edgeTotalCpu4SP + edgeTotalMem4SP);
 			
 			Instant timestampLatency = Instant.now().minusSeconds(LATENCY_CHECK_PERIOD_SEC);
-			long latencyN_ms = goldPingerReader.getAverageLatencyAmongTwoNodeGroups(currentNode, nodeSetOnEdge, timestampLatency);
 			
-			long loadingN_ms = 0; //we assume images are already in the node, so it is 0
-			score = wN * (instantiationN_ms + (latencyN_ms + loadingN_ms) * (1 - 2/tN));
+			double Lec = 1.0 * goldPingerReader.getAverageLatencyAmongTwoNodeGroups(anyNodeOnEdge, nodeSetOnCloud, timestampLatency);
+			double Lne = 1.0 * goldPingerReader.getAverageLatencyAmongTwoNodeGroups(anyNodeOnFarEdge, nodeSetOnEdge, timestampLatency);
+			double Lnc = Lec + Lne;
+			
+			double Pnc = 0.0; //we assume images are already in the node, so it is 0
+			double Pne = 0.0; //we assume images are already in the node, so it is 0
+			
+			double score_22 = Wn * In + (Lnc + Pnc) * (1 - 1/R_caret) - (Lnc + Pnc -Lne -Pne) * R_tilde;
+			double lambda = Wn * (Lnc + Pnc) / R_caret;
+			double score_15 = Wn * In + Wn * (Lne + Pne - Lnc - Pnc) * score_22 + lambda * (R_caret -1);
+
+			if(score_22 > SCORE_22_CONSTANT) {
+				throw new RuntimeException("score_22 must be lower than " + SCORE_22_CONSTANT);
+			}
+			score = SCORE_22_CONSTANT * score_22 + score_15;
 		}
 		
 		return score;
@@ -147,7 +156,7 @@ public class TTODAHelper {
 		for(Node node : nodeRepository.findBySP(serviceProvider.getName())) {
 			if(isNodeValidForServiceConstraints(node, serviceList)) {
 				Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
-				String nodeType = nodeProperties.get("node_type");
+				String nodeType = nodeProperties.get(NodeGroup.NODE_TYPE);
 				NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
 				
 				if(nodeGroupPriority != null) {
@@ -182,7 +191,7 @@ public class TTODAHelper {
 		for(Node node : nodeRepository.findBySP(serviceProvider.getName())) {
 			if(isNodeValidForServiceConstraints(node, service)) {
 				Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
-				String nodeType = nodeProperties.get("node_type");
+				String nodeType = nodeProperties.get(NodeGroup.NODE_TYPE);
 				NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
 				
 				if(nodeGroupPriority != null) {

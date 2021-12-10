@@ -20,17 +20,17 @@ import eu.pledgerproject.confservice.repository.NodeRepository;
 This optimiser implements ECODA algorithm and is activated by ServiceOptimisation latency
 ECODA is described here https://www.techrxiv.org/articles/preprint/An_Optimization_Framework_for_Edge-to-Cloud_Offloading_of_Kubernetes_Pods_in_V2X_Scenarios/16725643/1
 
-R & M are percentage or 0..1 
+R & M 0..1 
 
-rN = percentage of CPU requested wrt total capacity (expressed as 0..1)
-mN = percentage of MEM requested wrt total capacity (expressed as 0..1)
-tN = rN + mN
+Rn = percentage of CPU requested wrt total capacity (expressed as 0..1)
+Mn = percentage of MEM requested wrt total capacity (expressed as 0..1)
+Tn = Rn + Mn
 
-wN = tN / service priority
+Wn = Tn / service priority
 
-instantiationN = time (ms) to load service image (0 if images are pre-loaded)
-latencyN = time (ms) to communicate from edge to cloud nodes
-loadingN = time (ms) to have a service ready
+In = time (ms) to start a service (startup time)
+Ln = time (ms) to communicate from edge to cloud nodes (latency)
+Pn = time (ms) to have a service ready image (0 if images are pre-loaded)
 
 #for CPU/MEM constrained services
 
@@ -90,7 +90,7 @@ public class ECODAHelper {
 	 * returns the Service allocation score based on ECODA algorithm. See ECODAOptimiser class comment
 	 * 
 	 */
-	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnEdge, int edgeTotalCpu4SP, int edgeTotalMem4SP) {
+	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnEdge, int totalCpu4SP, int totalMem4SP) {
 		double score = 0.0;
 
     	Map<String, String> preferences = ConverterJSON.convertToMap(serviceData.service.getApp().getServiceProvider().getPreferences());
@@ -102,15 +102,18 @@ public class ECODAHelper {
 			int serviceRequestCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(serviceData.service, timestamp);
 			int serviceRequestMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(serviceData.service, timestamp);
 
-			double tN = 1.0 * serviceRequestCpu / edgeTotalCpu4SP + 1.0 * serviceRequestMem / edgeTotalMem4SP;
-			double wN = tN / serviceData.priority; 
-			double instantiationN_ms = resourceDataReader.getServiceStartupTimeSec(serviceData.service) * 1000;
+			double Rn = 1.0 * serviceRequestCpu / totalCpu4SP;
+			double Mn = 1.0 * serviceRequestMem / totalMem4SP;
+			double Tn = Rn + Mn; 
+			
+			double Wn = serviceData.priority / Tn; 
+			double In = resourceDataReader.getServiceStartupTimeSec(serviceData.service) * 1000;
 			
 			Instant timestampLatency = Instant.now().minusSeconds(LATENCY_CHECK_PERIOD_SEC);
-			long latencyN_ms = goldPingerReader.getAverageLatencyAmongTwoNodeGroups(currentNode, nodeSetOnEdge, timestampLatency);
+			long Ln = goldPingerReader.getAverageLatencyAmongTwoNodeGroups(currentNode, nodeSetOnEdge, timestampLatency);
 			
-			long loadingN_ms = 0; //we assume images are already in the node, so it is 0
-			score = wN * (instantiationN_ms + (latencyN_ms + loadingN_ms) * (1 - 2/tN));
+			long Pn = 0; //we assume images are already in the node, so it is 0
+			score = Wn * (In + (Ln + Pn) * (1 - 2/Tn));
 		}
 		
 		return score;
@@ -147,7 +150,7 @@ public class ECODAHelper {
 		for(Node node : nodeRepository.findBySP(serviceProvider.getName())) {
 			if(isNodeValidForServiceConstraints(node, serviceList)) {
 				Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
-				String nodeType = nodeProperties.get("node_type");
+				String nodeType = nodeProperties.get(NodeGroup.NODE_TYPE);
 				NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
 				
 				if(nodeGroupPriority != null) {
@@ -182,7 +185,7 @@ public class ECODAHelper {
 		for(Node node : nodeRepository.findBySP(serviceProvider.getName())) {
 			if(isNodeValidForServiceConstraints(node, service)) {
 				Map<String, String> nodeProperties = ConverterJSON.convertToMap(node.getProperties());
-				String nodeType = nodeProperties.get("node_type");
+				String nodeType = nodeProperties.get(NodeGroup.NODE_TYPE);
 				NodeGroupPriority nodeGroupPriority = NodeGroupPriority.valueOf(nodeType);
 				
 				if(nodeGroupPriority != null) {

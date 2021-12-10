@@ -55,7 +55,7 @@ public class DeploymentOptionsManager {
 			for(int priority : appDeploymentOptions.get(service).keySet()) {
 				result.append("\n   - ranking " + counter++ + " : service deployed on");
 				for(Node node : appDeploymentOptions.get(service).get(priority)) {
-					String nodeType = ConverterJSON.convertToMap(node.getProperties()).get("node_type");
+					String nodeType = ConverterJSON.convertToMap(node.getProperties()).get(NodeGroup.NODE_TYPE);
 					
 					result.append("\n     -- node#" + node.getId()+ " '" + node.getName() + "' ["+nodeType+"] on infrastructure '" + node.getInfrastructure().getName()+"' with id:" + node.getInfrastructure().getId());
 				}

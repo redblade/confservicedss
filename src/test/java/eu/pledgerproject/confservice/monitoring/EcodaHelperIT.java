@@ -62,8 +62,8 @@ public class EcodaHelperIT {
         Set<Node> nodeclusterCloud = new HashSet<Node>();
         nodeclusterCloud.add(cluster1_worker);
         
-        NodeGroup nodeGroupEdge = new NodeGroup("edge", nodeclusterEdge, 600, 600);
-        NodeGroup nodeGroupCloud = new NodeGroup("cloud", nodeclusterCloud, 5000, 5000);
+        NodeGroup nodeGroupEdge = new NodeGroup(NodeGroup.NODE_EDGE, nodeclusterEdge, 600, 600);
+        NodeGroup nodeGroupCloud = new NodeGroup(NodeGroup.NODE_CLOUD, nodeclusterCloud, 5000, 5000);
 
         nodeGroupList.add(nodeGroupEdge);
         nodeGroupList.add(nodeGroupCloud);
@@ -126,8 +126,8 @@ public class EcodaHelperIT {
         Set<Node> nodeclusterCloud = new HashSet<Node>();
         nodeclusterCloud.add(cluster1_worker);
         
-        NodeGroup nodeGroupEdge = new NodeGroup("edge", nodeclusterEdge, 600, 600);
-        NodeGroup nodeGroupCloud = new NodeGroup("cloud", nodeclusterCloud, 5000, 5000);
+        NodeGroup nodeGroupEdge = new NodeGroup(NodeGroup.NODE_EDGE, nodeclusterEdge, 600, 600);
+        NodeGroup nodeGroupCloud = new NodeGroup(NodeGroup.NODE_CLOUD, nodeclusterCloud, 5000, 5000);
 
         nodeGroupList.add(nodeGroupEdge);
         nodeGroupList.add(nodeGroupCloud);

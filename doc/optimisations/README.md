@@ -1,14 +1,17 @@
-This folder contains the spreadsheet to replicate the ECODA (the upcoming TTODA and so on) algorithms to check if the DSS is behaving as expected
+This folder contains the spreadsheet to replicate the ECODA, the TTODA (and so on) algorithms to check if the DSS is behaving as expected
 
 Optimisations implemented so far are:
 - "resource"
-- "latency"
-- "resource_latency"
-- "latency_faredge"
-- "latency_faredge_resource"
+- "offloading"
+- "scaling"
+- "latency" aka ECODA
+- "resource_latency" ECODA + "resource"
+- "latency_faredge" TTODA
 - "custom"
 
 The **resource** optimisation adjusts the cpu/mem reserved resources depending on the actual resource usage of a Service and on the SLA violations received. This optimisation is useful in case of edge and cloud infrastructures with very different cpu (mostly)/mem(less critical) performances and where latency is not critical
+The **offloading** optimisation adjusts the cpu/mem reserved resources depending on the actual resource usage of a Service and on the SLA violations received. This optimisation is useful in case of edge and cloud infrastructures with very different cpu (mostly)/mem(less critical) performances and where latency is not critical
+The **scaling** optimisation adjusts the cpu/mem reserved resources depending on the actual resource usage of a Service and on the SLA violations received. This optimisation is useful in case of edge and cloud infrastructures with very different cpu (mostly)/mem(less critical) performances and where latency is not critical
 
 The **latency** optimisation implements the ECODA algorithm. This optimisation is useful in case of homogeneous edge and cloud infrastructure in terms of cpu/mem where latency is critical
 

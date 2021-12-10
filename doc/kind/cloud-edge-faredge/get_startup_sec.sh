@@ -1,5 +1,5 @@
 #works on Mac OSx
-#example ./get_startup_sec.sh  kind-kubeconfig1.yaml testsp1 sample-app-bash1
+#example ./get_startup_sec.sh  kind-kubeconfig1.yaml testsp1 example-app-bash1
 
 export kubeconfig=$1
 export ns=$2

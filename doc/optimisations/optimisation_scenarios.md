@@ -4,12 +4,22 @@
 
 Optimisations available are the following:
 
-- 'resources': this optimisation manages resource allocation using requests limits
-    - whenever a SLA violation is received about a SLA which is dependent on resources, if used resources are close to the request limits they are increased
-    - if no SLA violations are received for some time and resources used are far below request limits, they are decreased.
-    
-- 'latency': this optimisation reduces an utility function according to the ECODA optimisation algorithm 
-- 'resources_latency': this optimisation combines 'resources' and 'latency' together: requests limits are dynamically changed and ECODA is used to reduce latency
+- 'resource': this optimisation changes the Apps *reserved resources* using the App **requests limits**, like follows:
+    - whenever a SLA violation is received about a SLA which is dependent on resources; if used resources are **close to the resource limits** they are **increased**
+    - if no SLA violations are received for some time; if resources used are **far below resource limits**, they are **decreased**.
+  
+  Depending on the resources availability and the deployment preferences, the DSS:
+    - scales App up/out (if resources need to be increased and there are resources available)
+    - scales App down/in (if App is on the edge and resources need to be decreased)
+    - offloads App from edge to cloud (if App is on the edge, resources need to be increased and there are no resources available on the edge)
+    - offloads App from cloud to edge (if App is on the cloud, resources need to be decreased and there are now resources available on the edge)
+
+- 'offloading': a simplified version of 'resource' optimisation where the Apps are offloaded to the cloud, then back to the edge depending on the SLA violations BUT without changing the reserved resources. The actual resource usage of the App is IGNORED.
+- 'scaling': a simplified version of 'resource' optimisation where the Apps are scaled up/out, then scale down/in depending on the SLA violations BUT without changing the reserved resources. The actual resource usage of the App is IGNORED.
+- 'latency': this optimisation reduces the App latency in a two-tier cloud-edge infrastructure using the ECODA optimisation algorithm 
+- 'resource_latency': this optimisation combines 'resources' and 'latency' together: **resource limits** are dynamically changed as in "resource" and ECODA is used to reduce latency
+- 'latency_faredge': this optimisation reduces the App latency in a three-tier cloud-edge-faredge infrastructure using the TTODA optimisation algorithm
+
 
 SLA are of three types:
 - 'active': this SLA is considered as related to resource consumption, so resource increase is managed to reduce violations
@@ -24,19 +34,15 @@ SLA Violations are consumed by the DSS using Kafka: for the tests, they can be s
 ./send_dev_kafka.sh -t sla_violation -f <my-file>
 ```
 
-<h2> SETUP OF THE TEST ENVIRONMENT </h2>
-Test environment is based on KinD - see the instructions to configure it in ../doc/kind/README.txt
+<h2> SETUP OF THE TEST CLOUD-EDGE ENVIRONMENT </h2>
+Test environment is based on KinD - see the instructions to configure it in ../doc/kind/cloud-edge/README.txt
+This is used to test optimisations of type:
+- 'resource'
+- 'offloading'
+- 'scaling'
+- 'latency'
+- 'resource_latency'
 
-Two Kubernetes infrastructures are configured:
-- cluster1:
-    - cluster1-master : cloud (unavailable for scheduling)
-    - cluster1-worker : cloud (with cpu/mem 5000)
-    - cluster1-worker2: edge  (with cpu/mem 300)
-    - cluster1-worker3: edge  (with cpu/mem 300)
-
-- cluster2:
-    - cluster2-master : cloud  (unavailable for scheduling)
-    - cluster2-worker : cloud  (with cpu/mem 3000)
 
 <h2>  DSS SCENARIO GROUP#1: optimisation of type 'resource', horizontal scaling based on SLA violations received </h2>
 
@@ -259,6 +265,25 @@ result#2: on the other apps see resource requests going DOWN
 get the requests and put them in the ECODA spreadsheet
 
 result#3: the ECODA edge/cloud offloads are coherent
+
+<h2> SETUP OF THE TEST CLOUD-EDGE-FAREDGE ENVIRONMENT </h2>
+Test environment is based on KinD - see the instructions to configure it in ../doc/kind/cloud-edge-faredge/README.txt
+This is used to test optimisations of type:
+- 'latency_faredge'
+
+<h2>  DSS SCENARIO GROUP#6: optimisation of type 'latency_faredge', offloading on edge/cloud based on TTODA optimisation </h2> 
+initial configuration: App example-app-bash1, example-app-bash2, example-app-bash3, example-app-bash4, example-app-bash5, example-app-bash6 running
+
+from ServiceReport, wait for startup time to be available
+get the requests and put them in the [ECODA spreadsheet](ECODA.ods)
+
+check the nodes where the pods are allocated
+
+```
+kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
+```
+
+result: the TTODA edge/cloud offloads are coherent
 
 
 **Note**: videos about these optimisations can be found on the official [Pledger YouTube channel](https://www.youtube.com/channel/UCXV6V9rJ0ZvWhXeoWvDsArQ)
