@@ -22,8 +22,8 @@ ECODA is described here https://www.techrxiv.org/articles/preprint/An_Optimizati
 
 R & M 0..1 
 
-Rn = percentage of CPU requested wrt total capacity (expressed as 0..1)
-Mn = percentage of MEM requested wrt total capacity (expressed as 0..1)
+Rn = percentage of CPU requested wrt total capacity on edge (expressed as 0..1)
+Mn = percentage of MEM requested wrt total capacity on edge (expressed as 0..1)
 Tn = Rn + Mn
 
 Wn = Tn / service priority
@@ -90,7 +90,7 @@ public class ECODAHelper {
 	 * returns the Service allocation score based on ECODA algorithm. See ECODAOptimiser class comment
 	 * 
 	 */
-	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnEdge, int totalCpu4SP, int totalMem4SP) {
+	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnEdge, int totalEdgeCpu4SP, int totalEdgeMem4SP) {
 		double score = 0.0;
 
     	Map<String, String> preferences = ConverterJSON.convertToMap(serviceData.service.getApp().getServiceProvider().getPreferences());
@@ -102,8 +102,8 @@ public class ECODAHelper {
 			int serviceRequestCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(serviceData.service, timestamp);
 			int serviceRequestMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(serviceData.service, timestamp);
 
-			double Rn = 1.0 * serviceRequestCpu / totalCpu4SP;
-			double Mn = 1.0 * serviceRequestMem / totalMem4SP;
+			double Rn = 1.0 * serviceRequestCpu / totalEdgeCpu4SP;
+			double Mn = 1.0 * serviceRequestMem / totalEdgeMem4SP;
 			double Tn = Rn + Mn; 
 			
 			double Wn = serviceData.priority / Tn; 

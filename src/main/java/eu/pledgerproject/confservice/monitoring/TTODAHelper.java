@@ -21,8 +21,8 @@ TTODA algorithm
 R & M are 0..1 
 
 //TODO check formula: total capacity?
-Rn = percentage of CPU requested wrt total capacity (expressed as 0..1)
-Mn = percentage of MEM requested wrt total capacity (expressed as 0..1)
+Rn = percentage of CPU requested wrt total capacity on edge and far-edge (expressed as 0..1)
+Mn = percentage of MEM requested wrt total capacity on edge and far-edge (expressed as 0..1)
 Tn = Rn + Mn
 
 //TODO check formula: reverse?
@@ -83,7 +83,7 @@ public class TTODAHelper {
 	 * returns the Service allocation score based on TTODA algorithm. See TTODAOptimiser class comment
 	 * 
 	 */
-	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnFarEdge, int faredgeTotalCpu4SP, int faredgeTotalMem4SP, Set<Node> nodeSetOnEdge, int edgeTotalCpu4SP, int edgeTotalMem4SP, Set<Node> nodeSetOnCloud, int cloudTotalCpu4SP, int cloudTotalMem4SP) {
+	public Double getOptimisationScore(ServiceData serviceData, Set<Node> nodeSetOnFarEdge, int faredgeTotalCpu4SP, int faredgeTotalMem4SP, Set<Node> nodeSetOnEdge, int edgeTotalCpu4SP, int edgeTotalMem4SP, Set<Node> nodeSetOnCloud) {
 		double score = 0.0;
 
 		Node anyNodeOnFarEdge = nodeSetOnFarEdge.iterator().next();
@@ -93,8 +93,8 @@ public class TTODAHelper {
 			double serviceRequestCpu = 1.0 * ResourceDataReader.getServiceRuntimeCpuRequest(serviceData.service);
 			double serviceRequestMem = 1.0 * ResourceDataReader.getServiceRuntimeMemRequest(serviceData.service);
 
-			double Rn = 1.0 * serviceRequestCpu / (faredgeTotalCpu4SP + edgeTotalCpu4SP + cloudTotalCpu4SP);
-			double Mn = 1.0 * serviceRequestMem / (faredgeTotalMem4SP + edgeTotalMem4SP + cloudTotalMem4SP);
+			double Rn = 1.0 * serviceRequestCpu / (faredgeTotalCpu4SP + edgeTotalCpu4SP);
+			double Mn = 1.0 * serviceRequestMem / (faredgeTotalMem4SP + edgeTotalMem4SP);
 			double Tn = Rn + Mn; 
 			
 			double Wn = Tn / serviceData.priority; 

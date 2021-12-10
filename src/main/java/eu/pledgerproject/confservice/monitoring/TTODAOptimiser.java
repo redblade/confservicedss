@@ -107,9 +107,6 @@ public class TTODAOptimiser {
 			int totalEdgeCpu4SP = 0;
 			int totalEdgeMem4SP = 0;
 
-			int totalCloudCpu4SP = 0;
-			int totalCloudMem4SP = 0;
-			
 			boolean foundFarEdgeNodes = false;
 			boolean foundEdgeNodes = false;
 			boolean foundCloudNodes = false;
@@ -130,9 +127,6 @@ public class TTODAOptimiser {
 			}
 			NodeGroup nodeSetOnCloud = nodeGroupList.get(2);
 			if(nodeSetOnCloud.location.equals(NodeGroup.NODE_CLOUD)) {
-				Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnCloud.nodes);
-				totalCloudCpu4SP += total4SP[0];
-				totalCloudMem4SP += total4SP[1];
 				foundCloudNodes = true;
 			}
 			if(foundFarEdgeNodes && foundEdgeNodes && foundCloudNodes) {
@@ -146,7 +140,7 @@ public class TTODAOptimiser {
 					
 					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ttodaHelper.getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes, totalCloudCpu4SP, totalCloudMem4SP);
+					serviceData.score = ttodaHelper.getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes);
 					log.info("TTODAOptimiser: Service " + service.getName() + " has TTODA score " + serviceData.score);
 					serviceDataList.add(serviceData);
 	 			}

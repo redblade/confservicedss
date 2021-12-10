@@ -100,17 +100,19 @@ public class ECODAOptimiser {
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
 		if(serviceList.size() > 0) {
 			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
-			int totalCpu4SP = 0;
-			int totalMem4SP = 0;
 			
-			for(NodeGroup nodeGroup : nodeGroupList) {
-				Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeGroup.nodes);
-				totalCpu4SP += total4SP[0];
-				totalMem4SP += total4SP[1];
+			int totalEdgeCpu4SP = 0;
+			int totalEdgeMem4SP = 0;
+			
+			NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
+			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_EDGE)) {
+				Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
+				totalEdgeCpu4SP += total4SP[0];
+				totalEdgeMem4SP += total4SP[1];
 			}
 				
 			NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
-			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalCpu4SP > 0 && totalMem4SP > 0) {
+			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalEdgeCpu4SP > 0 && totalEdgeMem4SP > 0) {
 				
 				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
 				for(Service service: serviceList) {
@@ -121,7 +123,7 @@ public class ECODAOptimiser {
 					
 					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalCpu4SP, totalMem4SP);
+					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
 					log.info("ECODAOptimiser: Service " + service.getName() + " has ECODA score " + serviceData.score);
 					serviceDataList.add(serviceData);
 	 			}
