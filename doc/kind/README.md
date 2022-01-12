@@ -10,4 +10,5 @@ This folder contains folders to setup the following test environments:
     
 - **"cloud-edge-faredge"**: KinD environment with  three-tier cloud-edge-faredge infrastructures to test optimisations of type:
      - "latency_faredge" (aka "TTODA")
+     - "resource_latency_faredge" (which combines "resource" with "TTODA")    
     

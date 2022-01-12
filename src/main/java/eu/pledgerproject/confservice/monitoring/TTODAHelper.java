@@ -16,7 +16,7 @@ import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 
 /*
-TTODA algorithm
+TTODA algorithm is described here (TODO add link after the paper is accepted) 
 
 R & M are 0..1 
 
@@ -46,7 +46,7 @@ WORK IN PROGRESS
 
 @Component
 public class TTODAHelper {
-	public static final int SCORE_22_CONSTANT = 100000;
+	public static final int SCORE_22_CONSTANT = 1000000;
 
 	public static final int LATENCY_CHECK_PERIOD_SEC = 7 * 24 * 60 * 60; //7d 
 	
@@ -117,7 +117,7 @@ public class TTODAHelper {
 			double score_15 = Wn * In + Wn * (Lne + Pne - Lnc - Pnc) * score_22 + lambda * (R_caret -1);
 
 			if(score_22 > SCORE_22_CONSTANT) {
-				throw new RuntimeException("score_22 must be lower than " + SCORE_22_CONSTANT);
+				throw new RuntimeException("score_22 is "+score_22+" BUT must be lower than " + SCORE_22_CONSTANT);
 			}
 			score = SCORE_22_CONSTANT * score_22 + score_15;
 		}

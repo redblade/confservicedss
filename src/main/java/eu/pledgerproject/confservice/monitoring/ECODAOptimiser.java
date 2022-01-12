@@ -22,7 +22,6 @@ import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 
 /*
   ECODA optimiser combines ECODA algorithm and is activated by ServiceOptimisation latency
-  ECODA is described here https://www.techrxiv.org/articles/preprint/An_Optimization_Framework_for_Edge-to-Cloud_Offloading_of_Kubernetes_Pods_in_V2X_Scenarios/16725643/1
   See ECODAHelper.class for TTODA algorithm details
 
  */
@@ -118,6 +117,7 @@ public class ECODAOptimiser {
 				for(Service service: serviceList) {
 	
 					//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
+					
 					int requestCpuMillicore = ResourceDataReader.getServiceRuntimeCpuRequest(service);
 					int requestMemoryMB = ResourceDataReader.getServiceRuntimeMemRequest(service);
 					

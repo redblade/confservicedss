@@ -1,6 +1,6 @@
 {
   "name": "confservice",
-  "version": "2.4.9",
+  "version": "2.5.0",
   "description": "ConfServiceDSS",
   "private": true,
   "license": "Apache2",

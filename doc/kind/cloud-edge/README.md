@@ -1,4 +1,4 @@
-##HOWTO test ConfService/DSS with KinD (Kubernetes in Docker) in a cloud-edge infrastructure scenario
+###HOWTO test ConfService/DSS with KinD in a cloud-edge infrastructure
 
 This environment has
 
@@ -7,18 +7,21 @@ This environment has
 - cluster2
 
 6 NODEs 
-- cluster1.control-plane (cloud)
-- cluster1.worker        (cloud)
-- cluster1.worker2       (edge )
-- cluster1.worker3       (edge )
-- cluster2.control-plane (cloud)
-- cluster2.worker        (cloud)
+- cluster1-control-plane (cloud)
+- cluster1-worker        (cloud)
+- cluster1-worker2       (edge )
+- cluster1-worker3       (edge )
+- cluster2-control-plane (cloud)
+- cluster2-worker        (cloud)
+
+Goldpinger[https://github.com/bloomberg/goldpinger] installed to measure the latency among nodes
+metrics-server[https://github.com/kubernetes-sigs/metrics-server] installed to measure the resource allocation
 
 The following instructions can be used to test Optimisations of type:
 - "resource"
 - "scaling"
 - "offloading"
-- "latency" (aka "ECODA")
+- "latency" (aka "ECODA" **src/main/java/eu/pledgerproject/confservice/monitoring/ECODA*.java**])
 - "resource_latency" (which combines "resource" with "ECODA")
 
 ### Create the test environment
@@ -111,16 +114,13 @@ APPs
 - app4 with cpu/mem request 200/200 initial startup 20
 
 
-option.1 add latency to the cluster1 cloud worker and check the values on GoldPinger (response-time measured is latency*2)
+option#1 add latency on cloud worker node, then check the values on GoldPinger (response-time measured is 2xlatency)
+
+cloud node (20ms)
 
 ```
 docker exec -it `docker ps --format '{{.Names}}' | grep cluster1-worker | grep -v worker2 | grep -v worker3` bash
-```
-
-add latency 
-
-```
-tc qdisc add dev eth0 root netem delay 50ms
+tc qdisc add dev eth0 root netem delay 20ms
 ```
 
 remove latency
@@ -129,7 +129,7 @@ remove latency
 tc qdisc del dev eth0 root
 ```
 
-option.2 change startup time
+option#2 change startup time
 
 this adds 60s to normal startup time
 

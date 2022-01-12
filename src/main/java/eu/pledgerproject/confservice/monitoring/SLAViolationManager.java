@@ -75,11 +75,13 @@ public class SLAViolationManager {
 							}
 							*/
 						}
-						//in case of ServiceOptimisation resource or resource_latency, we check whether there is ACTUAL need of more resources or not
+						//in case of ServiceOptimisation resource or resource_latency or resource_latency_faredge, we check whether there is ACTUAL need of more resources or not
 						else if(
+								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources.name())
+								||
 								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources_latency.name())
 								||
-								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources.name())
+								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources_latency_faredge.name())
 						) {
 		
 							int resourceUsedPerc = resourceDataReader.getResourceUsagePercentage(slaViolation.getSla().getService());

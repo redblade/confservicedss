@@ -1,4 +1,4 @@
-##HOWTO test ConfService/DSS with KinD (Kubernetes in Docker) in a cloud-edge-faredge infrastructure scenario
+###HOWTO test ConfService/DSS with KinD in a cloud-edge-faredge infrastructure
 
 
 This environment has
@@ -14,8 +14,12 @@ This environment has
 - cluster1.worker4       (faredge)
 - cluster1.worker5       (faredge)
 
+Goldpinger[https://github.com/bloomberg/goldpinger] installed to measure the latency among nodes
+metrics-server[https://github.com/kubernetes-sigs/metrics-server] installed to measure the resource allocation
+
 The following instructions can be used to test Optimisations of type:
-- "latency_faredge"  (aka "TTODA")
+- "latency_faredge"  (aka "TTODA" **src/main/java/eu/pledgerproject/confservice/monitoring/TTODA*.java**])
+- "resource_latency_faredge"  (which combines "resource" with "TTODA")
 
 ### Create the test environment
 
@@ -81,12 +85,12 @@ INFRASTRUCTUREs
 - cluster1 with 6600m cpu 6600m mem
 
 NODEs 
-- cluster1.control-plane (cloud)    with  400m cpu  400m mem - unavailable for Apps
-- cluster1.worker        (cloud)    with 5000m cpu 5000m mem
-- cluster2.worker        (edge)     with  300m cpu  300m mem
-- cluster2.worker        (edge)     with  300m cpu  300m mem
-- cluster3.worker        (faredge)  with  300m cpu  300m mem
-- cluster3.worker        (faredge)  with  300m cpu  300m mem
+- cluster1-control-plane (cloud)    with  400m cpu  400m mem - unavailable for Apps
+- cluster1-worker        (cloud)    with 5000m cpu 5000m mem
+- cluster1-worker2       (edge)     with  300m cpu  300m mem
+- cluster1-worker3       (edge)     with  300m cpu  300m mem
+- cluster1-worker4       (faredge)  with  300m cpu  300m mem
+- cluster1-worker5       (faredge)  with  300m cpu  300m mem
 
 APPs
 - app1 with cpu/mem request 250/250 initial startup 15s 
@@ -96,17 +100,25 @@ APPs
 - app5 with cpu/mem request 200/200 initial startup 20s
 - app6 with cpu/mem request 200/200 initial startup 20s
 
-option.1 add latency to the cluster1 cloud worker and check the values on GoldPinger (response-time measured is latency*2)
+option#1 add latency on cloud and edge worker nodes, then check the values on GoldPinger (response-time measured is 2xlatency)
+
+cloud node (20ms):
 
 ```
-docker exec -it `docker ps --format '{{.Names}}' | grep cluster1-worker | grep -v worker2 | grep -v worker3` bash
+docker exec -it `docker ps --format '{{.Names}}' | grep cluster1-worker | grep -v worker2 | grep -v worker3 | grep -v worker4 | grep -v worker5` bash
+tc qdisc add dev eth0 root netem delay 20ms
 ```
 
-add latency 
+edge nodes (10ms):
 
 ```
-tc qdisc add dev eth0 root netem delay 50ms
+docker exec -it `docker ps --format '{{.Names}}' | grep cluster1-worker2` bash
+tc qdisc add dev eth0 root netem delay 10ms
+
+docker exec -it `docker ps --format '{{.Names}}' | grep cluster1-worker3` bash
+tc qdisc add dev eth0 root netem delay 10ms
 ```
+
 
 remove latency
 
@@ -114,7 +126,7 @@ remove latency
 tc qdisc del dev eth0 root
 ```
 
-option.2 change startup time
+option#2 change startup time
 
 this adds 60s to normal startup time
 

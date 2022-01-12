@@ -17,7 +17,6 @@ import eu.pledgerproject.confservice.repository.NodeRepository;
 
 /*
 
-This optimiser implements ECODA algorithm and is activated by ServiceOptimisation latency
 ECODA is described here https://www.techrxiv.org/articles/preprint/An_Optimization_Framework_for_Edge-to-Cloud_Offloading_of_Kubernetes_Pods_in_V2X_Scenarios/16725643/1
 
 R & M 0..1 

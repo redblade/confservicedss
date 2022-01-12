@@ -1,5 +1,6 @@
 package eu.pledgerproject.confservice.monitoring;
 
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -25,19 +26,19 @@ import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 
 /*
 
-This optimiser combines ECODA algorithm with "resource" optimisation and is activated by ServiceOptimisation resources_latency
-See ECODAHelper.class for ECODA algorithm details
+This optimiser combines TTODA algorithm with "resource" optimisation and is activated by ServiceOptimisation resources_latency_faredge
+See TTODAHelper.class for TTODA algorithm details
 */
 
 
 @Component
-public class ECODAResourceOptimiser {
+public class TTODAResourceOptimiser {
 	public static final String DEFAULT_AUTOSCALE_PERCENTAGE = "10";
 
-	private final Logger log = LoggerFactory.getLogger(ECODAResourceOptimiser.class);
+	private final Logger log = LoggerFactory.getLogger(TTODAResourceOptimiser.class);
 	
 	private final ResourceDataReader resourceDataReader;
-	private final ECODAHelper ecodaHelper;
+	private final TTODAHelper ttodaHelper;
 	private final ServiceProviderRepository serviceProviderRepository;
 	private final SlaViolationRepository slaViolationRepository;
 	private final BenchmarkManager benchmarkManager;
@@ -49,9 +50,9 @@ public class ECODAResourceOptimiser {
 	//One service can belong to multiple Sets, which means it can be offloaded to multiple "infrastructures".
 	//So, the Groups are built as all the possible Node sets for all the services. Then, Group by Group, the optimisation decides where a service could go
 
-	public ECODAResourceOptimiser(ResourceDataReader resourceDataReader, ECODAHelper ecodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
+	public TTODAResourceOptimiser(ResourceDataReader resourceDataReader, TTODAHelper ttodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
 		this.resourceDataReader = resourceDataReader;
-		this.ecodaHelper = ecodaHelper;
+		this.ttodaHelper = ttodaHelper;
 		this.serviceProviderRepository = serviceProviderRepository;
 		this.slaViolationRepository = slaViolationRepository;
 		this.benchmarkManager = benchmarkManager;
@@ -65,7 +66,7 @@ public class ECODAResourceOptimiser {
 		event.setTimestamp(Instant.now());
 		event.setServiceProvider(service.getApp().getServiceProvider());
 		event.setDetails(msg);
-		event.setCategory("EcodaResourceOptimiser");
+		event.setCategory("TTODAResourceOptimiser");
 		event.severity(Event.INFO);
 		eventRepository.save(event);
 	}
@@ -74,7 +75,7 @@ public class ECODAResourceOptimiser {
 		event.setTimestamp(Instant.now());
 		event.setServiceProvider(serviceProvider);
 		event.setDetails(msg);
-		event.setCategory("EcodaResourceOptimiser");
+		event.setCategory("TTODAResourceOptimiser");
 		event.severity(Event.ERROR);
 		eventRepository.save(event);
 	}
@@ -85,7 +86,7 @@ public class ECODAResourceOptimiser {
 	public void doOptimise() {
 		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
-			log.info("ECODAResourceOptimiser started");
+			log.info("TTODAResourceOptimiser started");
 			
 			//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
 			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
@@ -105,9 +106,9 @@ public class ECODAResourceOptimiser {
 				}
 				
 				//then we optimise the services
-				//HERE we assume a SP DOES one ECODA on ALL the services which are labelled with ECODA.
+				//HERE we assume a SP DOES one TTODA on ALL the services which are labelled with TTODA.
 				//Nodes preferences in ServiceConstraints are considered for ALL the services (in AND)
-				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
+				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency_faredge.name());
 				doOptimise(serviceProvider, serviceList);
 			}
 		}
@@ -115,20 +116,37 @@ public class ECODAResourceOptimiser {
 	
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
 		if(serviceList.size() > 0) {
-			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
-			
+
+			List<NodeGroup> nodeGroupList = ttodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+			int totalFarEdgeCpu4SP = 0;
+			int totalFarEdgeMem4SP = 0;
+
 			int totalEdgeCpu4SP = 0;
 			int totalEdgeMem4SP = 0;
+
+			boolean foundFarEdgeNodes = false;
+			boolean foundEdgeNodes = false;
+			boolean foundCloudNodes = false;
 			
 			NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
-			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_EDGE)) {
-				Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
+			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_FAREDGE)) {
+				Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
+				totalFarEdgeCpu4SP += total4SP[0];
+				totalFarEdgeMem4SP += total4SP[1];
+				foundFarEdgeNodes = true;
+			}
+			NodeGroup nodeSetOnEdge = nodeGroupList.get(1);
+			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE)) {
+				Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnEdge.nodes);
 				totalEdgeCpu4SP += total4SP[0];
 				totalEdgeMem4SP += total4SP[1];
+				foundEdgeNodes = true;
 			}
-				
-			NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
-			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalEdgeCpu4SP > 0 && totalEdgeMem4SP > 0) {
+			NodeGroup nodeSetOnCloud = nodeGroupList.get(2);
+			if(nodeSetOnCloud.location.equals(NodeGroup.NODE_CLOUD)) {
+				foundCloudNodes = true;
+			}
+			if(foundFarEdgeNodes && foundEdgeNodes && foundCloudNodes) {
 				
 				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
 				for(Service service: serviceList) {
@@ -140,28 +158,30 @@ public class ECODAResourceOptimiser {
 					
 					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
-					log.info("ECODAOptimiser: Service " + service.getName() + " has ECODA score " + serviceData.score);
+					serviceData.score = ttodaHelper.getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes);
+					log.info("TTODAResourceOptimiser: Service " + service.getName() + " has TTODA score " + (new DecimalFormat("#").format(serviceData.score)));
 					serviceDataList.add(serviceData);
 	 			}
 				Collections.sort(serviceDataList);
-
+				
 				//the allocation plan, based on the optimised ServiceData list
 				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
 				if(serviceOptimisedAllocationPlan == null) {
-					log.error("ECODAResourceOptimiser error: not enough resources on the worse option(cloud)");
+					log.error("TTODAResourceOptimiser error: not enough resources on the worse option(cloud)");
 					saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 				}
 				else { 
 					if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
-						log.info("ECODAResourceOptimiser: no offloadings needed");
+						log.info("TTODAResourceOptimiser: no offloadings needed");
 					}
 					else {
 						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
 							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
-							log.info("ECODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
+							log.info("TTODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
 							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
+	
 							serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
+							saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode);
 						}
 					}
 				}

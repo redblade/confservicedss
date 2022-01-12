@@ -40,4 +40,6 @@ From here, Jenkins build number was restarted
 2.4.7b42:pledgerui_v32   - added SOE provisioning features from Project entity
 2.4.8b51:pledgerui_v32   - added scaling and offloading optimisations benchmarksummary servicebenchmarkmatch initial Docker management
 2.4.9b52:pledgerui_v32   - setting the ground for TTODA - initial implementation
+2.5.0b53:pledgerui_v32   - TTODA implementation + TTODA resource implementation (faredge_latency and resource_faredge_latency optimisations)
+
 
