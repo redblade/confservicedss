@@ -14,8 +14,8 @@ This environment has
 - cluster2-control-plane (cloud)
 - cluster2-worker        (cloud)
 
-Goldpinger[https://github.com/bloomberg/goldpinger] installed to measure the latency among nodes
-metrics-server[https://github.com/kubernetes-sigs/metrics-server] installed to measure the resource allocation
+[Goldpinger](https://github.com/bloomberg/goldpinger) installed to measure the latency among nodes
+[metrics-server](https://github.com/kubernetes-sigs/metrics-server) installed to measure the resource allocation
 
 The following instructions can be used to test Optimisations of type:
 - "resource"
@@ -86,7 +86,7 @@ open http://localhost:30092
 
 ```
 mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"
-java -cp target/confservicedss-2.4.4.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_kind.sql localhost 3306 root root
+java -cp target/confservicedss-x.y.z.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_kind.sql localhost 3306 root root
 
 ```
 
