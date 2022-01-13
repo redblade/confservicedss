@@ -108,7 +108,7 @@ An example is provided below:
 
 ```
 mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"
-java -cp target/confservicedss-2.4.4.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_base.sql localhost 3306 root root
+java -cp target/confservicedss-x.y.z.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_base.sql localhost 3306 root root
 ```
 
 The lock table ''db_lock' is automatically re-created by InitDB; if necessary, it can also be created with 
