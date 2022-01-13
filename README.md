@@ -5,7 +5,7 @@ This file contains the main instruction to build and run ConfService and DSS cor
 
 ### Development
 
-ConfServiceDSS is based on [JHipster 6.10.5](https://www.jhipster.tech/documentation-archive/v6.10.5) with [this model file](jhipster-jdl.jdl). Before you can build this project, you must install and configure the following dependencies on your machine with minimal version highlighted:
+ConfService and DSS core components are based on [JHipster 6.10.5](https://www.jhipster.tech/documentation-archive/v6.10.5) with [this model file](jhipster-jdl.jdl). Before you can build this project, you must install and configure the following dependencies on your machine with minimal version highlighted:
 
 - [OpenJDK](https://openjdk.java.net/) or [AdoptJDK](https://adoptopenjdk.net/) v1.8: Java Developer Kit is used to run the project services
 - [Maven](https://maven.apache.org/) v3.3: Maven is used to build the project
@@ -130,9 +130,8 @@ java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspen
 ```
 
 ### Documentation
-Some documentation is provided in the "doc" folder. More details are provided in the Pledger project deliverables section
-
-
+Some documentation is provided in the "doc" folder, please check the doc/README.md file.
+More details are provided in the Pledger project deliverables section
 
 
 ###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.

@@ -1,8 +1,8 @@
-The Python3 scripts in this folders allows to send msg on Kafka (dev/prod)
-They require kafka-python to be installed (pip3 install kafka-python)
+The Python3 scripts in this folders allows to send msg on Kafka (dev/prod), basically SLA violations to be consumed by the DSS.
+Such scripts require kafka-python to be installed (pip3 install kafka-python)
 
 
-HOWTO get ca, cert and key from JKS
+Side notes about how to get ca, cert and key from JKS
 keytool (and openssl) are needed
 sudo apt install openjdk-11-jre-headless -y
 
