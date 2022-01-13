@@ -16,10 +16,10 @@ Optimisations are:
 
 - 'offloading': a simplified version of 'resource' optimisation where the Apps are offloaded to the cloud, then back to the edge depending on the SLA violations BUT without changing the reserved resources. The actual resource usage of the App is IGNORED.
 - 'scaling': a simplified version of 'resource' optimisation where the Apps are scaled up/out, then scale down/in depending on the SLA violations BUT without changing the reserved resources. The actual resource usage of the App is IGNORED.
-- 'latency': this optimisation reduces the App latency in a two-tier cloud-edge infrastructure using the ECODA optimisation algorithm 
+- 'latency': this optimisation reduces the App latency in a two-tier cloud-edge infrastructure using the ECODA  algorithm that is run periodically to check the parameters it relies on: reserved resources, priorities, startup times, cloud/edge resource capacity and cloud->edge latency
 - 'resource_latency': this optimisation combines 'resources' and 'latency' together: **resource limits** are dynamically changed as in "resource" and ECODA is used to reduce latency
-- 'latency_faredge': this optimisation reduces the App latency in a three-tier cloud-edge-faredge infrastructure using the TTODA optimisation algorithm
-- 'resource_latency_faredge': this optimisation combines 'resources' and 'latency_faredge' together: **resource limits** are dynamically changed as in "resource" and TTODA is used to reduce latency on faredge
+- 'latency_faredge': this optimisation reduces the App latency in a three-tier cloud-edge-faredge infrastructure using the TTODA algorithm that is run periodically to check the parameters it relies on: reserved resources, priorities, startup times, cloud/edge/faredge resource capacity and cloud->edge and edge->faredge latencies
+- 'resource_latency_faredge': this optimisation combines 'resources' and 'latency_faredge' together: **resource limits** are dynamically changed as in "resource" and TTODA is used to reduce latency
 
 
 SLA are:
