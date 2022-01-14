@@ -18,8 +18,8 @@ import eu.pledgerproject.confservice.domain.Sla;
 import eu.pledgerproject.confservice.domain.SlaViolation;
 import eu.pledgerproject.confservice.domain.enumeration.SlaViolationType;
 import eu.pledgerproject.confservice.message.dto.SlaViolationDTO;
-import eu.pledgerproject.confservice.monitoring.SLAOptimisationType;
-import eu.pledgerproject.confservice.monitoring.SlaViolationStatus;
+import eu.pledgerproject.confservice.optimisation.SLAOptimisationType;
+import eu.pledgerproject.confservice.optimisation.SLAViolationStatus;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.GuaranteeRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
@@ -75,17 +75,17 @@ public class ConsumerSlaViolationDTO {
 	    		//we only process violations which belong to SLA with type 'active' AND in case the service has got any others with type 'suspend' within the last X min
 	    		if(SLAOptimisationType.suspend.toString().equals(sla.getType())){
 	    			saveInfoEvent("DSS received a SLA violation of type 'suspend', so future violations on service " + sla.getService().getName() + " will be ignored");
-	    			slaViolation.setStatus(SlaViolationStatus.closed_suspend.toString());
+	    			slaViolation.setStatus(SLAViolationStatus.closed_suspend.toString());
 	    		}
 	    		else if(isResourceManagementSuspendedOnService(sla.getService())) {
 	    			saveInfoEvent("DSS received a SLA violation that will be ignored because a recent SLA violation of type 'suspend' was received");
-	    			slaViolation.setStatus(SlaViolationStatus.closed_skip.toString());
+	    			slaViolation.setStatus(SLAViolationStatus.closed_skip.toString());
 	    		}
 	    		else if(SLAOptimisationType.ignore.toString().equals(sla.getType())){
-	    			slaViolation.setStatus(SlaViolationStatus.closed_ignored.toString());
+	    			slaViolation.setStatus(SLAViolationStatus.closed_ignored.toString());
 	    		}
 	    		else if(SLAOptimisationType.active.toString().equals(sla.getType())){
-	    			slaViolation.setStatus(SlaViolationStatus.open.toString());
+	    			slaViolation.setStatus(SLAViolationStatus.open.toString());
 	    		}
 
 	    		slaViolation.setViolationName(guarantee.get().getName());
@@ -106,7 +106,7 @@ public class ConsumerSlaViolationDTO {
     
     private boolean isResourceManagementSuspendedOnService(Service service) {
     	Instant timestamp = Instant.now().minusSeconds(60 * MINS_TO_SUSPEND);
-    	List<SlaViolation> slaViolationList = slaViolationRepository.findAllByServiceAndStatusSinceTimestampRegardlessOfOptimisationType(service, SlaViolationStatus.closed_suspend.name(), timestamp);
+    	List<SlaViolation> slaViolationList = slaViolationRepository.findAllByServiceAndStatusSinceTimestampRegardlessOfOptimisationType(service, SLAViolationStatus.closed_suspend.name(), timestamp);
     	return slaViolationList.size() > 0;
     }
     

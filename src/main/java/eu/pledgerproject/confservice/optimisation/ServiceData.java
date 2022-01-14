@@ -1,20 +1,21 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Service;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 
 public class ServiceData implements Comparable<ServiceData>{
 	public static final double ROUND = 100;
 	
-	Service service;
-	int priority;
-	Double score;
+	public Service service;
+	public int priority;
+	public Double score;
 
-	Node currentNode;
-	int requestMemoryMB;
-	int requestCpuMillicore;
+	public Node currentNode;
+	public int requestMemoryMB;
+	public int requestCpuMillicore;
 	
-	boolean requestsAreChanged;
+	public boolean requestsAreChanged;
 
 	public ServiceData(Service service, int requestCpuMillicoreNew, int requestMemoryMBNew){
 		this.service = service;

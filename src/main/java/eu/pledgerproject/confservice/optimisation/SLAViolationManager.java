@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceOptimisation;
 import eu.pledgerproject.confservice.domain.SlaViolation;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 
 @Component
@@ -34,7 +37,7 @@ public class SLAViolationManager {
 
 			log.info("SLAViolationManager started");
 	
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByStatus(SlaViolationStatus.open.name())){
+			for(SlaViolation slaViolation : slaViolationRepository.findAllByStatus(SLAViolationStatus.open.name())){
 				Service service = slaViolation.getSla().getService();
 				Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
 				int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
@@ -43,7 +46,7 @@ public class SLAViolationManager {
 				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
 				
 				if(slaViolation.getTimestamp().isBefore(startTime)) {
-					slaViolation.setStatus(SlaViolationStatus.closed_ignored.name());
+					slaViolation.setStatus(SLAViolationStatus.closed_ignored.name());
 					slaViolationRepository.save(slaViolation);		
 				}
 				else {
@@ -60,7 +63,7 @@ public class SLAViolationManager {
 						) {
 		
 							//These two optimisations are really basic: shall we at least verify there is need of resources here? It seems UCs do not need this, so this check is disabled
-							slaViolation.setStatus(SlaViolationStatus.elab_resources_needed.name());
+							slaViolation.setStatus(SLAViolationStatus.elab_resources_needed.name());
 							slaViolationRepository.save(slaViolation);
 
 							/*
@@ -75,7 +78,7 @@ public class SLAViolationManager {
 							}
 							*/
 						}
-						//in case of ServiceOptimisation resource or resource_latency or resource_latency_faredge, we check whether there is ACTUAL need of more resources or not
+						//in case of ServiceOptimisation resource or resources_latency or resources_latency_faredge, we check whether there is ACTUAL need of more resources or not
 						else if(
 								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.resources.name())
 								||
@@ -86,11 +89,11 @@ public class SLAViolationManager {
 		
 							int resourceUsedPerc = resourceDataReader.getResourceUsagePercentage(slaViolation.getSla().getService());
 							if(resourceUsedPerc > RESOURCE_USED_PERCENTAGE_THRESHOLD) {
-								slaViolation.setStatus(SlaViolationStatus.elab_resources_needed.name());
+								slaViolation.setStatus(SLAViolationStatus.elab_resources_needed.name());
 								slaViolationRepository.save(slaViolation);
 							}
 							else {
-								slaViolation.setStatus(SlaViolationStatus.elab_no_action_needed.name());
+								slaViolation.setStatus(SLAViolationStatus.elab_no_action_needed.name());
 								slaViolationRepository.save(slaViolation);
 							}
 						}
@@ -98,11 +101,11 @@ public class SLAViolationManager {
 						else if(
 								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.latency.name())
 						) {
-							slaViolation.setStatus(SlaViolationStatus.closed_not_critical.name());
+							slaViolation.setStatus(SLAViolationStatus.closed_not_critical.name());
 							slaViolationRepository.save(slaViolation);
 						}
 						else if(serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.webhook.name())) {
-							slaViolation.setStatus(SlaViolationStatus.elab_no_action_needed.name());
+							slaViolation.setStatus(SLAViolationStatus.elab_no_action_needed.name());
 							slaViolationRepository.save(slaViolation);					
 						}
 					}			

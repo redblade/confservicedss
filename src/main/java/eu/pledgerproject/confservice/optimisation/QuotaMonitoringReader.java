@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -18,6 +18,9 @@ import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Project;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.MonitoringService;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.InfrastructureReportRepository;
 import eu.pledgerproject.confservice.repository.ProjectRepository;

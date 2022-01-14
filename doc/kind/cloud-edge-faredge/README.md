@@ -19,7 +19,7 @@ This environment has
 
 The following instructions can be used to test Optimisations of type:
 - "latency_faredge"  (aka "TTODA" **src/main/java/eu/pledgerproject/confservice/monitoring/TTODA*.java**])
-- "resource_latency_faredge"  (which combines "resource" with "TTODA")
+- "resources_latency_faredge"  (which combines "resource" with "TTODA")
 
 ### Create the test environment
 

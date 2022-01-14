@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 public enum ServiceOptimisationType {
 	scaling,

@@ -26,7 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
-import eu.pledgerproject.confservice.monitoring.ServiceResourceOptimiser;
+import eu.pledgerproject.confservice.optimisation.ServiceResourceOptimiser;
 import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 import eu.pledgerproject.confservice.service.ServiceService;
 import eu.pledgerproject.confservice.web.rest.errors.BadRequestAlertException;

@@ -68,7 +68,7 @@ user roles:
     - **offloading**: the DSS offloads to the cloud or to the edge based on the SLA violations received. More details in the DSS component.
     - **resource**: the DSS dynamically changes the Service reserved resources. More details in the DSS component.
     - **latency**: the DSS optimises the edge-to-cloud latency according to ECODA algorithm
-    - **resource_latency**: the DSS dynamically changes the Service resource reserved AND also optimises the edge-to-cloud latency according to ECODA algorithm 
+    - **resources_latency**: the DSS dynamically changes the Service resource reserved AND also optimises the edge-to-cloud latency according to ECODA algorithm 
     - **webhook**: the DSS invokes an external URL when a violation is received to allow custom automations
 
 
@@ -100,7 +100,7 @@ user roles:
     - **scaling**: it directly scales up/out or down/in as with **resource** BUT without dynamically changing the resources reserved
     - **offloading**: it directly offloads to the cloud or edge as with **resource** BUT without dynamically changing the resources reserved
     - **latency**: periodically checks the ECODA monitoring metrics. Depending on the new deployment plan updates and on the **severity score**, the DSS triggers the offloading sending messages on Kafka for the **Orchestrator**
-    - **resource_latency**: works as with **resource** and also checking the ECODA monitoring metrics. Eventually the DSS triggers the scaling/offloading sending messages on Kafka for the **Orchestrator**
+    - **resources_latency**: works as with **resource** and also checking the ECODA monitoring metrics. Eventually the DSS triggers the scaling/offloading sending messages on Kafka for the **Orchestrator**
     - **webhook**: invokes an external URL to allow custom automation
 - [A] the DSS, when offloading, decides the Nodes where to run the Service. If more than one are available with the same **severity score**, it uses Benchmarks (with the best "performance_index" metric) to choose the Node
 - [A] the DSS, to choose which Benchmark to use for a given Service, in case no Benchmark name is configured for a Service (by the AppProfiler), matches the App labels with the Benchmark ones

@@ -15,6 +15,8 @@ import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.NodeReport;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceReport;
+import eu.pledgerproject.confservice.optimisation.ResourceSteadyOptimiser;
+import eu.pledgerproject.confservice.optimisation.ServiceResourceOptimiser;
 import eu.pledgerproject.confservice.repository.NodeReportRepository;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
@@ -151,14 +153,14 @@ public class ResourceDataReader {
 		return result;
 	}
 	public Integer getServiceMaxCpuUsedInPeriod(Service service, Instant timestamp) {
-		Integer result = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
+		Integer result = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
 		if(result == null) {
 			result = ResourceDataReader.getServiceMinCpuRequest(service);
 		}
 		return result;
 	}
 	public Integer getServiceMaxMemUsedInPeriod(Service service, Instant timestamp) {
-		Integer result = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
+		Integer result = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.CPU_LABEL, timestamp);
 		if(result == null) {
 			result = ResourceDataReader.getServiceMinMemRequest(service);
 		}

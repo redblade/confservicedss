@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -15,12 +15,18 @@ import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceOptimisation;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.SlaViolation;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceOptimisationRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+
+/**
+this optimiser implements "webhook" Optimisation
+*/
 
 @Component
 public class CustomServiceOptimiser {
@@ -79,8 +85,8 @@ public class CustomServiceOptimiser {
 				Instant stopTime = Instant.now();
 				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
 				
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.webhook.name(), startTime)) {
-					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.webhook.name(), startTime)) {
+					slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 					slaViolationRepository.save(slaViolation);
 					doOptimise(serviceProvider, slaViolation.getSla().getService());
 				}

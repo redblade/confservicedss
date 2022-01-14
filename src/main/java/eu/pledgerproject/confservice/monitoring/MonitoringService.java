@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import eu.pledgerproject.confservice.domain.Event;
 import eu.pledgerproject.confservice.domain.Infrastructure;
+import eu.pledgerproject.confservice.optimisation.QuotaMonitoringReader;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.InfrastructureRepository;
 

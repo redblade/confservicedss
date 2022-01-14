@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import eu.pledgerproject.confservice.domain.App;
 import eu.pledgerproject.confservice.domain.AppDeploymentOptions;
-import eu.pledgerproject.confservice.monitoring.DeploymentOptionsManager;
+import eu.pledgerproject.confservice.optimisation.DeploymentOptionsManager;
 import eu.pledgerproject.confservice.repository.AppRepository;
 import eu.pledgerproject.confservice.service.AppDeploymentOptionsService;
 

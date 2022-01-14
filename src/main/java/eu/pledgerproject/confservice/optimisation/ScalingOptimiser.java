@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -14,11 +14,20 @@ import eu.pledgerproject.confservice.domain.Event;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.SlaViolation;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
+
+/**
+this optimiser implements "scaling" Optimisation
+
+*/
+
 
 @Component
 public class ScalingOptimiser {
@@ -81,23 +90,23 @@ public class ScalingOptimiser {
 					
 					boolean criticalService = false;
 					boolean steadyService = false;
-					for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.scaling.name(), startTime)) {
+					for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.scaling.name(), startTime)) {
 						if(service.getLastChangedStatus().isBefore(slaViolation.getTimestamp())) {
-							slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
+							slaViolation.setStatus(SLAViolationStatus.closed_critical.toString());
 							slaViolationRepository.save(slaViolation);
 							criticalService = true;
 						}
 						else {
-							slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
+							slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 							slaViolationRepository.save(slaViolation);
 						}
 					}
-					for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.scaling.name(), startTime)) {
-						slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
+					for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.scaling.name(), startTime)) {
+						slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 						slaViolationRepository.save(slaViolation);
 					}
 
-					List<SlaViolation> slaViolationCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.scaling.name(), startTime);
+					List<SlaViolation> slaViolationCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.scaling.name(), startTime);
 					steadyService = slaViolationCritical.size() == 0 && service.getLastChangedStatus().isBefore(startTime);
 					
 					String autoscalePercentage = preferences.get("autoscale.percentage");

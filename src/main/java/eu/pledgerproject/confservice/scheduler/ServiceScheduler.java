@@ -27,11 +27,11 @@ import eu.pledgerproject.confservice.message.PublisherOrchestrationUpdate;
 import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
 import eu.pledgerproject.confservice.monitoring.ControlFlags;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
-import eu.pledgerproject.confservice.monitoring.DeploymentOptionsManager;
 import eu.pledgerproject.confservice.monitoring.MonitoringService;
-import eu.pledgerproject.confservice.monitoring.RankingManager;
 import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
-import eu.pledgerproject.confservice.monitoring.SlaViolationStatus;
+import eu.pledgerproject.confservice.optimisation.DeploymentOptionsManager;
+import eu.pledgerproject.confservice.optimisation.RankingManager;
+import eu.pledgerproject.confservice.optimisation.SLAViolationStatus;
 import eu.pledgerproject.confservice.repository.CriticalServiceRepository;
 import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
@@ -285,7 +285,7 @@ public class ServiceScheduler {
 						criticalServiceRepository.delete(criticalServiceDB.get());
 					}
 					for(SlaViolation slaViolation : slaViolationRepository.findAllNotClosed(service)) {
-						slaViolation.setStatus(SlaViolationStatus.closed_app_stop.name());
+						slaViolation.setStatus(SLAViolationStatus.closed_app_stop.name());
 						slaViolationRepository.save(slaViolation);
 					}
 				}

@@ -22,7 +22,7 @@ The following instructions can be used to test Optimisations of type:
 - "scaling"
 - "offloading"
 - "latency" (aka "ECODA" **src/main/java/eu/pledgerproject/confservice/monitoring/ECODA*.java**])
-- "resource_latency" (which combines "resource" with "ECODA")
+- "resources_latency" (which combines "resource" with "ECODA")
 
 ### Create the test environment
 First, install [Kind tool](https://kind.sigs.k8s.io/docs/user/quick-start/)

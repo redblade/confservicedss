@@ -8,7 +8,7 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import eu.pledgerproject.confservice.monitoring.ResourceSteadyServiceOptimiser;
+import eu.pledgerproject.confservice.optimisation.ResourceSteadyOptimiser;
 
 public class ResourceUsage {
 	public static String CPU = "cpu";
@@ -37,7 +37,7 @@ public class ResourceUsage {
 					try(PreparedStatement ps = connDrop.prepareStatement(insertSQL)){
 						for(int i= 0; i<count; i++) {
 							
-							ps.setString(1, ResourceSteadyServiceOptimiser.RESOURCE_USAGE_CATEGORY);
+							ps.setString(1, ResourceSteadyOptimiser.RESOURCE_USAGE_CATEGORY);
 							ps.setString(2, group);
 							ps.setTimestamp(4, new java.sql.Timestamp(time - (count -i - 1) * stepSec * 1000));
 							ps.setLong(6, service_id);

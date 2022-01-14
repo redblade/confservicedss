@@ -1,6 +1,5 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
-import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -18,27 +17,32 @@ import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.SlaViolation;
+import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 
-/*
+/**
+this optimiser implements "resources_latency" Optimisation which uses ECODA algorithm combined with "resources" optimisation
+See ECODAHelper.class for ECODA algorithm details
 
-This optimiser combines TTODA algorithm with "resource" optimisation and is activated by ServiceOptimisation resources_latency_faredge
-See TTODAHelper.class for TTODA algorithm details
-*/
+ */
+
 
 
 @Component
-public class TTODAResourceOptimiser {
+public class ECODAResourceOptimiser {
 	public static final String DEFAULT_AUTOSCALE_PERCENTAGE = "10";
 
-	private final Logger log = LoggerFactory.getLogger(TTODAResourceOptimiser.class);
+	private final Logger log = LoggerFactory.getLogger(ECODAResourceOptimiser.class);
 	
 	private final ResourceDataReader resourceDataReader;
-	private final TTODAHelper ttodaHelper;
+	private final ECODAHelper ecodaHelper;
 	private final ServiceProviderRepository serviceProviderRepository;
 	private final SlaViolationRepository slaViolationRepository;
 	private final BenchmarkManager benchmarkManager;
@@ -50,9 +54,9 @@ public class TTODAResourceOptimiser {
 	//One service can belong to multiple Sets, which means it can be offloaded to multiple "infrastructures".
 	//So, the Groups are built as all the possible Node sets for all the services. Then, Group by Group, the optimisation decides where a service could go
 
-	public TTODAResourceOptimiser(ResourceDataReader resourceDataReader, TTODAHelper ttodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
+	public ECODAResourceOptimiser(ResourceDataReader resourceDataReader, ECODAHelper ecodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
 		this.resourceDataReader = resourceDataReader;
-		this.ttodaHelper = ttodaHelper;
+		this.ecodaHelper = ecodaHelper;
 		this.serviceProviderRepository = serviceProviderRepository;
 		this.slaViolationRepository = slaViolationRepository;
 		this.benchmarkManager = benchmarkManager;
@@ -66,7 +70,7 @@ public class TTODAResourceOptimiser {
 		event.setTimestamp(Instant.now());
 		event.setServiceProvider(service.getApp().getServiceProvider());
 		event.setDetails(msg);
-		event.setCategory("TTODAResourceOptimiser");
+		event.setCategory("EcodaResourceOptimiser");
 		event.severity(Event.INFO);
 		eventRepository.save(event);
 	}
@@ -75,7 +79,7 @@ public class TTODAResourceOptimiser {
 		event.setTimestamp(Instant.now());
 		event.setServiceProvider(serviceProvider);
 		event.setDetails(msg);
-		event.setCategory("TTODAResourceOptimiser");
+		event.setCategory("EcodaResourceOptimiser");
 		event.severity(Event.ERROR);
 		eventRepository.save(event);
 	}
@@ -86,7 +90,7 @@ public class TTODAResourceOptimiser {
 	public void doOptimise() {
 		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
-			log.info("TTODAResourceOptimiser started");
+			log.info("ECODAResourceOptimiser started");
 			
 			//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
 			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
@@ -96,19 +100,19 @@ public class TTODAResourceOptimiser {
 				Instant stopTime = Instant.now();
 				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
 				
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
-					slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+					slaViolation.setStatus(SLAViolationStatus.closed_critical.toString());
 					slaViolationRepository.save(slaViolation);
 				}
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
-					slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+					slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 					slaViolationRepository.save(slaViolation);
 				}
 				
 				//then we optimise the services
-				//HERE we assume a SP DOES one TTODA on ALL the services which are labelled with TTODA.
+				//HERE we assume a SP DOES one ECODA on ALL the services which are labelled with ECODA.
 				//Nodes preferences in ServiceConstraints are considered for ALL the services (in AND)
-				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency_faredge.name());
+				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
 				doOptimise(serviceProvider, serviceList);
 			}
 		}
@@ -116,37 +120,20 @@ public class TTODAResourceOptimiser {
 	
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
 		if(serviceList.size() > 0) {
-
-			List<NodeGroup> nodeGroupList = ttodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
-			int totalFarEdgeCpu4SP = 0;
-			int totalFarEdgeMem4SP = 0;
-
+			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+			
 			int totalEdgeCpu4SP = 0;
 			int totalEdgeMem4SP = 0;
-
-			boolean foundFarEdgeNodes = false;
-			boolean foundEdgeNodes = false;
-			boolean foundCloudNodes = false;
 			
 			NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
-			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_FAREDGE)) {
-				Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
-				totalFarEdgeCpu4SP += total4SP[0];
-				totalFarEdgeMem4SP += total4SP[1];
-				foundFarEdgeNodes = true;
-			}
-			NodeGroup nodeSetOnEdge = nodeGroupList.get(1);
-			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE)) {
-				Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnEdge.nodes);
+			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_EDGE)) {
+				Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
 				totalEdgeCpu4SP += total4SP[0];
 				totalEdgeMem4SP += total4SP[1];
-				foundEdgeNodes = true;
 			}
-			NodeGroup nodeSetOnCloud = nodeGroupList.get(2);
-			if(nodeSetOnCloud.location.equals(NodeGroup.NODE_CLOUD)) {
-				foundCloudNodes = true;
-			}
-			if(foundFarEdgeNodes && foundEdgeNodes && foundCloudNodes) {
+				
+			NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
+			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalEdgeCpu4SP > 0 && totalEdgeMem4SP > 0) {
 				
 				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
 				for(Service service: serviceList) {
@@ -158,30 +145,28 @@ public class TTODAResourceOptimiser {
 					
 					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ttodaHelper.getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes);
-					log.info("TTODAResourceOptimiser: Service " + service.getName() + " has TTODA score " + (new DecimalFormat("#").format(serviceData.score)));
+					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
+					log.info("ECODAOptimiser: Service " + service.getName() + " has ECODA score " + serviceData.score);
 					serviceDataList.add(serviceData);
 	 			}
 				Collections.sort(serviceDataList);
-				
+
 				//the allocation plan, based on the optimised ServiceData list
 				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
 				if(serviceOptimisedAllocationPlan == null) {
-					log.error("TTODAResourceOptimiser error: not enough resources on the worse option(cloud)");
+					log.error("ECODAResourceOptimiser error: not enough resources on the worse option(cloud)");
 					saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 				}
 				else { 
 					if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
-						log.info("TTODAResourceOptimiser: no offloadings needed");
+						log.info("ECODAResourceOptimiser: no offloadings needed");
 					}
 					else {
 						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
 							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
-							log.info("TTODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
+							log.info("ECODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
 							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
-	
 							serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
-							saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode);
 						}
 					}
 				}
@@ -205,7 +190,7 @@ public class TTODAResourceOptimiser {
 
 		//if there have been violations then we need to increase resources
 		Instant timestampCritical = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
-		List<SlaViolation> slaViolationListCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampCritical);
+		List<SlaViolation> slaViolationListCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampCritical);
 		if(slaViolationListCritical.size() > 0) {
 			result[0] = (int) (result[0] * (100.0 + autoscalePercentageInt)/100.0);
 			result[1] = (int) (result[1] * (100.0 + autoscalePercentageInt)/100.0);
@@ -215,7 +200,7 @@ public class TTODAResourceOptimiser {
 		else {
 			Instant timestampSteady = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
 
-			List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampSteady);
+			List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampSteady);
 			if(service.getLastChangedStatus().isBefore(timestampSteady) && slaViolationCriticalList.size() == 0) {
 				int minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 				int minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);

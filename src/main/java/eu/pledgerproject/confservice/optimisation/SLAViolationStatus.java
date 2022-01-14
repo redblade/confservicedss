@@ -1,6 +1,6 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
-public enum SlaViolationStatus {
+public enum SLAViolationStatus {
 	open,					  //just created by the Kafka consumer
 	closed_suspend,			  //this means the SLA Violation is NOT resource dependent, it will suspend the elaboration of future SLA Violations on the same service for some time
 	closed_skip,			  //this means the SLA Violation is resource dependent BUT it has been skipped as a SLA Violation of type suspend has been recently received

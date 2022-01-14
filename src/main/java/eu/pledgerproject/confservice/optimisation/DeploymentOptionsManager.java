@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +18,8 @@ import eu.pledgerproject.confservice.domain.App;
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceConstraint;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.AppRepository;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 import eu.pledgerproject.confservice.repository.ServiceConstraintRepository;

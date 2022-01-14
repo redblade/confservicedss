@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,15 +22,23 @@ import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.SlaViolation;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.CriticalServiceRepository;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 
+/**
+this optimiser implements "resources" Optimisation and works in tandem with ResourceSteadyOptimiser
+Its goal is to increase reserved resources if SLA violations are received 
+ */
+
 @Component
-public class ResourceCriticalServiceOptimiser {
+public class ResourceCriticalOptimiser {
 	public static final String NO_ACTION_TAKEN = "No action taken - score within limits";
-    private final Logger log = LoggerFactory.getLogger(ResourceCriticalServiceOptimiser.class);
+    private final Logger log = LoggerFactory.getLogger(ResourceCriticalOptimiser.class);
     
     public static int SCORE_THRESHOLD = 100;
 
@@ -41,7 +49,7 @@ public class ResourceCriticalServiceOptimiser {
 	private final ServiceResourceOptimiser serviceResourceOptimiser;
 	private final ResourceDataReader resourceDataReader;
 
-    public ResourceCriticalServiceOptimiser(CriticalServiceRepository criticalServiceRepository, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, EventRepository eventRepository, ServiceResourceOptimiser serviceResourceOptimiser, ResourceDataReader resourceDataReader) {
+    public ResourceCriticalOptimiser(CriticalServiceRepository criticalServiceRepository, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, EventRepository eventRepository, ServiceResourceOptimiser serviceResourceOptimiser, ResourceDataReader resourceDataReader) {
     	this.criticalServiceRepository = criticalServiceRepository;
     	this.serviceProviderRepository = serviceProviderRepository;
     	this.slaViolationRepository = slaViolationRepository;
@@ -136,16 +144,16 @@ public class ResourceCriticalServiceOptimiser {
 			
 			//create a Map service -> List<SlaViolation>
 			Map<Service, List<SlaViolation>> serviceSlaViolationMap = new HashMap<Service, List<SlaViolation>>();
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.resources.name(), startTime)) {
+			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.resources.name(), startTime)) {
 				if(!serviceSlaViolationMap.containsKey(slaViolation.getSla().getService())) {
 					serviceSlaViolationMap.put(slaViolation.getSla().getService(), new ArrayList<SlaViolation>());	
 				}
 				serviceSlaViolationMap.get(slaViolation.getSla().getService()).add(slaViolation);
-				slaViolation.setStatus(SlaViolationStatus.closed_critical.toString());
+				slaViolation.setStatus(SLAViolationStatus.closed_critical.toString());
 				slaViolationRepository.save(slaViolation);
 			}
-			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SlaViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.resources.name(), startTime)) {
-				slaViolation.setStatus(SlaViolationStatus.closed_not_critical.toString());
+			for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.resources.name(), startTime)) {
+				slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 				slaViolationRepository.save(slaViolation);
 			}
 			//iterate over service in Map and create one CriticalService with a score computed over the associated List<SlaViolation>

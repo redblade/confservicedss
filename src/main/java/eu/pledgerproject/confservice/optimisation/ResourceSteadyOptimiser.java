@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -19,6 +19,10 @@ import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.domain.SlaViolation;
 import eu.pledgerproject.confservice.domain.SteadyService;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.MonitoringService;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
@@ -26,10 +30,16 @@ import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.repository.SteadyServiceRepository;
 
+/**
+this optimiser implements "resources" Optimisation and works in tandem with ResourceCriticalOptimiser
+Its goal is to reduce reserved resources if no SLA violations are received after some time
+ */
+
+
 @Component
-public class ResourceSteadyServiceOptimiser {
+public class ResourceSteadyOptimiser {
 	public static final String NO_ACTION_TAKEN = "No action taken - score within limits";
-    private final Logger log = LoggerFactory.getLogger(ResourceSteadyServiceOptimiser.class);
+    private final Logger log = LoggerFactory.getLogger(ResourceSteadyOptimiser.class);
     
     public static final String RESOURCE_USAGE_CATEGORY = "resource-used";
     
@@ -44,7 +54,7 @@ public class ResourceSteadyServiceOptimiser {
     private final EventRepository eventRepository;
     private final SlaViolationRepository slaViolationRepository;
     
-    public ResourceSteadyServiceOptimiser(ResourceDataReader resourceDataReader, ServiceProviderRepository serviceProviderRepository, SteadyServiceRepository steadyServiceRepository, ServiceReportRepository serviceReportRepository, ServiceResourceOptimiser serviceResourceOptimiser, ServiceRepository serviceRepository, EventRepository eventRepository, SlaViolationRepository slaViolationRepository) {
+    public ResourceSteadyOptimiser(ResourceDataReader resourceDataReader, ServiceProviderRepository serviceProviderRepository, SteadyServiceRepository steadyServiceRepository, ServiceReportRepository serviceReportRepository, ServiceResourceOptimiser serviceResourceOptimiser, ServiceRepository serviceRepository, EventRepository eventRepository, SlaViolationRepository slaViolationRepository) {
     	this.resourceDataReader = resourceDataReader;
     	this.serviceProviderRepository = serviceProviderRepository;
         this.steadyServiceRepository = steadyServiceRepository;
@@ -148,7 +158,7 @@ public class ResourceSteadyServiceOptimiser {
 			
 			List<Service> runningServiceList = serviceRepository.findServiceListByServiceProviderServiceOptimisationSinceTimestamp(serviceProvider, ServiceOptimisationType.resources.name(), timestampSteady);
 			for(Service service : runningServiceList) {
-				List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SlaViolationStatus.closed_critical.name(), ServiceOptimisationType.resources.name(), timestampSteady); 
+				List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources.name(), timestampSteady); 
 				if(slaViolationCriticalList.size() == 0) {
 					//get service scaling type
 					Map<String, String> serviceInitialConfigurationProperties = ConverterJSON.convertToMap(service.getInitialConfiguration());

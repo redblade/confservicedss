@@ -13,7 +13,7 @@ import eu.pledgerproject.confservice.domain.App;
 import eu.pledgerproject.confservice.domain.Infrastructure;
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
-import eu.pledgerproject.confservice.monitoring.NodeGroup;
+import eu.pledgerproject.confservice.optimisation.NodeGroup;
 import eu.pledgerproject.confservice.repository.InfrastructureRepository;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 import eu.pledgerproject.confservice.service.NetworkService;

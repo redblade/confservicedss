@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.util.Map;
@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Service;
+import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 
 @Component

@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -13,19 +13,20 @@ import org.springframework.stereotype.Component;
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
+import eu.pledgerproject.confservice.monitoring.GoldPingerReader;
+import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 
 /*
-TTODA algorithm is described here (TODO add link after the paper is accepted) 
+TTODA algorithm is described here (TODO add link once the paper is accepted) 
 
 R & M are 0..1 
 
-//TODO check formula: total capacity?
 Rn = percentage of CPU requested wrt total capacity on edge and far-edge (expressed as 0..1)
 Mn = percentage of MEM requested wrt total capacity on edge and far-edge (expressed as 0..1)
 Tn = Rn + Mn
 
-//TODO check formula: reverse?
 Wn = service priority / Tn 
 
 R_caret & R_tilde are 0..1

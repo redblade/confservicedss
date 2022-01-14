@@ -7,7 +7,7 @@ The main documentation is in the "doc" folder, in particular the "doc/architectu
 For more details, please refer to the [Pledger project deliverables section](https://pledger-project.eu/content/deliverables)
 
 
-### Preconditions
+### Setup of the development environment
 
 ConfServiceDSS is based on [JHipster 6.10.5](https://www.jhipster.tech/documentation-archive/v6.10.5) with [this model file](jhipster-jdl.jdl). Before you can build this project, you must install and configure the following dependencies on your machine:
 

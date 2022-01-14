@@ -1,4 +1,4 @@
-package eu.pledgerproject.confservice.monitoring;
+package eu.pledgerproject.confservice.optimisation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +8,7 @@ import java.util.Set;
 
 import eu.pledgerproject.confservice.domain.Infrastructure;
 import eu.pledgerproject.confservice.domain.Node;
+import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 
 public class NodeGroup {
 	public static final String NODE_TYPE = "node_type";
@@ -27,15 +28,15 @@ public class NodeGroup {
 		int capacityMemoryMB;
 	}
 	
-	String name;
-	Infrastructure infrastructure;
-	String location;
+	public String name;
+	public Infrastructure infrastructure;
+	public String location;
 	public Set<Node> nodes;
-	List<NodeData> nodesData;
-	int capacityMemoryMB;
-	int capacityCpuMillicore;
-	int availabilityMemoryMB;
-	int availabilityCpuMillicore;
+	public List<NodeData> nodesData;
+	public int capacityMemoryMB;
+	public int capacityCpuMillicore;
+	public int availabilityMemoryMB;
+	public int availabilityCpuMillicore;
 	
 	public NodeGroup(String name, Collection<Node> nodes, int capacityCpuMillicore, int capacityMemoryMB){
 		this.name = name;

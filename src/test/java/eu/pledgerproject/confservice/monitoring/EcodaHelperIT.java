@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Service;
+import eu.pledgerproject.confservice.optimisation.ECODAHelper;
+import eu.pledgerproject.confservice.optimisation.NodeGroup;
+import eu.pledgerproject.confservice.optimisation.ServiceData;
 import eu.pledgerproject.confservice.service.UserService;
 
 /**

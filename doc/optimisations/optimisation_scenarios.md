@@ -5,26 +5,7 @@ This file describes how to test the DSS optimisations; this includes: the setup 
 Videos about the optimisations can be found on the Pledger [official YouTube channel](https://www.youtube.com/channel/UCXV6V9rJ0ZvWhXeoWvDsArQ)
 
 
-<h2>List of the optimisations implemented by the DSS:</h2>
-
-1. '**resource**': this optimisation changes the Apps *reserved resources* using the App **requests limits**, like follows:
-    - whenever a SLA violation is received about a SLA which is dependent on resources; if used resources are **close to the resource limits** they are **increased**
-    - if no SLA violations are received for some time; if resources used are **far below resource limits**, they are **decreased**.
-  Depending on the resources availability and the deployment preferences, the DSS:
-    - scales App up/out (if resources need to be increased and there are resources available)
-    - scales App down/in (if App is on the edge and resources need to be decreased)
-    - offloads App from edge to cloud (if App is on the edge, resources need to be increased and there are no resources available on the edge)
-    - offloads App from cloud to edge (if App is on the cloud, resources need to be decreased and there are now resources available on the edge)
-
-2. '**offloading': a simplified version of 'resource' optimisation where the Apps are offloaded to the cloud, then back to the edge depe**nding on the SLA violations BUT without changing the reserved resources. The actual resource usage of the App is IGNORED.
-3. '**scaling**': a simplified version of 'resource' optimisation where the Apps are scaled up/out, then scale down/in depending on the SLA violations BUT without changing the reserved resources. The actual resource usage of the App is IGNORED.
-4. '**latency**': this optimisation reduces the App latency in a two-tier cloud-edge infrastructure using the ECODA  algorithm that is run periodically to check the parameters it relies on: reserved resources, priorities, startup times, cloud/edge resource capacity and cloud->edge latency
-5. '**resource_latency**': this optimisation combines 'resources' and 'latency' together: **resource limits** are dynamically changed as in "resource" and ECODA is used to reduce latency
-6. '**latency_faredge**': this optimisation reduces the App latency in a three-tier cloud-edge-faredge infrastructure using the TTODA algorithm that is run periodically to check the parameters it relies on: reserved resources, priorities, startup times, cloud/edge/faredge resource capacity and cloud->edge and edge->faredge latencies
-7. '**resource_latency_faredge**': this optimisation combines 'resources' and 'latency_faredge' together: **resource limits** are dynamically changed as in "resource" and TTODA is used to reduce latency
-
-
-<h2>How SLA violations are managed by the DSS</h2>
+<h2>Note on how SLA violations are managed by the DSS</h2>
 - 'active': this SLA is considered as related to resource consumption, so resource increase is managed to reduce violations
 - 'suspend': this SLA is considered as dependent on a major issue (eg., radio failure) which requires to suspend any resource increase/decrease on the related service until this SLA violation is solved
 - 'ignore': this SLA is considered as NOT related to resource consumption, so it is ignored by the DSS
@@ -44,22 +25,22 @@ SLA Violations are sent by the SLA Manager and consumed by the DSS using Kafka: 
 To test the DSS optimisations, it is possible to configure two different test environments based on KinD which come with some Apps ready for testing:
 
 1) cloud-edge: see the [instructions](../kind/cloud-edge/README.md). This is used for optimisations:
-   - 'resource'
+   - 'resources'
    - 'offloading'
    - 'scaling'
    - 'latency'
-   - 'resource_latency'
+   - 'resources_latency'
 
 2) cloud-edge-faredge: see the [instructions](../kind/cloud-edge-faredge/README.md). This is used for optimisations:
    - 'faredge'
-   - 'resource_latency_faredge'
+   - 'resources_latency_faredge'
 
 <h2> DSS SCENARIO #1</h2>
 <H4>Test environment: "cloud-edge"</h4>
 <H4>Goal: show how Apps are vertically scaled based on SLA violations received </h4>
 <u><b>initial configuration</b></u> 
 
-App example-app-ve is first configured with vertical scaling, has "resource" Optimisation and is running
+App example-app-ve is first configured with vertical scaling, has "resources" Optimisation and is running
 
 <u><b>test #1.1</b></u> - scaling UP because of high resource usage when SLA violations of type 'active' are received
 
@@ -131,7 +112,7 @@ result: example-app-ve is NOT scaled UP
 
 <u><b>initial configuration</b></u> 
 
-App example-app-ho is configured with horizontal scaling and "resource" Optimisation, started and running
+App example-app-ho is configured with horizontal scaling and "resources" Optimisation, started and running
 
 <u><b>test #2.1</b></u> - scaling OUT because of high resource usage when SLA violations of type 'active' are received
 
@@ -160,7 +141,7 @@ result: after some minutes, example-app-ho is scaled IN, removing a replica
 
 <u><b>initial configuration</b></u> 
 
-App example-app-ve is configured with "resource" optimisation, vertical scaling, has cpu/mem requests are 250, is started and running. 
+App example-app-ve is configured with "resources" optimisation, vertical scaling, has cpu/mem requests are 250, is started and running. 
 Please note edge edge nodes have cpu/mem capacity 300/300.
 
 <u><b>test #3.1</b></u> - offloading to the cloud when scaling UP would be necessary BUT edge resources are not sufficient
@@ -254,7 +235,7 @@ result: example-app-bash3 is moved to the edge, then back and is moved to the cl
 
 <h2> DSS SCENARIO #5:  </h2>
 <H4>Test environment: "cloud-edge"</h4>
-<H4>show how Apps are offloaded to edge/cloud nodes based on ECODA algorithm AND also resources allocated change as in "resource" optimisation</H4>
+<H4>show how Apps are offloaded to edge/cloud nodes based on ECODA algorithm AND also resources allocated change as in "resources" optimisation</H4>
 
 <u><b>initial configuration</b></u> 
 
@@ -337,11 +318,11 @@ result: the TTODA offloads are coherent with the spreadsheet
 
 <h2>  DSS SCENARIO #7: </h2>
 <H4>Test environment: "cloud-edge-faredge"</h4>
-<H4>show how Apps are offloaded to faredge/edge/cloud nodes based on TTODA algorithm AND also resources allocated change as in "resource" optimisation</H4>
+<H4>show how Apps are offloaded to faredge/edge/cloud nodes based on TTODA algorithm AND also resources allocated change as in "resources" optimisation</H4>
 
 <u><b>initial configuration</b></u> 
 
-The following Apps are configured with "latency_faredge_resource" optimisation, started and running:
+The following Apps are configured with "resources_latency_faredge" optimisation, started and running:
 - example-app-bash1
 - example-app-bash2
 - example-app-bash3

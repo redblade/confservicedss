@@ -31,9 +31,9 @@ public class CredentialManager {
 	@EventListener(ApplicationReadyEvent.class)
 	public void initialiseCredentials() {
 		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
-			log.info("DSS just started, initialising credentialService..");
+			log.info("DSS just started, initialising CredentialManager..");
 			updateCredentials();
-			log.info("credentialManager initialising completed");
+			log.info("CredentialManager initialising completed");
 		}
 	}
 	
