@@ -204,8 +204,8 @@ INSERT INTO `service_optimisation` (`id`, `name`, `optimisation`, `service_id`) 
 ('10','example-app-bash2','latency_faredge','10'),
 ('11','example-app-bash3','latency_faredge','11'),
 ('12','example-app-bash4','latency_faredge','12'),
-('13','example-app-bash4','latency_faredge','13'),
-('14','example-app-bash4','latency_faredge','14');
+('13','example-app-bash5','latency_faredge','13'),
+('14','example-app-bash6','latency_faredge','14');
 
 /*!40000 ALTER TABLE `service_optimisation` ENABLE KEYS */;
 UNLOCK TABLES;

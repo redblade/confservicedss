@@ -2,10 +2,14 @@
 
 This file contains the main instruction to build and run ConfService and DSS core components of the [Pledger system](https://pledger-project.eu/)
 
+ConfService and DSS core components are two functional components built as a unique artefact in Java, from now on called "ConfServiceDSS". 
+The main documentation is in the "doc" folder, in particular the "doc/architecture" folder gives an overall of the architecture. 
+For more details, please refer to the [Pledger project deliverables section](https://pledger-project.eu/content/deliverables)
 
-### Development
 
-ConfService and DSS core components are based on [JHipster 6.10.5](https://www.jhipster.tech/documentation-archive/v6.10.5) with [this model file](jhipster-jdl.jdl). Before you can build this project, you must install and configure the following dependencies on your machine with minimal version highlighted:
+### Preconditions
+
+ConfServiceDSS is based on [JHipster 6.10.5](https://www.jhipster.tech/documentation-archive/v6.10.5) with [this model file](jhipster-jdl.jdl). Before you can build this project, you must install and configure the following dependencies on your machine:
 
 - [OpenJDK](https://openjdk.java.net/) or [AdoptJDK](https://adoptopenjdk.net/) v1.8: Java Developer Kit is used to run the project services
 - [Maven](https://maven.apache.org/) v3.3: Maven is used to build the project
@@ -13,14 +17,13 @@ ConfService and DSS core components are based on [JHipster 6.10.5](https://www.j
 - [Node.js](https://nodejs.org/en/) v12.16: Node is used to run a development web server and build the project.
 - [npm](https://docs.npmjs.com/) v6.14: npm is used to install Node dependencies and to launch the development front end service
 
-After installing Node, run the following command to install development tools.
-You will also need to run this command when dependencies change in [package.json](package.json).
+After installing Node, run the following command to install development tools. You will also need to run this command when dependencies change in [package.json](package.json).
 
 ```
 npm install
 ```
 
-Before you run the project, you need a [Kafka](https://kafka.apache.org/) service running and these topics to be available:
+Before launching the project, you need a [Kafka](https://kafka.apache.org/) service running and the following topics to be configured:
 - configuration
 - sla_violation
 - deployment
@@ -28,7 +31,9 @@ Before you run the project, you need a [Kafka](https://kafka.apache.org/) servic
 - benchmarking
 - app_profiler
 
-Environment variables for Kafka need to be set, if needed also Mail, for example:
+### Building and launching from command line for development purposes:
+The project can be imported as a Maven project in Eclipse and compiled. 
+Some environment variables must be set before launching ConfServiceDSS: Kafka's are mandatory, Mail's are optional.
 
 ```
 export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
@@ -62,9 +67,9 @@ export SPRING_DATASOURCE_PASSWORD=root
 ```
 
 
-### Packaging and launching as jar
+### Building, packaging and launching as jar
 
-To build the final jar and optimize ConfServiceDSS for production, run:
+To build the ConfServiceDSS jar optimized for production, run:
 
 ```
 mvn -Pprod clean package -DskipTests=true 
@@ -89,7 +94,7 @@ mvn package -Pprod jib:dockerBuild -DskipTests=true -Dimage=confservicedss
 
 ```
 
-To package your ConfServiceDSS as a Docker image and push to a Docker registry, run:
+To package your ConfServiceDSS as a Docker image and push it to a Docker registry, run:
 
 ```
 mvn package -Pprod jib:dockerBuild -DskipTests=true -Djib.allowInsecureRegistries=true  -Dimage=myregistry/confservicedss
@@ -102,8 +107,7 @@ To launch your ConfServiceDSS from a Docker image, use env variables (eg. [this]
 docker run -v $(pwd):/var/tmp --env-file doc/env/confservicedss.env -p8080:8080 confservicedss
 ```
 
-Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql, dump_kind.sql or any other SQL). 
-A security table (db_lock) needs to be dropped before overriding the data, for safety reason.
+Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql, dump_kind.sql or any other SQL) into the DB, otherwise there will be no configuration, not even a user defined. To load a SQL script, a security table (db_lock) needs first to be dropped, it is used as a safety measure to avoid unwanted overwrites.
 An example is provided below:
 
 ```
@@ -111,7 +115,7 @@ mysql -h localhost -D confservice -u root -proot -e "drop table db_lock"
 java -cp target/confservicedss-x.y.z.jar -Dloader.main=eu.pledgerproject.confservice.InitDB org.springframework.boot.loader.PropertiesLauncher src/main/resources/config/sql/dump_base.sql localhost 3306 root root
 ```
 
-The lock table ''db_lock' is automatically re-created by InitDB; if necessary, it can also be created with 
+Please note the lock table ''db_lock' is automatically re-created by InitDB; if necessary, it can also be created with 
 
 ```
 mysql -h localhost -D confservice -u root -proot -e "create table db_lock(id INT);"
@@ -119,7 +123,7 @@ mysql -h localhost -D confservice -u root -proot -e "create table db_lock(id INT
 
 ### Login
 
-Finally, when the 'dump_base.sql' configuration is loaded, navigate to [http://localhost:8080](http://localhost:8080) and login with root/test
+Finally, when the 'dump_base.sql' configuration is loaded, navigate to [http://localhost:9000](http://localhost:9000) and login with root/test
 
 
 ### Remote debugging
@@ -128,10 +132,6 @@ For remote debugging you can attach to remote session after launching ConfServic
 ```
 java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
 ```
-
-### Documentation
-Some documentation is provided in the "doc" folder, please check the doc/README.md file.
-More details are provided in the Pledger project deliverables section
 
 
 ###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.
