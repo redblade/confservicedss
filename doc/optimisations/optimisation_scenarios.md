@@ -1,6 +1,9 @@
 <H1> DSS optimisation scenarios </H1>
 
-This file describes how to test the DSS optimisations; this includes: the setup of the test environment, the simulation of SLA violations and the scenarios used for testing. 
+This file describes **how to test the DSS optimisations**; this includes: 
+- the setup of the test environment
+- the simulation of SLA violations
+- the tests to validate the DSS optimisation 
 
 Videos about the optimisations can be found on the Pledger [official YouTube channel](https://www.youtube.com/channel/UCXV6V9rJ0ZvWhXeoWvDsArQ)
 
@@ -12,7 +15,8 @@ Videos about the optimisations can be found on the Pledger [official YouTube cha
 
 SLA Violations are considered as "solved" if no new violations from the same SLA are received within the monitoring period (eg., 1min)
 
-SLA Violations are sent by the SLA Manager and consumed by the DSS using Kafka: for the integration tests, they are **sent with a script**:
+As described in the [Pledger architecture](../architecture/architecture.md), SLA Violations are sent by the SLA Manager and consumed by the DSS through the StreamHandler using Kafka.
+**To allow the testing of the DSS and cut down the dependencies**, you just need Kafka running and the following script to generate and send SLA violations:
 
 
 ```
@@ -22,18 +26,21 @@ SLA Violations are sent by the SLA Manager and consumed by the DSS using Kafka: 
 
 <h2>How to setup the test environments</h2>
 
-To test the DSS optimisations, it is possible to configure two different test environments based on KinD which come with some Apps ready for testing:
+To test the DSS optimisations, it is possible to configure **two different test environments** based on KinD which come with some pre-configured Apps:
 
-1) cloud-edge: see the [instructions](../kind/cloud-edge/README.md). This is used for optimisations:
+1) **cloud-edge** (see the [instructions](../kind/cloud-edge/README.md)). This is used for optimisations:
    - 'resources'
    - 'offloading'
    - 'scaling'
    - 'latency'
    - 'resources_latency'
 
-2) cloud-edge-faredge: see the [instructions](../kind/cloud-edge-faredge/README.md). This is used for optimisations:
+2) **cloud-edge-faredge** (see the [instructions](../kind/cloud-edge-faredge/README.md)). This is used for optimisations:
    - 'faredge'
    - 'resources_latency_faredge'
+
+
+Please find below the scenarios to test the DSS optimisations.
 
 <h2> DSS SCENARIO #1</h2>
 <H4>Test environment: "cloud-edge"</h4>
