@@ -10,7 +10,7 @@ The DSS implements the following optimisations (see **eu.pledgerproject.confserv
 - "resources_latency_faredge" (combines "latency_faredge" and "resources")
 - "webhook"
 
-Main actions taken in each optimisation algorithm:
+**Main actions** taken by the DSS:
 
 - '**resources**': this optimisation changes the Apps *reserved resources* using the App **requests limits**, like follows:
     - whenever a SLA violation is received about a SLA which is dependent on resources; if used resources are **close to the resource limits** they are **increased**
@@ -27,25 +27,53 @@ Main actions taken in each optimisation algorithm:
 -  '**resources_latency**': this optimisation combines 'resources' and 'latency' together: **resource limits** are dynamically changed as in "resources" and ECODA is used to reduce latency
 -  '**latency_faredge**': this optimisation reduces the App latency in a three-tier cloud-edge-faredge infrastructure using the TTODA algorithm that is run periodically to check the parameters it relies on: reserved resources, priorities, startup times, cloud/edge/faredge resource capacity and cloud->edge and edge->faredge latencies
 -  '**resources_latency_faredge**': this optimisation combines 'resources' and 'latency_faredge' together: **resource limits** are dynamically changed as in "resources" and TTODA is used to reduce latency
--  '**webhook**': this invokes an external HTTP service to allow the implementation of custom optimisation algorithm.
+-  '**webhook**': this invokes an external HTTP service to allow the implementation of custom optimisation algorithm. A NodeRed instance is configured in Pledger to receive webhooks from the DSS to facilitate the creation of custom algorithm using a visual tool for coding
 
 
-Here are reported the recommended scenarios for each optimisation:
+**Recommended** scenario for each optimisation:
 
-- The **resources** optimisation adjusts the cpu/mem reserved resources depending on the actual resource usage of a Service and on the SLA violations received. This optimisation is **recommended** in case of edge and cloud infrastructures with very different cpu (mostly)/mem(less critical) performances and where latency is not critical.
+- **resources**:
+    - infrastructure with **edge and cloud nodes**
+    - scarce edge resources **managed by the DSS**
+    - **very varied HW performance on the edge** (mostly cpu)
+    - **latency is not critical**
 
-- The **offloading** optimisation adjusts the cpu/mem reserved resources depending on the actual resource usage of a Service and on the SLA violations received. This optimisation is **recommended** in case of edge and cloud infrastructures with very different cpu (mostly)/mem(less critical) performances and where latency is not critical.
+- **offloading**:
+    - infrastructure with **edge and cloud nodes**
+    - scarce edge resources **managed by different entities** and where lack of resources requires offloading to the cloud
+    - **very varied HW performance on the edge** (mostly cpu)
+    - **latency is not critical**
 
-- The **scaling** optimisation adjusts the cpu/mem reserved resources depending on the actual resource usage of a Service and on the SLA violations received. This optimisation is **recommended** in case of edge and cloud infrastructures with very different cpu (mostly)/mem(less critical) performances and where latency is not critical.
+- **scaling**:
+    - infrastructure with **edge and cloud nodes**
+    - scarce edge resources **managed by different entities** and where lack of resources requires scaling up on the edge
+    - **very varied HW performance on the edge nodes** (mostly cpu)
+    - **latency is not critical**
 
-- The **latency** optimisation implements the "ECODA" algorithm. This optimisation is **recommended** in case of homogeneous edge and cloud infrastructure in terms of cpu/mem where latency is critical.
+- **latency**:
+    - infrastructure with **edge and cloud nodes**
+    - **homogeneus HW performance on the edge nodes**
+    - **latency is critical**
 
-- The **resources_latency** optimisation combines both the "resources" and the "latency" optimisations together. This optimisation is **recommended** in case of edge and cloud infrastructures with very different cpu/mem and where latency is critical.
+- **resources_latency**:
+    - infrastructure with **edge and cloud nodes**
+    - scarce edge resources **managed by the DSS**
+    - **very varied HW performance on the edge nodes** (mostly cpu)
+    - **latency is critical**
 
-- The **latency_faredge** optimisation implements the "TTODA" algorithm. This optimisation is **recommended** in case of homogeneous far-edge, edge and cloud infrastructure in terms of cpu/mem where latency is critical.
+- **latency_faredge**:
+    - infrastructure with **faredge, edge and cloud nodes**
+    - **homogeneus HW performance on the faredge and edge nodes**
+    - **latency is critical**
+    
+- **resources_latency_faredge**:
+    - infrastructure with **faredge, edge and cloud nodes**
+    - scarce edge resources **managed by the DSS**
+    - **very varied HW performance on the faredge and edge nodes** (mostly cpu)
+    - **latency is critical**
+    
+- **webhook**:
+    - a **custom algorithm** is required
 
-- The **resources_latency_faredge** optimisation combines both the "resources" and the "latency_faredge" optimisations together. This optimisation is **recommended** in case of far-edge, edge and cloud infrastructures with very different cpu/mem and where latency is critical.
-
-- The **webhook** optimisation just executes a HTTP call to an external service. This is **recommended** in case a custom algorithm is necessary. A NodeRed instance is configured in Pledger to receive webhooks from the DSS to facilitate the creation of custom algorithm using a visual tool for coding.
 
 
