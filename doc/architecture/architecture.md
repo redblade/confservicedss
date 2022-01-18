@@ -46,8 +46,10 @@ In Pledger, all the data above is shared through the StreamHandler component usi
 
 To facilitate the system integrators activities and limit the dependencies to run demos, the ConfService and DSS also offer direct support to some specific infrastructures, in particular:
 1. support to opensource Kafka, without the need to have the **StreamHandler**
-2. support to Kubernetes, without the need to have the **Orchestrator**
-3. support (work in progress) to Prometheus AlertManager to get SLA violations, without the need to have the **SLA Lite** 
-4. support to Kubernetes metrics-server and Goldpinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
+2. support to Kubernetes, without the need to have the **E2CO Orchestrator**
+3. support (work still in progress) to Prometheus AlertManager to get SLA violations, without the need to have the **SLA Lite**. Currently, SLA violations over App metrics can be sent using **bash scripts** (see **doc/kafka** folder).
+4. support to Kubernetes metrics-server and GoldPinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
+
+The high-level architecture with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) and is the one used for the integration tests for the DSS optimisations.
 
 More details for the system integrators demo are provided in the **"doc/kind"** folder
