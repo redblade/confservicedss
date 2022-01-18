@@ -128,7 +128,7 @@ App example-app-ho is configured with horizontal scaling and "resources" Optimis
 ```
 APPNAME=example-app-ho
 kubectl --kubeconfig kind-kubeconfig1.yaml exec -it `kubectl --kubeconfig kind-kubeconfig1.yaml get po -n test1 | grep $APPNAME | awk '{ print $1}'` -n testsp1 -- sh
-simulate high CPU usage with 'stress'
+#simulate high CPU usage with 'stress'
 stress --cpu 8
 ```
 send a SLA violation about resources (sla_violation_sla_ho.json)
@@ -282,7 +282,7 @@ on example-app-bash2 simulate high CPU usage
 ```
 APPNAME=example-app-bash2
 kubectl --kubeconfig kind-kubeconfig2.yaml exec -it `kubectl --kubeconfig kind-kubeconfig2.yaml get po -n testsp2 | grep $APPNAME | awk '{ print $1}'` -n testsp2 -- sh
-simulate high CPU usage with 'stress'
+#simulate high CPU usage with 'stress'
 stress --cpu 8
 ```
 
@@ -347,33 +347,28 @@ The following Apps are configured with "resources_latency_faredge" optimisation,
 
 <u><b>test #7.1</b></u>
 
-on example-app-bash2 simulate high CPU usage
+on example-app-bash6 simulate high CPU usage
 
 ```
-APPNAME=example-app-bash2
+APPNAME=example-app-bash6
 kubectl --kubeconfig kind-kubeconfig1.yaml exec -it `kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 | grep $APPNAME | awk '{ print $1}'` -n testsp1 -- sh
-simulate high CPU usage with 'stress'
+#simulate high CPU usage with 'stress'
 stress --cpu 8
 ```
 
-send a SLA violation about resources (sla_violation_sla_bash2.json)
+send a SLA violation about resources (sla_violation_sla_bash6.json)
 
 ```
-./send_dev_kafka.sh -t sla_violation -f sla_violation_sla_bash2.json
+./send_dev_kafka.sh -t sla_violation -f sla_violation_sla_bash6.json
 ```
 
-result#1: resource requests(300/300) go UP and the app offloaded to the cloud
-
-result#2: on the other apps see resource requests going DOWN
+result#1: on example-app-bash6 App, resource requests(200/200) go UP
+result#2: on the other apps, after some time, as SLA violations are not received, see resource requests going DOWN
+(see "resources" optimisation)
 
 get the requests and put them in the TTODA spreadsheet
 
 result#3: the TTODA offloads are coherent
 
-
-<u><b>test #7.2</b></u>
-
-wait for some time without SLA violations
-see the Apps scaled down and check the TTODA offloads are coherent with the spreadsheet
 
 
