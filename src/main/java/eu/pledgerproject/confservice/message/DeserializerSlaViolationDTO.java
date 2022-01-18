@@ -3,6 +3,7 @@ package eu.pledgerproject.confservice.message;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.json.JSONObject;
 
+import eu.pledgerproject.confservice.domain.enumeration.SlaViolationType;
 import eu.pledgerproject.confservice.message.dto.SlaViolationDTO;
 
 public class DeserializerSlaViolationDTO implements Deserializer<SlaViolationDTO> {
@@ -18,8 +19,10 @@ public class DeserializerSlaViolationDTO implements Deserializer<SlaViolationDTO
 		result.datetime = jsonObject.getString("datetime");
 		result.description = jsonObject.optString("description", "guarantee violation");
 		result.guarantee_id = jsonObject.getLong("guarantee_id");
-		result.importance_name = jsonObject.getString("importanceName");
-
+		result.importance_name = jsonObject.optString("importanceName", null);
+		if(result.importance_name == null) {
+			result.importance_name = jsonObject.optString("importance_name", SlaViolationType.Serious.name());
+		}
 		return result;
 	}
     
