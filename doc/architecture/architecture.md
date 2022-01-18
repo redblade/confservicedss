@@ -1,6 +1,6 @@
-## Confservice and DSS architecture within Pledger project
+## Confservice and DSS architecture and dependencies with other Pledger core components
 
-This file introduces the ConfService and DSS architecture with respect to the [Pledger project](http://www.pledger-project.eu/) core components. 
+This file introduces the ConfService and DSS architecture with respect to the [Pledger](http://www.pledger-project.eu/) core components. An overview of the Pledger core components **end-to-end scenarios** involving ConfService and DSS is provided in [this document](Pledger_core_scenarios.md)
 
 ConfService and DSS are two functional components which are released in a three layers architecture:
 - frontend, based on [Angular](https://angular.io)
@@ -44,12 +44,10 @@ To take its decisions and have them applied, the DSS needs:
 
 In Pledger, all the data above is shared through the StreamHandler component using the Kafka protocol. The high-level architecture is shown in [this picture](confservice_dss.drawio.png)
 
-To facilitate the system integrators activities and limit the dependencies to run demos, the ConfService and DSS also offer direct support to some specific infrastructures, in particular:
+To **facilitate the system integrators** and to **reduce the dependencies on other Pledger components**, the ConfService and DSS also offer direct support to some specific infrastructures, in particular:
 1. support to opensource Kafka, without the need to have the **StreamHandler**
 2. support to Kubernetes, without the need to have the **E2CO Orchestrator**
 3. support (work still in progress) to Prometheus AlertManager to get SLA violations, without the need to have the **SLA Lite**. Currently, SLA violations over App metrics can be sent using **bash scripts** (see **doc/kafka** folder).
 4. support to Kubernetes metrics-server and GoldPinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
 
-The high-level architecture with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) and is the one used for the integration tests for the DSS optimisations.
-
-More details for the system integrators demo are provided in the **"doc/kind"** folder
+The high-level architecture with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) used for DSS the integration tests described in the **doc/optimisations** folder.

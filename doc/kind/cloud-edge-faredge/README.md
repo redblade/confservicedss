@@ -1,4 +1,4 @@
-###HOWTO test ConfService/DSS with KinD in a cloud-edge-faredge infrastructure
+### HOWTO test ConfService/DSS with KinD in a cloud-edge-faredge infrastructure
 
 
 This environment has
@@ -18,8 +18,8 @@ This environment has
 [metrics-server](https://github.com/kubernetes-sigs/metrics-server) installed to measure the resource allocation
 
 The following instructions can be used to test Optimisations of type:
-- "latency_faredge"  (aka "TTODA" **src/main/java/eu/pledgerproject/confservice/monitoring/TTODA*.java**])
-- "resources_latency_faredge"  (which combines "resource" with "TTODA")
+- "latency_faredge"  (aka "TTODA" - see [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/TTODAOptimiser.java))
+- "resources_latency_faredge"  (which combines "resources" with "TTODA" - see [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/TTODAResourceOptimiser.java))
 
 ### Create the test environment
 

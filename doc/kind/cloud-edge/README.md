@@ -1,4 +1,4 @@
-###HOWTO test ConfService/DSS with KinD in a cloud-edge infrastructure
+### HOWTO test ConfService/DSS with KinD in a cloud-edge infrastructure
 
 This environment has
 
@@ -18,11 +18,11 @@ This environment has
 [metrics-server](https://github.com/kubernetes-sigs/metrics-server) installed to measure the resource allocation
 
 The following instructions can be used to test Optimisations of type:
-- "resource"
-- "scaling"
-- "offloading"
-- "latency" (aka "ECODA" **src/main/java/eu/pledgerproject/confservice/monitoring/ECODA*.java**])
-- "resources_latency" (which combines "resource" with "ECODA")
+- "resource" (see [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/ResourceCriticalOptimiser.java) and [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/ResourceSteadyOptimiser.java) )
+- "scaling" (see [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/ScalingOptimiser.java))
+- "offloading" (see [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/OffloadingOptimiser.java))
+- "latency" (aka "ECODA" - see [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/ECODAOptimiser.java))
+- "resources_latency" (which combines "resources" with "ECODA" - see [code](../../../src/main/java/eu/pledgerproject/confservice/optimisation/ECODAResourceOptimiser.java))
 
 ### Create the test environment
 First, install [Kind tool](https://kind.sigs.k8s.io/docs/user/quick-start/)

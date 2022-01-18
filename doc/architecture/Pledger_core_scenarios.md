@@ -1,5 +1,4 @@
-# ConfService and DSS Pledger integration scenarios
-
+# Pledger core components end-to-end scenarios involving ConfService and DSS
 
 Note: actions listed with [A] are done automatically by the ConfService or by the DSS
 

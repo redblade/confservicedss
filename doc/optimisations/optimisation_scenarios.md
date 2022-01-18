@@ -13,9 +13,10 @@ Videos about the optimisations can be found on the Pledger [official YouTube cha
 - 'suspend': this SLA is considered as dependent on a major issue (eg., radio failure) which requires to suspend any resource increase/decrease on the related service until this SLA violation is solved
 - 'ignore': this SLA is considered as NOT related to resource consumption, so it is ignored by the DSS
 
-SLA Violations are considered as "solved" if no new violations from the same SLA are received within the monitoring period (eg., 1min)
+SLA Violations are considered as "closed" if no new violations from the same SLA are received within the SLA monitoring period (by default, 180s) that **can be changed in the SP preferences** ("monitoring.slaViolation.periodSec"). 
 
 As described in the [Pledger architecture](../architecture/architecture.md), SLA Violations are sent by the SLA Manager and consumed by the DSS through the StreamHandler using Kafka.
+
 **To allow the testing of the DSS and cut down the dependencies**, you just need Kafka running and the following script to generate and send SLA violations:
 
 
@@ -23,6 +24,7 @@ As described in the [Pledger architecture](../architecture/architecture.md), SLA
 ./send_dev_kafka.sh -t sla_violation -f <my-file>
 ```
 
+Please refer to the architecture documentation for more details.
 
 <h2>How to setup the test environments</h2>
 
