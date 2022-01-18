@@ -23,7 +23,7 @@ After installing Node, run the following command to install development tools. Y
 npm install
 ```
 
-Before launching the project, you need a [Kafka](https://kafka.apache.org/) service running and the following topics to be configured:
+**Before launching the project, you need a [Kafka](https://kafka.apache.org/) service running** and the following topics to be configured:
 - configuration
 - sla_violation
 - deployment
