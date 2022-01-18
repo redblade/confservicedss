@@ -286,10 +286,10 @@ simulate high CPU usage with 'stress'
 stress --cpu 8
 ```
 
-send a SLA violation about resources (sla_violation_bash2.json)
+send a SLA violation about resources (sla_violation_sla_bash2.json)
 
 ```
-./send_dev_kafka.sh -t sla_violation -f sla_violation_bash2.json
+./send_dev_kafka.sh -t sla_violation -f sla_violation_sla_bash2.json
 ```
 
 result#1: resource requests(300/300) go UP and the app offloaded to the cloud
@@ -356,10 +356,10 @@ simulate high CPU usage with 'stress'
 stress --cpu 8
 ```
 
-send a SLA violation about resources (sla_violation_bash2.json)
+send a SLA violation about resources (sla_violation_sla_bash2.json)
 
 ```
-./send_dev_kafka.sh -t sla_violation -f sla_violation_bash2.json
+./send_dev_kafka.sh -t sla_violation -f sla_violation_sla_bash2.json
 ```
 
 result#1: resource requests(300/300) go UP and the app offloaded to the cloud
