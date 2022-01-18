@@ -47,7 +47,7 @@ WORK IN PROGRESS
 
 @Component
 public class TTODAHelper {
-	public static final int SCORE_22_CONSTANT = 1000000;
+	public static final int SCORE_22_CONSTANT = 1000000000;
 
 	public static final int LATENCY_CHECK_PERIOD_SEC = 7 * 24 * 60 * 60; //7d 
 	
