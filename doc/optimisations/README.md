@@ -1,4 +1,4 @@
-This file (and folder) contains the documentation about the DSS optimisations, some [scenarios](optimisation_scenarios.md) to replicate the algorithms and some spreadsheets to validate the implementation of most complex algorithm (eg. [ECODA](ECODA.ods), [TTODA](TTODA.ods)).
+This file (and folder) contains the documentation about the DSS optimisations, some [scenarios](optimisation_scenarios.md) to replicate the algorithms and spreadsheets to validate the implementation of more complex algorithms (eg. [ECODA](https://www.techrxiv.org/articles/preprint/An_Optimization_Framework_for_Edge-to-Cloud_Offloading_of_Kubernetes_Pods_in_V2X_Scenarios/16725643/1), [TTODA](link_to_be_added_as_soon_as_the_paper_is_public)).
 
 The DSS implements the following optimisations (see **eu.pledgerproject.confservice.optimisation** Java package for the code)
 - "resources"
