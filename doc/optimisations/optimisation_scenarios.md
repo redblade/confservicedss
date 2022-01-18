@@ -369,4 +369,9 @@ get the requests and put them in the TTODA spreadsheet
 result#3: the TTODA offloads are coherent
 
 
+<u><b>test #7.2</b></u>
+
+wait for some time without SLA violations
+see the Apps scaled down and check the TTODA offloads are coherent with the spreadsheet
+
 
