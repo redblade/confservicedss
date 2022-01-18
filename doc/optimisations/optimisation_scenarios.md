@@ -267,7 +267,13 @@ kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
 
 result: the ECODA offloads are coherent with the spreadsheet
 
+
 <u><b>test #5.1</b></u>
+wait some time without SLA violations
+
+result#1: Apps' resources are scaled down by 10%
+
+<u><b>test #5.2</b></u>
 
 on example-app-bash2 simulate high CPU usage
 
