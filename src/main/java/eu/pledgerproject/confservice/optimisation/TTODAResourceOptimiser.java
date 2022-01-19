@@ -110,7 +110,7 @@ public class TTODAResourceOptimiser {
 				}
 				
 				//then we optimise the services
-				//HERE we assume a SP DOES one TTODA on ALL the services which are labelled with TTODA.
+				//HERE we assume a SP DOES one TTODA on ALL the services which are labeled with TTODA.
 				//Nodes preferences in ServiceConstraints are considered for ALL the services (in AND)
 				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency_faredge.name());
 				doOptimise(serviceProvider, serviceList);

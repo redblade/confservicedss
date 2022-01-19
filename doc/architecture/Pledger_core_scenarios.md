@@ -90,8 +90,8 @@ user roles:
 
 
 ##### optimisation activities
-- [A] the DSS, for SLA of type **active** and for which the Service has not received violations on SLA of type **suspend** for some time, decides whether to activate and **directly scale up/out** or **directly offload to the cloud** or **increase reserved resources** or not depending on the **actual Service resource usage** being close to the Service reserved resources configured, or takes no action
-- [A] the DSS, for Services that have not received SLA violations for some time, decides whether to activate and **scale down/in** or **offload to the edge** or **reduce reserved resources** or takes no actions
+- [A] the DSS, for SLA of type **active** and for which the Service has not received violations on SLA of type **suspend** for some time (*), decides whether to activate and **directly scale up/out** or **directly offload to the cloud** or **increase reserved resources** or not depending on the **actual Service resource usage** being close to the Service reserved resources configured, or takes no action
+- [A] the DSS, for Services that have not received SLA violations, decides whether to activate and **scale down/in** or **offload to the edge** or **reduce reserved resources** or takes no actions
 - [A] the DSS optimises Services based on their ServiceOptimisation configured:
     - **resource**: it changes the Service reserved resources values like follows: 
        - if the decision is to **increase reserved resources** and the current DeploymentOptions has enough resources, depending on the **severity score** it triggers a scaling up/out, otherwise it triggers an offloading to a worse ranking (edge to cloud). Both actions send messages on Kafka for the **Orchestrator**
@@ -103,6 +103,7 @@ user roles:
     - **webhook**: invokes an external URL to allow custom automation
 - [A] the DSS, when offloading, decides the Nodes where to run the Service. If more than one are available with the same **severity score**, it uses Benchmarks (with the best "performance_index" metric) to choose the Node
 - [A] the DSS, to choose which Benchmark to use for a given Service, in case no Benchmark name is configured for a Service (by the AppProfiler), matches the App labels with the Benchmark ones
+
 
 An example of the DSS "resource" optimisation scenario is reported below:
 

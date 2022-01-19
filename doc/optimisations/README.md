@@ -11,10 +11,11 @@ The DSS implements the following optimisations (see **eu.pledgerproject.confserv
 - "webhook"
 
 **Main actions** taken by the DSS:
+Note the "SLA monitoring period" mentioned below is the "monitoring.slaViolation.periodSec" in the SP preferences
 
-- '**resources**': this optimisation changes the Apps *reserved resources* using the App configured **requests limits**. The goal is to reserve some resources to an App and check if they are really necessary: increase them if a SLA violation is received AND resource used are close to the resource reserved, decrease them if no SLA violations are received (for some time) AND resources used are much lower than resource reserved. More in details:
-    - whenever a SLA violation is received about a SLA which is dependent on resources, if used resources are **close to the resource limits** they are **increased**
-    - if no SLA violations are received for some time ("monitoring.slaViolation.periodSec" in the SP preferences) AND if resources used are **far below resource limits**, they are **decreased**.
+- '**resources**': this optimisation changes the Apps *reserved resources* using the App configured **requests limits**. The goal is to reserve some resources to an App and check if they are really necessary: increase them if a SLA violation is received AND resource used are close to the resource reserved, decrease them if no SLA violations are received in the SLA monitoring period AND resources used are much lower than resource reserved. More in details:
+    - whenever a SLA violation is received about a SLA which is dependent on resources, if used resources are **close to the resource limits** AND there has not been another scaling/offloading in the past SLA monitoring period, THEN resources are **increased**
+    - if no SLA violations are received in the SLA monitoring period AND **the service was not scaled or offloaded in that period** AND if resources used are **far below resource limits**, they are **decreased**.
   Depending on the resources availability and the deployment preferences, the DSS:
     - scales App up/out (if resources need to be increased and there are resources available)
     - scales App down/in (if App is on the edge and resources need to be decreased)
