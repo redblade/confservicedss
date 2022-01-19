@@ -208,7 +208,7 @@ example-app-bash1 and example-app-bash2 are instantiated on the edge
 example-app-bash3 and example-app-bash4 are instantiated on the cloud
 
 from ServiceReport, wait for startup time to be available
-get the requests and put them in the [ECODA spreadsheet](ECODA.ods)
+get the requests and put them in the [ECODA spreadsheet](ECODA.ods) and check the expected offloads, or check the "OptimisationReport" in the ConfServiceDSS UI
 
 check the nodes where the pods are allocated
 
@@ -216,7 +216,7 @@ check the nodes where the pods are allocated
 kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
 ```
 
-first result: the ECODA offloads are coherent with the spreadsheet
+first result: the ECODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
 
 <u><b>test #4.1</b></u>
 
@@ -259,7 +259,7 @@ example-app-bash1 and example-app-bash2 are instantiated on the edge
 example-app-bash3 and example-app-bash4 are instantiated on the cloud
 
 from ServiceReport, wait for startup time to be available
-get the requests and put them in the ECODA spreadsheet in doc/ECODA
+get the requests and put them in the [ECODA spreadsheet](ECODA.ods) and check the expected offloads, or check the "OptimisationReport" in the ConfServiceDSS UI
 
 check the nodes where the pods are allocated
 
@@ -267,7 +267,7 @@ check the nodes where the pods are allocated
 kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
 ```
 
-result: the ECODA offloads are coherent with the spreadsheet
+result: the ECODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
 
 
 <u><b>test #5.1</b></u>
@@ -297,9 +297,9 @@ result#1: resource requests(300/300) go UP and the app offloaded to the cloud
 
 result#2: on the other apps see resource requests going DOWN
 
-get the requests and put them in the ECODA spreadsheet
+get the requests, put them in the [ECODA spreadsheet](ECODA.ods) and check the expected offloads, or check the "OptimisationReport" in the ConfServiceDSS UI
 
-result#3: the ECODA offloads are coherent with the spreadsheet
+result#3: the ECODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
 
 
 
@@ -321,7 +321,7 @@ The following Apps are configured with "latency_faredge" optimisation, started a
 <u><b>test #6.1</b></u>
 
 from ServiceReport, wait for startup time to be available
-get the requests and put them in the [TTODA spreadsheet](TTODA.ods)
+get the requests, put them in the [TTODA spreadsheet](TTODA.ods) and check the expected offloads, or check the "OptimisationReport" in the ConfServiceDSS UI
 
 check the nodes where the pods are allocated
 
@@ -329,7 +329,7 @@ check the nodes where the pods are allocated
 kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
 ```
 
-result: the TTODA offloads are coherent with the spreadsheet
+result: the TTODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
 
 <h2>  DSS SCENARIO #7: </h2>
 <H4>Test environment: "cloud-edge-faredge"</h4>
@@ -366,9 +366,9 @@ result#1: on example-app-bash6 App, resource requests(200/200) go UP
 result#2: on the other apps, after some time, as SLA violations are not received, see resource requests going DOWN
 (see "resources" optimisation)
 
-get the requests and put them in the TTODA spreadsheet
+get the requests, put them in the [TTODA spreadsheet](TTODA.ods) and check the expected offloads, or check the "OptimisationReport" in the ConfServiceDSS UI
 
-result#3: the TTODA offloads are coherent
+result#3: the TTODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
 
 
 

@@ -1,0 +1,64 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="optimisationReport">
+            <h2><span>Optimisation Report</span> {{ optimisationReport.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span>Optimisation Type</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.optimisationType }}</span>
+                </dd>
+                <dt><span>App Name</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.appName }}</span>
+                </dd>
+                <dt><span>Service Name</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.serviceName }}</span>
+                </dd>
+                <dt><span>Service Priority</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.servicePriority }}</span>
+                </dd>
+                <dt><span>Request Cpu</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.requestCpu }}</span>
+                </dd>
+                <dt><span>Request Mem</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.requestMem }}</span>
+                </dd>
+                <dt><span>Startup Time</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.startupTime }}</span>
+                </dd>
+                <dt><span>Node</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.node }}</span>
+                </dd>
+                <dt><span>Node Category</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.nodeCategory }}</span>
+                </dd>
+                <dt><span>Optimisation Score</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.optimisationScore }}</span>
+                </dd>
+                <dt><span>Service Provider</span></dt>
+                <dd>
+                    <span>{{ optimisationReport.serviceProvider }}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+            </button>
+        </div>
+    </div>
+</div>

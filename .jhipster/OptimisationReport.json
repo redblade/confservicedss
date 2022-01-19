@@ -1,0 +1,60 @@
+{
+  "fluentMethods": true,
+  "clientRootFolder": "",
+  "relationships": [],
+  "fields": [
+    {
+      "fieldName": "optimisationType",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "appName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "serviceName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "servicePriority",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "requestCpu",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "requestMem",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "startupTime",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "node",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nodeCategory",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "optimisationScore",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "serviceProvider",
+      "fieldType": "String"
+    }
+  ],
+  "changelogDate": "20220119110611",
+  "dto": "no",
+  "searchEngine": false,
+  "service": "no",
+  "entityTableName": "optimisation_report",
+  "databaseType": "sql",
+  "readOnly": true,
+  "jpaMetamodelFiltering": false,
+  "pagination": "pagination"
+}

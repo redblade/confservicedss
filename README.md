@@ -4,7 +4,7 @@ This file contains the main instruction to build and run ConfService and DSS cor
 
 ConfService and DSS core components are two functional components built as a unique artefact in Java, from now on called "ConfServiceDSS". 
 The main documentation is in the "doc" folder, in particular the "doc/architecture" folder gives an overall of the architecture. 
-For more details, please refer to the [Pledger project deliverables section](https://pledger-project.eu/content/deliverables)
+For more details, please refer to the Pledger website, [deliverables section](https://pledger-project.eu/content/deliverables)
 
 
 ### Setup of the development environment

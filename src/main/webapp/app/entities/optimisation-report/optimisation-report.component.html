@@ -1,0 +1,58 @@
+<div>
+    <h2 id="page-heading">
+        <span>Optimisation Reports</span>
+    </h2>
+
+    <jhi-alert-error></jhi-alert-error>
+
+    <jhi-alert></jhi-alert>
+
+    <div class="alert alert-warning" id="no-result" *ngIf="optimisationReports?.length === 0">
+        <span>No optimisationReports found</span>
+    </div>
+
+    <div class="table-responsive" id="entities" *ngIf="optimisationReports && optimisationReports.length > 0">
+        <table class="table table-striped" aria-describedby="page-heading">
+            <thead>
+                <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
+                    <th scope="col"  jhiSortBy="optimisationType"><span>Optimisation</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="appName"><span>AppName</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="serviceName"><span>ServiceName</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="servicePriority"><span>Priority</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="requestCpu"><span>RequestCpu (mCPU)</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="requestMem"><span>RequestMem (MB)</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="startupTime"><span>StartupTime (ms)</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="node"><span>Node</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="nodeCategory"><span>NodeType</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="optimisationScore"><span>Score</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="serviceProvider"><span>ServiceProvider</span> <fa-icon icon="sort"></fa-icon></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let optimisationReport of optimisationReports ">
+                    <td>{{ optimisationReport.optimisationType }}</td>
+                    <td>{{ optimisationReport.appName }}</td>
+                    <td>{{ optimisationReport.serviceName }}</td>
+                    <td>{{ optimisationReport.servicePriority }}</td>
+                    <td>{{ optimisationReport.requestCpu }}</td>
+                    <td>{{ optimisationReport.requestMem }}</td>
+                    <td>{{ optimisationReport.startupTime }}</td>
+                    <td>{{ optimisationReport.node }}</td>
+                    <td>{{ optimisationReport.nodeCategory }}</td>
+                    <td>{{ optimisationReport.optimisationScore }}</td>
+                    <td>{{ optimisationReport.serviceProvider }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="optimisationReports && optimisationReports.length > 0">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,5 @@
 package eu.pledgerproject.confservice.optimisation;
 
-import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -27,6 +26,7 @@ import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
+import eu.pledgerproject.confservice.util.DoubleFormatter;
 
 /**
 this optimiser implements "resources_latency_faredge" Optimisation which uses TTODA algorithm combined with "resources" optimisation
@@ -163,7 +163,7 @@ public class TTODAResourceOptimiser {
 					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
 					serviceData.score = ttodaHelper.getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes);
-					log.info("TTODAResourceOptimiser: Service " + service.getName() + " has TTODA score " + (new DecimalFormat("#").format(serviceData.score)));
+					log.info("TTODAResourceOptimiser: Service " + service.getName() + " has TTODA score " + DoubleFormatter.format(serviceData.score));
 					serviceDataList.add(serviceData);
 	 			}
 				Collections.sort(serviceDataList);
