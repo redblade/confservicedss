@@ -30,7 +30,7 @@ spec:
         - /bin/sh
         - -c
         - sleep 1d
-        image: bash 
+        image: polinux/stress 
         name: bash1
         resources:
           limits:
