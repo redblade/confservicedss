@@ -107,7 +107,13 @@ To launch your ConfServiceDSS from a Docker image, use env variables (eg. [this]
 docker run -v $(pwd):/var/tmp --env-file doc/env/confservicedss.env -p8080:8080 confservicedss
 ```
 
-Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql, dump_kind.sql or any other SQL) into the DB, otherwise there will be no configuration, not even a user defined. To load a SQL script, a security table (db_lock) needs first to be dropped, it is used as a safety measure to avoid unwanted overwrites.
+Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql, dump_kind.sql, dump_kind_faredge.sql or any other SQL) into the DB, otherwise there will be no configuration, not even a user defined.
+Please note: 
+- dump_base.sql is the basic configuration with just users and no infrastructures loaded
+- dump_kind.sql is the configuration used for the KinD cloud-edge environment (see doc/kind for details)
+- dump_kind_faredge.sql is the configuration used for the KinD cloud-edge-faredge environment (see doc/kind for details)
+
+To load a SQL script, a security table (db_lock) needs first to be dropped, it is used as a safety measure to avoid unwanted overwrites.
 An example is provided below:
 
 ```
@@ -123,7 +129,7 @@ mysql -h localhost -D confservice -u root -proot -e "create table db_lock(id INT
 
 ### Login
 
-Finally, when the 'dump_base.sql' configuration is loaded, navigate to [http://localhost:9000](http://localhost:9000) and login with root/test
+Finally, when the sql configuration is loaded, navigate to [http://localhost:9000](http://localhost:9000) and login with root/test
 
 
 ### Remote debugging
