@@ -197,9 +197,9 @@
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
-                        <a class="dropdown-item" routerLink="optimisation-report" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                        <a class="dropdown-item" routerLink="service-optimisation" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Optimisation Report</span>
+                            <span>Service Optimisation</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
@@ -228,12 +228,11 @@
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
-                        <a class="dropdown-item" routerLink="service-optimisation" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                        <a class="dropdown-item" routerLink="optimisation-report" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Service Optimisation</span>
+                            <span>Optimisation Report</span>
                         </a>
                     </li>
-                    
                 </ul>
             </li>
             <li *jhiHasAnyAuthority="'ROLE_ADMIN'" ngbDropdown class="nav-item dropdown pointer" display="dynamic" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
