@@ -107,6 +107,8 @@ To launch your ConfServiceDSS from a Docker image, use env variables (eg. [this]
 docker run -v $(pwd):/var/tmp --env-file doc/env/confservicedss.env -p8080:8080 confservicedss
 ```
 
+### Initial configuration data (SQL script)
+
 Once ConfServiceDSS is started the first time, load the basic configuration data (eg. dump_base.sql, dump_kind.sql, dump_kind_faredge.sql or any other SQL) into the DB, otherwise there will be no configuration, not even a user defined.
 Please note: 
 - dump_base.sql is the basic configuration with just users and no infrastructures loaded
