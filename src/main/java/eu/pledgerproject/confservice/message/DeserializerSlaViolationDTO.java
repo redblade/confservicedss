@@ -16,7 +16,7 @@ public class DeserializerSlaViolationDTO implements Deserializer<SlaViolationDTO
 		
 		SlaViolationDTO result = new SlaViolationDTO();
 		
-		result.datetime = jsonObject.getString("datetime");
+		result.datetime = jsonObject.optString("datetime", null);
 		result.description = jsonObject.optString("description", "guarantee violation");
 		result.guarantee_id = jsonObject.getLong("guarantee_id");
 		result.importance_name = jsonObject.optString("importanceName", null);

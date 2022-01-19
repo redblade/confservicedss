@@ -100,11 +100,11 @@ public class TTODAResourceOptimiser {
 				Instant stopTime = Instant.now();
 				Instant startTime = stopTime.minus(monitoringSlaViolationPeriodSec, ChronoUnit.SECONDS);
 				
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.resources_latency_faredge.name(), startTime)) {
 					slaViolation.setStatus(SLAViolationStatus.closed_critical.toString());
 					slaViolationRepository.save(slaViolation);
 				}
-				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.resources_latency.name(), startTime)) {
+				for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceProviderAndStatusAndServiceOptimisationTypeSinceTimestamp(serviceProvider.getName(), SLAViolationStatus.elab_no_action_needed.name(), ServiceOptimisationType.resources_latency_faredge.name(), startTime)) {
 					slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 					slaViolationRepository.save(slaViolation);
 				}
@@ -118,56 +118,65 @@ public class TTODAResourceOptimiser {
 		}
 	}
 	
+	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList, boolean saveEvents) {
+		List<NodeGroup> nodeGroupList = ttodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+		
+		int totalFarEdgeCpu4SP = 0;
+		int totalFarEdgeMem4SP = 0;
+
+		int totalEdgeCpu4SP = 0;
+		int totalEdgeMem4SP = 0;
+
+		boolean foundFarEdgeNodes = false;
+		boolean foundEdgeNodes = false;
+		boolean foundCloudNodes = false;
+		
+		NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
+		if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_FAREDGE)) {
+			Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
+			totalFarEdgeCpu4SP += total4SP[0];
+			totalFarEdgeMem4SP += total4SP[1];
+			foundFarEdgeNodes = true;
+		}
+		NodeGroup nodeSetOnEdge = nodeGroupList.get(1);
+		if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE)) {
+			Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnEdge.nodes);
+			totalEdgeCpu4SP += total4SP[0];
+			totalEdgeMem4SP += total4SP[1];
+			foundEdgeNodes = true;
+		}
+		NodeGroup nodeSetOnCloud = nodeGroupList.get(2);
+		if(nodeSetOnCloud.location.equals(NodeGroup.NODE_CLOUD)) {
+			foundCloudNodes = true;
+		}
+		if(foundFarEdgeNodes && foundEdgeNodes && foundCloudNodes) {
+			
+			List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
+			for(Service service: serviceList) {
+
+				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
+				int[] cpuMemServiceResourcePlan = getServiceResourcePlan(service, saveEvents);
+				int requestCpuMillicore = cpuMemServiceResourcePlan[0];
+				int requestMemoryMB = cpuMemServiceResourcePlan[1];
+				
+				ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
+				serviceData.currentNode = resourceDataReader.getCurrentNode(service);
+				serviceData.score = ttodaHelper.getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes);
+				serviceDataList.add(serviceData);
+ 			}
+			Collections.sort(serviceDataList);
+			return serviceDataList;
+		}
+		return null;
+	}
+	
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
 		if(serviceList.size() > 0) {
 
 			List<NodeGroup> nodeGroupList = ttodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
-			int totalFarEdgeCpu4SP = 0;
-			int totalFarEdgeMem4SP = 0;
-
-			int totalEdgeCpu4SP = 0;
-			int totalEdgeMem4SP = 0;
-
-			boolean foundFarEdgeNodes = false;
-			boolean foundEdgeNodes = false;
-			boolean foundCloudNodes = false;
 			
-			NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
-			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_FAREDGE)) {
-				Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
-				totalFarEdgeCpu4SP += total4SP[0];
-				totalFarEdgeMem4SP += total4SP[1];
-				foundFarEdgeNodes = true;
-			}
-			NodeGroup nodeSetOnEdge = nodeGroupList.get(1);
-			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE)) {
-				Integer[] total4SP = ttodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnEdge.nodes);
-				totalEdgeCpu4SP += total4SP[0];
-				totalEdgeMem4SP += total4SP[1];
-				foundEdgeNodes = true;
-			}
-			NodeGroup nodeSetOnCloud = nodeGroupList.get(2);
-			if(nodeSetOnCloud.location.equals(NodeGroup.NODE_CLOUD)) {
-				foundCloudNodes = true;
-			}
-			if(foundFarEdgeNodes && foundEdgeNodes && foundCloudNodes) {
-				
-				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
-				for(Service service: serviceList) {
-	
-					//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-					int[] cpuMemServiceResourcePlan = getServiceResourcePlan(service);
-					int requestCpuMillicore = cpuMemServiceResourcePlan[0];
-					int requestMemoryMB = cpuMemServiceResourcePlan[1];
-					
-					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
-					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ttodaHelper.getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes);
-					log.info("TTODAResourceOptimiser: Service " + service.getName() + " has TTODA score " + DoubleFormatter.format(serviceData.score));
-					serviceDataList.add(serviceData);
-	 			}
-				Collections.sort(serviceDataList);
-				
+			List<ServiceData> serviceDataList = getNewOrderedServiceDataList(serviceProvider, serviceList, true);
+			if(serviceDataList != null) {
 				//the allocation plan, based on the optimised ServiceData list
 				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
 				if(serviceOptimisedAllocationPlan == null) {
@@ -180,6 +189,8 @@ public class TTODAResourceOptimiser {
 					}
 					else {
 						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
+							log.info("TTODAResourceOptimiser: Service " + serviceData.service.getName() + " has TTODA score " + DoubleFormatter.format(serviceData.score));
+
 							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
 							log.info("TTODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
 							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
@@ -193,7 +204,7 @@ public class TTODAResourceOptimiser {
 		}
 	}
 	
-	private int[] getServiceResourcePlan(Service service) {
+	private int[] getServiceResourcePlan(Service service, boolean saveEvents) {
 		int[] result = new int[] {
 			ResourceDataReader.getServiceRuntimeCpuRequest(service),
 			ResourceDataReader.getServiceRuntimeMemRequest(service)
@@ -209,17 +220,19 @@ public class TTODAResourceOptimiser {
 
 		//if there have been violations then we need to increase resources
 		Instant timestampCritical = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
-		List<SlaViolation> slaViolationListCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampCritical);
+		List<SlaViolation> slaViolationListCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency_faredge.name(), timestampCritical);
 		if(slaViolationListCritical.size() > 0) {
 			result[0] = (int) (result[0] * (100.0 + autoscalePercentageInt)/100.0);
 			result[1] = (int) (result[1] * (100.0 + autoscalePercentageInt)/100.0);
-			saveInfoEvent(service, "Increased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+			if(saveEvents) {
+				saveInfoEvent(service, "Increased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+			}
 		}
 		//if, on the other hand, the service has been running and no violations have been received so far, then we need to decrease resources
 		else {
 			Instant timestampSteady = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
 
-			List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency.name(), timestampSteady);
+			List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency_faredge.name(), timestampSteady);
 			if(service.getLastChangedStatus().isBefore(timestampSteady) && slaViolationCriticalList.size() == 0) {
 				int minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 				int minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
@@ -228,11 +241,13 @@ public class TTODAResourceOptimiser {
 				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageInt)/100.0); 
 				result[0] = cpuRequestTemp > minCpuRequest ? cpuRequestTemp : minCpuRequest;
 				result[1] = memRequestTemp > minMemRequest ? memRequestTemp : minMemRequest;
-				if(result[0] != minCpuRequest || result[1] != minMemRequest) {
-					saveInfoEvent(service, "Decreased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
-				}
-				else {
-					saveInfoEvent(service, "Min resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+				if(saveEvents) {
+					if(result[0] != minCpuRequest || result[1] != minMemRequest) {
+						saveInfoEvent(service, "Decreased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+					}
+					else {
+						saveInfoEvent(service, "Min resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+					}
 				}
 			}
 		}

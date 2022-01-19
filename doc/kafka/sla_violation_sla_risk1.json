@@ -1,13 +1,11 @@
 {
   "sla_id": "1",
   "guarantee_id": "1",
-  "datetime": "2021-07-23T17:27:06Z",
   "importance_name": "Serious",
   "values": [
     {
       "key": "scrape_duration_seconds{10.244.0.8:3000}",
-      "value": "2.8476827",
-      "datetime": "2021-07-23T17:27:06Z"
+      "value": "2.8476827"
     }
   ]
 }

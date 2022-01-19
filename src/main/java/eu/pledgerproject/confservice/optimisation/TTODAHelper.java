@@ -2,7 +2,6 @@ package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -293,58 +292,5 @@ public class TTODAHelper {
 		return result;
 	}
 	
-	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList) {
-		if(serviceList.size() > 0) {
-
-			List<NodeGroup> nodeGroupList = getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
-			int totalFarEdgeCpu4SP = 0;
-			int totalFarEdgeMem4SP = 0;
-
-			int totalEdgeCpu4SP = 0;
-			int totalEdgeMem4SP = 0;
-
-			boolean foundFarEdgeNodes = false;
-			boolean foundEdgeNodes = false;
-			boolean foundCloudNodes = false;
-			
-			NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
-			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_FAREDGE)) {
-				Integer[] total4SP = getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
-				totalFarEdgeCpu4SP += total4SP[0];
-				totalFarEdgeMem4SP += total4SP[1];
-				foundFarEdgeNodes = true;
-			}
-			NodeGroup nodeSetOnEdge = nodeGroupList.get(1);
-			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE)) {
-				Integer[] total4SP = getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnEdge.nodes);
-				totalEdgeCpu4SP += total4SP[0];
-				totalEdgeMem4SP += total4SP[1];
-				foundEdgeNodes = true;
-			}
-			NodeGroup nodeSetOnCloud = nodeGroupList.get(2);
-			if(nodeSetOnCloud.location.equals(NodeGroup.NODE_CLOUD)) {
-				foundCloudNodes = true;
-			}
-			if(foundFarEdgeNodes && foundEdgeNodes && foundCloudNodes) {
-				
-				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
-				for(Service service: serviceList) {
 	
-					//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-					int requestCpuMillicore = ResourceDataReader.getServiceRuntimeCpuRequest(service);
-					int requestMemoryMB = ResourceDataReader.getServiceRuntimeMemRequest(service);
-					
-					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
-					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = getOptimisationScore(serviceData, nodeSetOnFarEdge.nodes, totalFarEdgeCpu4SP, totalFarEdgeMem4SP, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP, nodeSetOnCloud.nodes);
-					serviceDataList.add(serviceData);
-	 			}
-				Collections.sort(serviceDataList);
-				
-				return serviceDataList;
-			}
-		}
-		return null;
-				
-	}
 }

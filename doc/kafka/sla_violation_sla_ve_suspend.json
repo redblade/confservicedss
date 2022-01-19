@@ -1,13 +1,11 @@
 {
   "sla_id": "8",
   "guarantee_id": "9",
-  "datetime": "2021-10-23T17:27:06Z",
   "importance_name": "Serious",
   "values": [
     {
       "key": "data",
-      "value": "1100",
-      "datetime": "2021-10-23T17:27:06Z"
+      "value": "1100"
     }
   ]
 }

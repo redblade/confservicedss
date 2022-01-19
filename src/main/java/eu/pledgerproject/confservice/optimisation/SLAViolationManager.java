@@ -66,17 +66,6 @@ public class SLAViolationManager {
 							slaViolation.setStatus(SLAViolationStatus.elab_resources_needed.name());
 							slaViolationRepository.save(slaViolation);
 
-							/*
-							int resourceUsedPerc = resourceDataReader.getResourceUsagePercentage(slaViolation.getSla().getService());
-							if(resourceUsedPerc > RESOURCE_USED_PERCENTAGE_THRESHOLD) {
-								slaViolation.setStatus(SlaViolationStatus.elab_resources_needed.name());
-								slaViolationRepository.save(slaViolation);
-							}
-							else {
-								slaViolation.setStatus(SlaViolationStatus.elab_no_action_needed.name());
-								slaViolationRepository.save(slaViolation);
-							}
-							*/
 						}
 						//in case of ServiceOptimisation resource or resources_latency or resources_latency_faredge, we check whether there is ACTUAL need of more resources or not
 						else if(
@@ -100,6 +89,8 @@ public class SLAViolationManager {
 						//else, in case ServiceOptimisation latency, webhook, there are no Optimiser, so violations are moved to 'not_critical'
 						else if(
 								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.latency.name())
+								||
+								serviceOptimisation.getOptimisation().equals(ServiceOptimisationType.latency_faredge.name())
 						) {
 							slaViolation.setStatus(SLAViolationStatus.closed_not_critical.name());
 							slaViolationRepository.save(slaViolation);

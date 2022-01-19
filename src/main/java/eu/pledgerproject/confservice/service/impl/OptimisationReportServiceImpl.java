@@ -21,11 +21,13 @@ import eu.pledgerproject.confservice.domain.OptimisationReport;
 import eu.pledgerproject.confservice.domain.ServiceProvider;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
-import eu.pledgerproject.confservice.optimisation.ECODAHelper;
+import eu.pledgerproject.confservice.optimisation.ECODAOptimiser;
+import eu.pledgerproject.confservice.optimisation.ECODAResourceOptimiser;
 import eu.pledgerproject.confservice.optimisation.NodeGroup;
 import eu.pledgerproject.confservice.optimisation.ServiceData;
 import eu.pledgerproject.confservice.optimisation.ServiceOptimisationType;
-import eu.pledgerproject.confservice.optimisation.TTODAHelper;
+import eu.pledgerproject.confservice.optimisation.TTODAOptimiser;
+import eu.pledgerproject.confservice.optimisation.TTODAResourceOptimiser;
 import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.service.OptimisationReportService;
@@ -44,11 +46,16 @@ public class OptimisationReportServiceImpl implements OptimisationReportService 
     private ServiceRepository serviceRepository;
     private ResourceDataReader resourceDataReader;
     
-    private ECODAHelper ecodaHelper;
-    private TTODAHelper ttodaHelper;
-    public OptimisationReportServiceImpl(ECODAHelper ecodaHelper, TTODAHelper ttodaHelper, ServiceProviderRepository serviceProviderRepository, ServiceRepository serviceRepository, ResourceDataReader resourceDataReader) {
-    	this.ecodaHelper = ecodaHelper;
-    	this.ttodaHelper = ttodaHelper;
+    private ECODAOptimiser ecodaOptimiser;
+    private ECODAResourceOptimiser ecodaResourceOptimiser;
+    private TTODAOptimiser ttodaOptimiser;
+    private TTODAResourceOptimiser ttodaResourceOptimiser;
+    
+    public OptimisationReportServiceImpl(ECODAOptimiser ecodaOptimiser, ECODAResourceOptimiser ecodaResourceOptimiser, TTODAOptimiser ttodaOptimiser, TTODAResourceOptimiser ttodaResourceOptimiser, ServiceProviderRepository serviceProviderRepository, ServiceRepository serviceRepository, ResourceDataReader resourceDataReader) {
+    	this.ecodaOptimiser = ecodaOptimiser;
+    	this.ecodaResourceOptimiser = ecodaResourceOptimiser;
+    	this.ttodaOptimiser = ttodaOptimiser;
+    	this.ttodaResourceOptimiser = ttodaResourceOptimiser;
     	this.serviceProviderRepository = serviceProviderRepository;
     	this.serviceRepository = serviceRepository;
     	this.resourceDataReader = resourceDataReader;
@@ -79,23 +86,30 @@ public class OptimisationReportServiceImpl implements OptimisationReportService 
     }
     
     private void addOptimisationReportList(ServiceProvider serviceProvider, List<OptimisationReport> tempResult) {
-    	
+
     	List<eu.pledgerproject.confservice.domain.Service> serviceListLatency = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.latency.name());
-    	List<ServiceData> serviceDataListLatency = ecodaHelper.getNewOrderedServiceDataList(serviceProvider, serviceListLatency);
-		tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListLatency, ServiceOptimisationType.latency));
+    	if(serviceListLatency.size() > 0) {
+    		List<ServiceData> serviceDataListLatency = ecodaOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListLatency);
+    		tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListLatency, ServiceOptimisationType.latency));
+    	}
 		
     	List<eu.pledgerproject.confservice.domain.Service> serviceListResourcesLatency = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
-    	List<ServiceData> serviceDataListResourcesLatency = ecodaHelper.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatency);
-		tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListResourcesLatency, ServiceOptimisationType.resources_latency));
-
+    	if(serviceListResourcesLatency.size() > 0) {
+	    	List<ServiceData> serviceDataListResourcesLatency = ecodaResourceOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatency, false);
+	    	tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListResourcesLatency, ServiceOptimisationType.resources_latency));
+    	}
+    	
     	List<eu.pledgerproject.confservice.domain.Service> serviceListLatencyFaredge = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.latency_faredge.name());
-    	List<ServiceData> serviceDataListLatencyFaredge = ttodaHelper.getNewOrderedServiceDataList(serviceProvider, serviceListLatencyFaredge);
-		tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListLatencyFaredge, ServiceOptimisationType.latency_faredge));
-
+    	if(serviceListLatencyFaredge.size() > 0) {
+	    	List<ServiceData> serviceDataListLatencyFaredge = ttodaOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListLatencyFaredge);
+			tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListLatencyFaredge, ServiceOptimisationType.latency_faredge));
+    	}
+    	
     	List<eu.pledgerproject.confservice.domain.Service> serviceListResourcesLatencyFaredge = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency_faredge.name());
-    	List<ServiceData> serviceDataListResourcesLatencyFaredge = ttodaHelper.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatencyFaredge);
-		tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListResourcesLatencyFaredge, ServiceOptimisationType.resources_latency_faredge));
-
+    	if(serviceListResourcesLatencyFaredge.size() > 0) {
+	    	List<ServiceData> serviceDataListResourcesLatencyFaredge = ttodaResourceOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatencyFaredge, false);
+			tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListResourcesLatencyFaredge, ServiceOptimisationType.resources_latency_faredge));
+    	}
     }
 
     private List<OptimisationReport> getOptimisationReportList(ServiceProvider serviceProvider, List<ServiceData> serviceDataList, ServiceOptimisationType optimisationType) {

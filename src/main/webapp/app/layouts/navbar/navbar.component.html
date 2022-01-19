@@ -218,19 +218,19 @@
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="critical-service" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Critical Service</span>
+                            <span>Resource Critical Service</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="steady-service" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Steady Service</span>
+                            <span>Resource Steady Service</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="optimisation-report" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Optimisation Report</span>
+                            <span>Latency Optimisation Report</span>
                         </a>
                     </li>
                 </ul>

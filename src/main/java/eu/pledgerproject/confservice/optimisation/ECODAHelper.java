@@ -2,7 +2,6 @@ package eu.pledgerproject.confservice.optimisation;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -289,43 +288,5 @@ public class ECODAHelper {
 		return result;
 	}
 	
-	
-	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList) {
-		if(serviceList.size() > 0) {
-			List<NodeGroup> nodeGroupList = getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
-			
-			int totalEdgeCpu4SP = 0;
-			int totalEdgeMem4SP = 0;
-			
-			NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
-			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_EDGE)) {
-				Integer[] total4SP = getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
-				totalEdgeCpu4SP += total4SP[0];
-				totalEdgeMem4SP += total4SP[1];
-			}
-				
-			NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
-			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalEdgeCpu4SP > 0 && totalEdgeMem4SP > 0) {
-				
-				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
-				for(Service service: serviceList) {
-	
-					//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-					
-					int requestCpuMillicore = ResourceDataReader.getServiceRuntimeCpuRequest(service);
-					int requestMemoryMB = ResourceDataReader.getServiceRuntimeMemRequest(service);
-					
-					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
-					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
-					serviceDataList.add(serviceData);
-	 			}
-				Collections.sort(serviceDataList);
-				return serviceDataList;
-			}
-		}
-		return null;
-				
-	}
 	
 }

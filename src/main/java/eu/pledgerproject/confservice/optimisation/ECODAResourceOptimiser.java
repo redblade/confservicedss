@@ -26,6 +26,7 @@ import eu.pledgerproject.confservice.repository.ServiceProviderRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
 import eu.pledgerproject.confservice.repository.SlaViolationRepository;
 import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
+import eu.pledgerproject.confservice.util.DoubleFormatter;
 
 /**
 this optimiser implements "resources_latency" Optimisation which uses ECODA algorithm combined with "resources" optimisation
@@ -118,38 +119,47 @@ public class ECODAResourceOptimiser {
 		}
 	}
 	
+	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList, boolean saveEvents) {
+		List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+
+		int totalEdgeCpu4SP = 0;
+		int totalEdgeMem4SP = 0;
+		
+		NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
+		if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_EDGE)) {
+			Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
+			totalEdgeCpu4SP += total4SP[0];
+			totalEdgeMem4SP += total4SP[1];
+		}
+			
+		NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
+		if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalEdgeCpu4SP > 0 && totalEdgeMem4SP > 0) {
+			
+			List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
+			for(Service service: serviceList) {
+
+				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
+				int[] cpuMemServiceResourcePlan = getServiceResourcePlan(service, saveEvents);
+				int requestCpuMillicore = cpuMemServiceResourcePlan[0];
+				int requestMemoryMB = cpuMemServiceResourcePlan[1];
+				
+				ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
+				serviceData.currentNode = resourceDataReader.getCurrentNode(service);
+				serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
+				serviceDataList.add(serviceData);
+ 			}
+			Collections.sort(serviceDataList);
+			return serviceDataList;
+		}
+		return null;
+	}
+	
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
 		if(serviceList.size() > 0) {
 			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
 			
-			int totalEdgeCpu4SP = 0;
-			int totalEdgeMem4SP = 0;
-			
-			NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
-			if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_EDGE)) {
-				Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
-				totalEdgeCpu4SP += total4SP[0];
-				totalEdgeMem4SP += total4SP[1];
-			}
-				
-			NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
-			if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalEdgeCpu4SP > 0 && totalEdgeMem4SP > 0) {
-				
-				List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
-				for(Service service: serviceList) {
-	
-					//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-					int[] cpuMemServiceResourcePlan = getServiceResourcePlan(service);
-					int requestCpuMillicore = cpuMemServiceResourcePlan[0];
-					int requestMemoryMB = cpuMemServiceResourcePlan[1];
-					
-					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
-					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
-					log.info("ECODAOptimiser: Service " + service.getName() + " has ECODA score " + serviceData.score);
-					serviceDataList.add(serviceData);
-	 			}
-				Collections.sort(serviceDataList);
+			List<ServiceData> serviceDataList = getNewOrderedServiceDataList(serviceProvider, serviceList, true);
+			if(serviceDataList != null) {
 
 				//the allocation plan, based on the optimised ServiceData list
 				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
@@ -163,10 +173,14 @@ public class ECODAResourceOptimiser {
 					}
 					else {
 						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
+							log.info("ECODAOptimiser: Service " + serviceData.service.getName() + " has ECODA score " + DoubleFormatter.format(serviceData.score));
+
 							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
 							log.info("ECODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
 							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
+							
 							serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
+							saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode);
 						}
 					}
 				}
@@ -174,7 +188,7 @@ public class ECODAResourceOptimiser {
 		}
 	}
 	
-	private int[] getServiceResourcePlan(Service service) {
+	private int[] getServiceResourcePlan(Service service, boolean saveEvents) {
 		int[] result = new int[] {
 			ResourceDataReader.getServiceRuntimeCpuRequest(service),
 			ResourceDataReader.getServiceRuntimeMemRequest(service)
@@ -194,7 +208,9 @@ public class ECODAResourceOptimiser {
 		if(slaViolationListCritical.size() > 0) {
 			result[0] = (int) (result[0] * (100.0 + autoscalePercentageInt)/100.0);
 			result[1] = (int) (result[1] * (100.0 + autoscalePercentageInt)/100.0);
-			saveInfoEvent(service, "Increased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+			if(saveEvents) {
+				saveInfoEvent(service, "Increased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+			}
 		}
 		//if, on the other hand, the service has been running and no violations have been received so far, then we need to decrease resources
 		else {
@@ -209,11 +225,13 @@ public class ECODAResourceOptimiser {
 				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageInt)/100.0); 
 				result[0] = cpuRequestTemp > minCpuRequest ? cpuRequestTemp : minCpuRequest;
 				result[1] = memRequestTemp > minMemRequest ? memRequestTemp : minMemRequest;
-				if(result[0] != minCpuRequest || result[1] != minMemRequest) {
-					saveInfoEvent(service, "Decreased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
-				}
-				else {
-					saveInfoEvent(service, "Min resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+				if(saveEvents) {
+					if(result[0] != minCpuRequest || result[1] != minMemRequest) {
+						saveInfoEvent(service, "Decreased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+					}
+					else {
+						saveInfoEvent(service, "Min resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
+					}
 				}
 			}
 		}

@@ -131,7 +131,11 @@ mysql -h localhost -D confservice -u root -proot -e "create table db_lock(id INT
 
 ### Login
 
-Finally, when the sql configuration is loaded, navigate to [http://localhost:9000](http://localhost:9000) and login with root/test
+Finally, when the sql configuration is loaded, navigate to [http://localhost:9000](http://localhost:9000) and login. 
+
+The SQL dump_* scripts above have:
+- username: root 
+- password: test
 
 
 ### Remote debugging
