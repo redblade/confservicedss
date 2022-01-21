@@ -119,7 +119,7 @@ public class ECODAResourceOptimiser {
 		}
 	}
 	
-	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList) {
+	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList, boolean saveServiceResourcePlanInEvent) {
 		List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
 
 		int totalEdgeCpu4SP = 0;
@@ -141,8 +141,9 @@ public class ECODAResourceOptimiser {
 				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
 				ServiceResourcePlan serviceResourcePlan = getServiceResourcePlan(service);
 				if(serviceResourcePlan != null) {
-					saveInfoEvent(service, serviceResourcePlan.msg);
-					
+					if(saveServiceResourcePlanInEvent) {
+						saveInfoEvent(service, serviceResourcePlan.msg);
+					}
 					int requestCpuMillicore = serviceResourcePlan.cpu;
 					int requestMemoryMB = serviceResourcePlan.mem;
 				
@@ -162,7 +163,7 @@ public class ECODAResourceOptimiser {
 		if(serviceList.size() > 0) {
 			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
 			
-			List<ServiceData> serviceDataList = getNewOrderedServiceDataList(serviceProvider, serviceList);
+			List<ServiceData> serviceDataList = getNewOrderedServiceDataList(serviceProvider, serviceList, true);
 			if(serviceDataList != null) {
 
 				//the allocation plan, based on the optimised ServiceData list

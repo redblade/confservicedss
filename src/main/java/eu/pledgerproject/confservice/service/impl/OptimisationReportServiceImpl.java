@@ -95,7 +95,7 @@ public class OptimisationReportServiceImpl implements OptimisationReportService 
 		
     	List<eu.pledgerproject.confservice.domain.Service> serviceListResourcesLatency = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
     	if(serviceListResourcesLatency.size() > 0) {
-	    	List<ServiceData> serviceDataListResourcesLatency = ecodaResourceOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatency);
+	    	List<ServiceData> serviceDataListResourcesLatency = ecodaResourceOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatency, false);
 	    	tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListResourcesLatency, ServiceOptimisationType.resources_latency));
     	}
     	
@@ -107,7 +107,7 @@ public class OptimisationReportServiceImpl implements OptimisationReportService 
     	
     	List<eu.pledgerproject.confservice.domain.Service> serviceListResourcesLatencyFaredge = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency_faredge.name());
     	if(serviceListResourcesLatencyFaredge.size() > 0) {
-	    	List<ServiceData> serviceDataListResourcesLatencyFaredge = ttodaResourceOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatencyFaredge);
+	    	List<ServiceData> serviceDataListResourcesLatencyFaredge = ttodaResourceOptimiser.getNewOrderedServiceDataList(serviceProvider, serviceListResourcesLatencyFaredge, false);
 			tempResult.addAll(getOptimisationReportList(serviceProvider, serviceDataListResourcesLatencyFaredge, ServiceOptimisationType.resources_latency_faredge));
     	}
     }

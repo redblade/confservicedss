@@ -118,7 +118,7 @@ public class TTODAResourceOptimiser {
 		}
 	}
 	
-	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList) {
+	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList, boolean saveServiceResourcePlanInEvent) {
 		List<NodeGroup> nodeGroupList = ttodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
 		
 		int totalFarEdgeCpu4SP = 0;
@@ -157,8 +157,9 @@ public class TTODAResourceOptimiser {
 				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
 				ServiceResourcePlan serviceResourcePlan = getServiceResourcePlan(service);
 				if(serviceResourcePlan != null) {
-					saveInfoEvent(service, serviceResourcePlan.msg);
-					
+					if(saveServiceResourcePlanInEvent) {
+						saveInfoEvent(service, serviceResourcePlan.msg);
+					}
 					int requestCpuMillicore = serviceResourcePlan.cpu;
 					int requestMemoryMB = serviceResourcePlan.mem;
 					
@@ -179,7 +180,7 @@ public class TTODAResourceOptimiser {
 
 			List<NodeGroup> nodeGroupList = ttodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
 			
-			List<ServiceData> serviceDataList = getNewOrderedServiceDataList(serviceProvider, serviceList);
+			List<ServiceData> serviceDataList = getNewOrderedServiceDataList(serviceProvider, serviceList, true);
 			if(serviceDataList != null) {
 				//the allocation plan, based on the optimised ServiceData list
 				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
