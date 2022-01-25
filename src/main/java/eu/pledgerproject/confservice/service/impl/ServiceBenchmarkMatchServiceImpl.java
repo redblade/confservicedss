@@ -28,8 +28,8 @@ import eu.pledgerproject.confservice.service.ServiceBenchmarkMatchService;
 @org.springframework.stereotype.Service
 @Transactional
 public class ServiceBenchmarkMatchServiceImpl implements ServiceBenchmarkMatchService {
-	public static final String RATIONALE_MATCH_BENCHMARK_NAME = "service[profile] EQUALS TO benchmark[name]";
-	public static final String RATIONALE_MATCH_BENCHMARK_LABEL = "service[profile] IN benchmark[category] LABELS";
+	public static final String RATIONALE_MATCH_BENCHMARK_NAME = "service.profile field is EQUAL TO benchmark.name";
+	public static final String RATIONALE_MATCH_BENCHMARK_LABEL = "service.profile field is CONTAINED INTO benchmark.category labels";
 
     private final Logger log = LoggerFactory.getLogger(ServiceBenchmarkMatchServiceImpl.class);
 

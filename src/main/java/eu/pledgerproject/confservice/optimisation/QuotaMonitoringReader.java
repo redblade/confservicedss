@@ -151,7 +151,7 @@ public class QuotaMonitoringReader {
 		try {
 			log.info("QuotaMonitoringReader storeMetrics...");
 			for(Project project : projectRepository.findAll()) {
-				if(project.getQuotaCpuMillicore() > 0 && project.getQuotaMemMB() > 0) {
+				if(project.getQuotaCpuMillicore() != null && project.getQuotaCpuMillicore() > 0 && project.getQuotaMemMB() != null && project.getQuotaMemMB() > 0) {
 					InfrastructureReport infrastructureReport4SP;
 
 					//quota requested

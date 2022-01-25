@@ -50,4 +50,4 @@ To **facilitate the system integrators** and to **reduce the dependencies on oth
 3. support (work still in progress) to Prometheus AlertManager to get SLA violations, without the need to have the **SLA Lite**. Currently, SLA violations over App metrics can be sent using **bash scripts** (see **doc/kafka** folder).
 4. support to Kubernetes metrics-server and GoldPinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
 
-The high-level architecture with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) used for DSS the integration tests described in the **doc/optimisations** folder.
+The high-level architecture with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) used for DSS the integration tests described in the **doc/optimisations** folder and allow their replication using KinD environments (see **doc/kind** folder)

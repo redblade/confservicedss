@@ -2,8 +2,11 @@ package eu.pledgerproject.confservice.service.impl;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -18,15 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 import eu.pledgerproject.confservice.domain.Event;
 import eu.pledgerproject.confservice.domain.Project;
 import eu.pledgerproject.confservice.message.PublisherConfigurationUpdate;
+import eu.pledgerproject.confservice.message.PublisherOrchestrationUpdate;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.security.CheckRole;
 import eu.pledgerproject.confservice.service.ProjectService;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 /**
  * Service Implementation for managing {@link Project}.
@@ -34,17 +34,18 @@ import okhttp3.RequestBody;
 @Service
 @Transactional
 public class ProjectServiceImpl implements ProjectService {
-	private static final String REST_TEMPLATE = "{\n  \"k8s_ns_name\": \"PLACEHOLDER_NAMESPACE\",\n  \"k8s_resource_quota_name\": \"PLACEHOLDER_SLICE\",\n  \"limits_cpu\": \"PLACEHOLDER_CPU\",\n  \"limits_memory\": \"PLACEHOLDER_MEMGi\",\n  \"requests_cpu\": \"PLACEHOLDER_CPU\",\n  \"requests_memory\": \"PLACEHOLDER_MEMGi\"\n}";
     private final Logger log = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     private final ProjectRepository projectRepository;
     private final EventRepository eventRepository;
     private final PublisherConfigurationUpdate configurationNotifierService;
+    private final PublisherOrchestrationUpdate orchestrationNotifierService;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository, EventRepository eventRepository, PublisherConfigurationUpdate configurationNotifierService) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, EventRepository eventRepository, PublisherConfigurationUpdate configurationNotifierService, PublisherOrchestrationUpdate orchestrationNotifierService) {
         this.projectRepository = projectRepository;
         this.eventRepository = eventRepository;
         this.configurationNotifierService = configurationNotifierService;
+        this.orchestrationNotifierService = orchestrationNotifierService;
    }
 
     @Override
@@ -57,6 +58,9 @@ public class ProjectServiceImpl implements ProjectService {
         return result;
     }
     
+    
+    //private static final String REST_TEMPLATE = "{\n  \"k8s_ns_name\": \"PLACEHOLDER_NAMESPACE\",\n  \"k8s_resource_quota_name\": \"PLACEHOLDER_SLICE\",\n  \"limits_cpu\": \"PLACEHOLDER_CPU\",\n  \"limits_memory\": \"PLACEHOLDER_MEMGi\",\n  \"requests_cpu\": \"PLACEHOLDER_CPU\",\n  \"requests_memory\": \"PLACEHOLDER_MEMGi\"\n}";
+    
     private void saveErrorEvent(String category, String msg) {
 		Event event = new Event();
 		event.setTimestamp(Instant.now());
@@ -66,16 +70,14 @@ public class ProjectServiceImpl implements ProjectService {
 		eventRepository.save(event);
 	}
 
-    @Override
-    public void provision(Project project) {
-        log.debug("Request to provision Project : {}", project);
-        CheckRole.block("ROLE_ROAPI");
-        String namespace = ConverterJSON.getProperty(project.getProperties(), "namespace");
+    /*
+    private void provision_rest(Project project) {
+    	String namespace = ConverterJSON.getProperty(project.getProperties(), "namespace");
         String sliceName = ConverterJSON.getProperty(project.getProperties(), "slice_name");
         if(namespace != null && namespace.trim().length() > 0 && sliceName != null && sliceName.trim().length() > 0) {
         	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
         	if(soeEndpoint != null) {
-        		log.info("Provisioning SOE slice");
+        		log.info("Provisioning SOE slice via REST");
         		try {
 	        		OkHttpClient client = new OkHttpClient().newBuilder().build();
 	        		MediaType mediaType = MediaType.parse("application/json");
@@ -103,6 +105,50 @@ public class ProjectServiceImpl implements ProjectService {
         		}
         	}
         }
+    }
+    */
+    
+    private void provision_kafka(Project project) {
+    	boolean msgSent = false;
+    	
+    	String namespace = ConverterJSON.getProperty(project.getProperties(), "namespace");
+        String sliceName = ConverterJSON.getProperty(project.getProperties(), "slice_name");
+
+        if(namespace != null && namespace.trim().length() > 0 && sliceName != null && sliceName.trim().length() > 0) {
+        	int cpuCore = project.getQuotaCpuMillicore() / 1000;
+    		int memGB = project.getQuotaMemMB() / 1024;
+    		if(cpuCore >= 0 && memGB >= 0) {
+	        	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
+	        	if(soeEndpoint != null) {
+	        		log.info("Provisioning SOE slice via Kafka");
+	                String k8s_cluster_id = ConverterJSON.getProperty(project.getProperties(), "k8s_cluster_id");
+	
+	                long infrastructureId = project.getInfrastructure().getId();
+	                Map<String, String> parameters = new HashMap<String, String>();
+	                parameters.put("slice_name", sliceName);
+	                parameters.put("namespace", namespace);
+	                parameters.put("limits_cpu", ""+cpuCore);
+	                parameters.put("limits_memory", ""+memGB);
+	                parameters.put("requests_cpu", ""+cpuCore);
+	                parameters.put("requests_memory", ""+memGB);
+	                parameters.put("k8s_cluster_id", k8s_cluster_id);
+	                
+	                orchestrationNotifierService.publish(infrastructureId, "infrastructure", "provision", parameters, new JSONArray());
+	                
+	                msgSent = true;
+	        	}
+    		}
+        }
+        if(!msgSent) {
+        	saveErrorEvent("SOE provisioning", "Missing parameters for SOE Kafka msg");
+        }
+    }
+    
+    @Override
+    public void provision(Project project) {
+        log.debug("Request to provision Project : {}", project);
+        CheckRole.block("ROLE_ROAPI");
+        provision_kafka(project);
     }
 
     @Override
