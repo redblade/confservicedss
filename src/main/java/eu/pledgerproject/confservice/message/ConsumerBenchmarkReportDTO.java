@@ -46,34 +46,39 @@ public class ConsumerBenchmarkReportDTO {
     	Optional<Infrastructure> infrastructureDB = infrastructureRepository.findById(message.pledgerInfrastructure);
     	Optional<Node> nodeDB = message.pledgerNode == null ? null : nodeRepository.findById(message.pledgerNode);
 
-    	Optional<Benchmark> benchmarkDB = benchmarkRepository.findByName(message.workloadId);
-    	if(!benchmarkDB.isPresent()) {
-    		Benchmark benchmark = new Benchmark();
-    		benchmark.setName(message.workloadId);
-    		benchmark.setCategory(message.category);
-    		if(serviceProviderDB.isPresent()) {
-    			benchmark.setServiceProvider(serviceProviderDB.get());
-    		}
-    		if(infrastructureDB.isPresent()) {
-    			benchmark.setInfrastructure(infrastructureDB.get());
-    		}
-    		
-    		benchmarkRepository.save(benchmark);
-    		benchmarkReport.setBenchmark(benchmark);
+    	if(serviceProviderDB.isPresent()) {
+	    	Optional<Benchmark> benchmarkDB = benchmarkRepository.findByBenchmarkNameAndServiceProviderName(message.workloadId, serviceProviderDB.get().getName());
+	    	if(!benchmarkDB.isPresent()) {
+	    		Benchmark benchmark = new Benchmark();
+	    		benchmark.setName(message.workloadId);
+	    		benchmark.setCategory(message.category);
+	    		if(serviceProviderDB.isPresent()) {
+	    			benchmark.setServiceProvider(serviceProviderDB.get());
+	    		}
+	    		if(infrastructureDB.isPresent()) {
+	    			benchmark.setInfrastructure(infrastructureDB.get());
+	    		}
+	    		
+	    		benchmarkRepository.save(benchmark);
+	    		benchmarkReport.setBenchmark(benchmark);
+	    	}
+	    	else {
+	    		benchmarkReport.setBenchmark(benchmarkDB.get());
+	    	}
+	    	benchmarkReport.setTime(Instant.now());
+	    	if(nodeDB != null && nodeDB.isPresent()) {
+	    		benchmarkReport.setNode(nodeDB.get());
+			}
+	    	benchmarkReport.setInterval(message.interval != null ? message.interval/60/60 : null);
+	    	benchmarkReport.setMean(message.mean);
+	    	benchmarkReport.setMetric(message.metric);
+	    	benchmarkReport.setStabilityIndex(message.stabilityIndex);
+	    	benchmarkReport.setTool(message.tool);
+	    	benchmarkReportRepository.save(benchmarkReport);
     	}
     	else {
-    		benchmarkReport.setBenchmark(benchmarkDB.get());
+    		log.error("Got a BenchmarkReport abount a not existing ServiceProvider ID " + message.pledgerServiceProvider);
     	}
-    	benchmarkReport.setTime(Instant.now());
-    	if(nodeDB != null && nodeDB.isPresent()) {
-    		benchmarkReport.setNode(nodeDB.get());
-		}
-    	benchmarkReport.setInterval(message.interval != null ? message.interval/60/60 : null);
-    	benchmarkReport.setMean(message.mean);
-    	benchmarkReport.setMetric(message.metric);
-    	benchmarkReport.setStabilityIndex(message.stabilityIndex);
-    	benchmarkReport.setTool(message.tool);
-    	benchmarkReportRepository.save(benchmarkReport);
     	
     } 
 } 

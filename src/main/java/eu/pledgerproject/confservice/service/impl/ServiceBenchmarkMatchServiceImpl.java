@@ -68,7 +68,7 @@ public class ServiceBenchmarkMatchServiceImpl implements ServiceBenchmarkMatchSe
 
     	long i = 0;
     	for(Service service : serviceList) {
-    		Optional<Benchmark> benchmarkDB = benchmarkRepository.findByName(service.getProfile());
+    		Optional<Benchmark> benchmarkDB = benchmarkRepository.findByBenchmarkNameAndServiceProviderName(service.getProfile(), service.getApp().getServiceProvider().getName());
     		if(benchmarkDB.isPresent()) {
     			result.add(new ServiceBenchmarkMatch(i++, service, benchmarkDB.get(), RATIONALE_MATCH_BENCHMARK_NAME));
     		}

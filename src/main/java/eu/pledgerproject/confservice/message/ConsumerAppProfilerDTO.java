@@ -50,16 +50,23 @@ public class ConsumerAppProfilerDTO {
     	log.info("New AppProfilerDTO received: " + message); 
     	
     	Optional<Service> serviceOpt = serviceRepository.findById(message.service_id);
-    	Optional<Benchmark> benchmarkOpt = benchmarkRepository.findByName(message.benchmark_name);
-    	if(serviceOpt.isPresent() && benchmarkOpt.isPresent()) {
+    	if(serviceOpt.isPresent()) {
     		Service serviceDB = serviceOpt.get();
-    		serviceDB.setProfile(benchmarkOpt.get().getName());
-    		serviceRepository.save(serviceDB);
-    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkOpt.get().getName() );
+
+    		Optional<Benchmark> benchmarkOpt = benchmarkRepository.findByBenchmarkNameAndServiceProviderName(message.benchmark_name, serviceDB.getApp().getServiceProvider().getName());
+    		if(benchmarkOpt.isPresent()) {
+	    		serviceDB.setProfile(benchmarkOpt.get().getName());
+	    		serviceRepository.save(serviceDB);
+	    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkOpt.get().getName() );
+    		}
+    		else {
+            	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; benchmark_name does not exist"); 
+            	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; benchmark_name does not exist");
+    		}
     	}
     	else {
-        	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name); 
-        	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name);
+        	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; service_id does not exist"); 
+        	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; service_id does not exist");
     	}
     } 
     
