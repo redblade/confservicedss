@@ -1,6 +1,6 @@
 {"categories": ["cpu", "prime-numbers", "cpu-intensive"],
 "interval": 604800,
-"mean": 0.38892727272727273,
+"mean": "1",
 "metric": "total_time_8_s",
 "pledgerInfrastructure": 5,
 "pledgerNode": 13,

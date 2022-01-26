@@ -16,10 +16,12 @@ import eu.pledgerproject.confservice.util.DoubleFormatter;
 
 public class DeserializerResourceMetricDTO implements Deserializer<ResourceMetricDTO> {
     private static final Logger log = LoggerFactory.getLogger(DeserializerResourceMetricDTO.class);
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	@Override
 	public ResourceMetricDTO deserialize(String topic, byte[] data) {
+		
 		String source = new String(data);
 		JSONObject jsonObject = new JSONObject(source);
 		
