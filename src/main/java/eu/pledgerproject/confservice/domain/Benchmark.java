@@ -30,7 +30,7 @@ public class Benchmark implements Serializable {
     private Long id;
 
     
-    @Column(name = "name", unique = true)
+    @Column(name = "name")
     private String name;
 
     @Column(name = "category")
