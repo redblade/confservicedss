@@ -56,14 +56,14 @@ public class InfrastructureProviderServiceImpl implements InfrastructureProvider
         List<InfrastructureProvider> tempResult = new ArrayList<InfrastructureProvider>();
         
         if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-        	tempResult.addAll(infrastructureProviderRepository.findAll(pageable).getContent());
+        	tempResult.addAll(infrastructureProviderRepository.findAll());
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ROAPI"))) {
-        	tempResult.addAll(infrastructureProviderRepository.findAll(pageable).getContent());
+        	tempResult.addAll(infrastructureProviderRepository.findAll());
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
-        	for (InfrastructureProvider infrastructureProvider : infrastructureProviderRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent()) {
+        	for (InfrastructureProvider infrastructureProvider : infrastructureProviderRepository.findAllAuthorizedSP(serviceProviderName)) {
         		if(!tempResult.contains(infrastructureProvider)) {
         			tempResult.add(infrastructureProvider);
         		}
@@ -71,9 +71,12 @@ public class InfrastructureProviderServiceImpl implements InfrastructureProvider
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_IP"))) {
         	String infrastructureProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(infrastructureProviderRepository.findByNamePageable(pageable, infrastructureProviderName).getContent());
+        	Optional<InfrastructureProvider> infrastructureOption = infrastructureProviderRepository.findByName(infrastructureProviderName);
+        	if(infrastructureOption.isPresent()) {
+        		tempResult.add(infrastructureOption.get());
+        	}
         }
-        return new PageImpl<InfrastructureProvider>(tempResult);
+        return new PageImpl<InfrastructureProvider>(tempResult, pageable, tempResult.size());
     }
 
 

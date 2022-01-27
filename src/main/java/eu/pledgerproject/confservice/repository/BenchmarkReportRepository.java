@@ -25,8 +25,17 @@ public interface BenchmarkReportRepository extends JpaRepository<BenchmarkReport
 	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider.name = :serviceProviderName")
 	Page<BenchmarkReport> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 
+	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider is null or benchmarkReport.benchmark.serviceProvider.name = :serviceProviderName")
+	Page<BenchmarkReport> findAllPublicOrAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
+	
+	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider.name = :serviceProviderName")
+	List<BenchmarkReport> findAllAuthorizedSP(@Param("serviceProviderName") String serviceProviderName);
+
 	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider is null")
 	Page<BenchmarkReport> findAllPublic(Pageable pageable);
+
+	@Query(value = "select benchmarkReport from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.serviceProvider is null")
+	List<BenchmarkReport> findAllPublic();
 	
 	//USED by BenchmarkManager.getBestNodeUsingBenchmark
 	@Query(value = "select benchmarkReport.node, max(benchmarkReport.mean),max(benchmarkReport.time) from BenchmarkReport benchmarkReport where benchmarkReport.benchmark.name = :benchmarkName and benchmarkReport.metric = :metric group by benchmarkReport.node having benchmarkReport.node in :nodeSet")

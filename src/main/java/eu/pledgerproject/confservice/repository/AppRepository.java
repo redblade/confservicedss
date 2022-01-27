@@ -17,6 +17,9 @@ import eu.pledgerproject.confservice.domain.App;
 @Repository
 public interface AppRepository extends JpaRepository<App, Long> {
 	@Query(value = "select app from App app where app.serviceProvider.name =:serviceProviderName")
+	List<App> findAllAuthorizedSP( @Param("serviceProviderName") String serviceProviderName);
+	
+	@Query(value = "select app from App app where app.serviceProvider.name =:serviceProviderName")
 	Page<App> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 	
 	@Query(value = "select app from App app where app.serviceProvider.id =:serviceProviderId")

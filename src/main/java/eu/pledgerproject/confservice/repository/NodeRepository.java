@@ -21,11 +21,17 @@ public interface NodeRepository extends JpaRepository<Node, Long> {
 	Page<Node> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 
 	@Query(value = "select node from Node node where node.infrastructure in (select project.infrastructure from Project project where project.serviceProvider.name =:serviceProviderName)")
+	List<Node> findAllAuthorizedSP(@Param("serviceProviderName") String serviceProviderName);
+
+	@Query(value = "select node from Node node where node.infrastructure in (select project.infrastructure from Project project where project.serviceProvider.name =:serviceProviderName)")
 	List<Node> findBySP(@Param("serviceProviderName") String serviceProviderName);
 
 	@Query(value = "select node from Node node where node.infrastructure in (select project.infrastructure from Project project where project.infrastructure.infrastructureProvider.name =:infrastructureProviderName)")
 	Page<Node> findAllAuthorizedIP(Pageable pageable, @Param("infrastructureProviderName") String infrastructureProviderName);
 	
+	@Query(value = "select node from Node node where node.infrastructure in (select project.infrastructure from Project project where project.infrastructure.infrastructureProvider.name =:infrastructureProviderName)")
+	List<Node> findAllAuthorizedIP(@Param("infrastructureProviderName") String infrastructureProviderName);
+
 	@Query(value = "select infrastructure.nodeSets from Infrastructure infrastructure where infrastructure.id = :infrastructureId")
 	List<Node> findAllNodesByInfrastructureId(@Param("infrastructureId") Long infrastructureId);
 	

@@ -62,10 +62,10 @@ public class CatalogAppServiceImpl implements CatalogAppService {
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
         	List<CatalogApp> catalogAppList = new ArrayList<CatalogApp>();
-        	catalogAppList.addAll(catalogAppRepository.findAllPublic(pageable).getContent());
-        	catalogAppList.addAll(new ArrayList<CatalogApp>(catalogAppRepository.findAllPrivate(pageable, serviceProviderName).getContent()));
+        	catalogAppList.addAll(catalogAppRepository.findAllPublic());
+        	catalogAppList.addAll(new ArrayList<CatalogApp>(catalogAppRepository.findAllPrivate(serviceProviderName)));
 
-        	return new PageImpl<CatalogApp>(catalogAppList);
+        	return new PageImpl<CatalogApp>(catalogAppList, pageable, catalogAppList.size());
         }
         else {
         	return new PageImpl<CatalogApp>(new ArrayList<CatalogApp>());

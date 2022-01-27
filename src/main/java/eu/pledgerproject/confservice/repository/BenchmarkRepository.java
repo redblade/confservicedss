@@ -24,9 +24,21 @@ public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {
 	List<Benchmark> findByCategoryLike(@Param("category") String category);
 	
 	@Query(value = "select benchmark from Benchmark benchmark where benchmark.serviceProvider.name = :serviceProviderName")
+	List<Benchmark> findAllAuthorizedSP(@Param("serviceProviderName") String serviceProviderName);
+	
+	@Query(value = "select benchmark from Benchmark benchmark where benchmark.serviceProvider.name = :serviceProviderName")
 	Page<Benchmark> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 
 	@Query(value = "select benchmark from Benchmark benchmark where benchmark.serviceProvider is null")
 	Page<Benchmark> findAllPublic(Pageable pageable);
+
+	@Query(value = "select benchmark from Benchmark benchmark where benchmark.serviceProvider is null or benchmark.serviceProvider.name = :serviceProviderName")
+	Page<Benchmark> findAllPublicOrAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
+
+	@Query(value = "select benchmark from Benchmark benchmark where benchmark.serviceProvider is null")
+	List<Benchmark> findAllPublic();
+
+	@Query(value = "select benchmark from Benchmark benchmark")
+	List<Benchmark> findAll();
 
 }

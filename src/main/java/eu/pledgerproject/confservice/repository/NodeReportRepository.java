@@ -27,14 +27,23 @@ public interface NodeReportRepository extends JpaRepository<NodeReport, Long> {
 	@Query(value = "select nodeReport from NodeReport nodeReport where :categoryFilter is null or :categoryFilter = nodeReport.category order by id desc")
 	Page<NodeReport> findAll(Pageable pageable, @Param("categoryFilter") String categoryFilter);
 	
+	@Query(value = "select nodeReport from NodeReport nodeReport where :categoryFilter is null or :categoryFilter = nodeReport.category order by id desc")
+	List<NodeReport> findAll(@Param("categoryFilter") String categoryFilter);
+
 	@Query(value = "select nodeReport from NodeReport nodeReport where nodeReport.node.id = :nodeSourceID and nodeReport.nodeDestination.id = :nodeDestinationID and nodeReport.category = :category")
 	Optional<NodeReport> getNodeReportByNodeSourceIDNodeDestinationIDCategory(@Param("nodeSourceID") Long nodeSourceID, @Param("nodeDestinationID") Long nodeDestinationID, @Param("category") String category);
 	
 	@Query(value = "select nodeReport from NodeReport nodeReport where (:categoryFilter is null or :categoryFilter = nodeReport.category) and nodeReport.node.infrastructure in (select project.infrastructure from Project project where project.serviceProvider.name =:serviceProviderName)")
 	Page<NodeReport> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName, @Param("categoryFilter") String categoryFilter);
 
+	@Query(value = "select nodeReport from NodeReport nodeReport where (:categoryFilter is null or :categoryFilter = nodeReport.category) and nodeReport.node.infrastructure in (select project.infrastructure from Project project where project.serviceProvider.name =:serviceProviderName)")
+	List<NodeReport> findAllAuthorizedSP(@Param("serviceProviderName") String serviceProviderName, @Param("categoryFilter") String categoryFilter);
+
 	@Query(value = "select nodeReport from NodeReport nodeReport where (:categoryFilter is null or :categoryFilter = nodeReport.category) and nodeReport.node.infrastructure in (select project.infrastructure from Project project where project.infrastructure.infrastructureProvider.name =:infrastructureProviderName)")
 	Page<NodeReport> findAllAuthorizedIP(Pageable pageable, @Param("infrastructureProviderName") String infrastructureProviderName, @Param("categoryFilter") String categoryFilter);
+
+	@Query(value = "select nodeReport from NodeReport nodeReport where (:categoryFilter is null or :categoryFilter = nodeReport.category) and nodeReport.node.infrastructure in (select project.infrastructure from Project project where project.infrastructure.infrastructureProvider.name =:infrastructureProviderName)")
+	List<NodeReport> findAllAuthorizedIP(@Param("infrastructureProviderName") String infrastructureProviderName, @Param("categoryFilter") String categoryFilter);
 
 	@Query(value = "select nodeReport from NodeReport nodeReport where nodeReport.node.id = :nodeId and nodeReport.key = :key order by nodeReport.id desc")
 	List<NodeReport> findNodeReportByNodeIdAndKey(@Param("nodeId") Long nodeId, @Param("key") String key);

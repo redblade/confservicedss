@@ -53,7 +53,7 @@ public class AppDeploymentOptionsServiceImpl implements AppDeploymentOptionsServ
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
-        	allowedApps = appRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent();
+        	allowedApps = appRepository.findAllAuthorizedSP(serviceProviderName);
         }
         
         for(App app : appRepository.findAll()) {
@@ -64,7 +64,7 @@ public class AppDeploymentOptionsServiceImpl implements AppDeploymentOptionsServ
 	        	result.add(appDeploymentOptions);
         	}
         }
-        return new PageImpl<AppDeploymentOptions>(result);
+        return new PageImpl<AppDeploymentOptions>(result, pageable, result.size());
     }
 
 

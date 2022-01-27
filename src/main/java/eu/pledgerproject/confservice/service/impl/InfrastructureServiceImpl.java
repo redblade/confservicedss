@@ -1,7 +1,6 @@
 package eu.pledgerproject.confservice.service.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -54,21 +53,19 @@ public class InfrastructureServiceImpl implements InfrastructureService {
         log.debug("Request to get all Infrastructures");
         SecurityContext securityContext = SecurityContextHolder.getContext();
 
-        List<Infrastructure> tempResult = new ArrayList<Infrastructure>();
-
         if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")) || securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ROAPI"))) {
-        	tempResult.addAll(infrastructureRepository.findAll(pageable).getContent());
+        	return infrastructureRepository.findAll(pageable);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(infrastructureRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent());
+        	return infrastructureRepository.findAllAuthorizedSP(pageable, serviceProviderName);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_IP"))) {
         	String infrastructureProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(infrastructureRepository.findAllAuthorizedIP(pageable, infrastructureProviderName).getContent());
+        	return infrastructureRepository.findAllAuthorizedIP(pageable, infrastructureProviderName);
         }
         
-        return new PageImpl<Infrastructure>(tempResult);
+        return new PageImpl<Infrastructure>(new ArrayList<Infrastructure>());
     }
 
 

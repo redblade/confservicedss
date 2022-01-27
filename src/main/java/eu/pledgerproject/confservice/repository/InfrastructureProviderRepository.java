@@ -1,5 +1,6 @@
 package eu.pledgerproject.confservice.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -19,6 +20,9 @@ public interface InfrastructureProviderRepository extends JpaRepository<Infrastr
 	@Query(value = "select project.infrastructure.infrastructureProvider from Project project where project.serviceProvider.name = :serviceProviderName")
 	Page<InfrastructureProvider> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 
+	@Query(value = "select project.infrastructure.infrastructureProvider from Project project where project.serviceProvider.name = :serviceProviderName")
+	List<InfrastructureProvider> findAllAuthorizedSP(@Param("serviceProviderName") String serviceProviderName);
+	
 	@Query(value = "select infrastructureProvider from InfrastructureProvider infrastructureProvider where infrastructureProvider.name = :infrastructureProviderName")
 	Page<InfrastructureProvider> findByNamePageable(Pageable pageable, @Param("infrastructureProviderName") String infrastructureProviderName);
 

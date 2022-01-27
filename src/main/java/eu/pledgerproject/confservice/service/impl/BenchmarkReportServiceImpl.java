@@ -1,7 +1,6 @@
 package eu.pledgerproject.confservice.service.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -57,10 +56,7 @@ public class BenchmarkReportServiceImpl implements BenchmarkReportService {
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
         	
-        	List<BenchmarkReport> result = new ArrayList<BenchmarkReport>();
-        	result.addAll(benchmarkReportRepository.findAllPublic(pageable).getContent());
-        	result.addAll(benchmarkReportRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent());
-        	return new PageImpl<BenchmarkReport>(result);
+        	return benchmarkReportRepository.findAllPublicOrAuthorizedSP(pageable, serviceProviderName);
         }
         else {
         	return new PageImpl<BenchmarkReport>(new ArrayList<BenchmarkReport>());

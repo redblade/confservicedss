@@ -58,8 +58,8 @@ public class BenchmarkSummaryServiceImpl implements BenchmarkSummaryService {
         	String serviceProviderName = securityContext.getAuthentication().getName();
         	
         	List<Benchmark> benchmarkList = new ArrayList<Benchmark>();
-        	benchmarkList.addAll(benchmarkRepository.findAllPublic(pageable).getContent());
-        	benchmarkList.addAll(benchmarkRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent());
+        	benchmarkList.addAll(benchmarkRepository.findAllPublic());
+        	benchmarkList.addAll(benchmarkRepository.findAllAuthorizedSP(serviceProviderName));
         	return createBenchmarkSummary(pageable, benchmarkList);
         }
         else {

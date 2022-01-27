@@ -19,8 +19,14 @@ public interface InfrastructureRepository extends JpaRepository<Infrastructure, 
 	@Query(value = "select infrastructure from Infrastructure infrastructure")// where infrastructure in (select project.infrastructure from Project project where project.serviceProvider.name =:serviceProviderName)")
 	Page<Infrastructure> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 
+	@Query(value = "select infrastructure from Infrastructure infrastructure")// where infrastructure in (select project.infrastructure from Project project where project.serviceProvider.name =:serviceProviderName)")
+	List<Infrastructure> findAllAuthorizedSP(@Param("serviceProviderName") String serviceProviderName);
+	
 	@Query(value = "select infrastructure from Infrastructure infrastructure where infrastructure in (select project.infrastructure from Project project where project.infrastructure.infrastructureProvider.name =:infrastructureProviderName)")
 	Page<Infrastructure> findAllAuthorizedIP(Pageable pageable, @Param("infrastructureProviderName") String infrastructureProviderName);
+
+	@Query(value = "select infrastructure from Infrastructure infrastructure where infrastructure in (select project.infrastructure from Project project where project.infrastructure.infrastructureProvider.name =:infrastructureProviderName)")
+	List<Infrastructure> findAllAuthorizedIP(@Param("infrastructureProviderName") String infrastructureProviderName);
 
 	@Query(value = "select distinct(infrastructure) from Infrastructure infrastructure left join fetch infrastructure.nodeSets")
 	List<Infrastructure> findAllWithNodes();

@@ -1,7 +1,6 @@
 package eu.pledgerproject.confservice.service.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -48,23 +47,22 @@ public class InfrastructureReportServiceImpl implements InfrastructureReportServ
     public Page<InfrastructureReport> findAll(Pageable pageable, String categoryFilter) {
         log.debug("Request to get all InfrastructureReports");
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        List<InfrastructureReport> tempResult = new ArrayList<InfrastructureReport>();
 
         if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-        	tempResult.addAll(infrastructureReportRepository.findAll(pageable, categoryFilter).getContent());
+        	return infrastructureReportRepository.findAll(pageable, categoryFilter);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ROAPI"))) {
-        	tempResult.addAll(infrastructureReportRepository.findAll(pageable, categoryFilter).getContent());
+        	return infrastructureReportRepository.findAll(pageable, categoryFilter);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(infrastructureReportRepository.findAllAuthorizedSP(pageable, serviceProviderName, categoryFilter).getContent());
+        	return infrastructureReportRepository.findAllAuthorizedSP(pageable, serviceProviderName, categoryFilter);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_IP"))) {
         	String infrastructureReportName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(infrastructureReportRepository.findAllAuthorizedIP(pageable, infrastructureReportName, categoryFilter).getContent());
+        	return infrastructureReportRepository.findAllAuthorizedIP(pageable, infrastructureReportName, categoryFilter);
         }
-        return new PageImpl<InfrastructureReport>(tempResult);
+        return new PageImpl<InfrastructureReport>(new ArrayList<InfrastructureReport>());
     }
 
 

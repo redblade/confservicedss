@@ -1,7 +1,6 @@
 package eu.pledgerproject.confservice.service.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -48,23 +47,22 @@ public class NodeReportServiceImpl implements NodeReportService {
     public Page<NodeReport> findAll(Pageable pageable, String categoryFilter) {
         log.debug("Request to get all NodeReports");
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        List<NodeReport> tempResult = new ArrayList<NodeReport>();
 
         if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-        	tempResult.addAll(nodeReportRepository.findAll(pageable, categoryFilter).getContent());
+        	return nodeReportRepository.findAll(pageable, categoryFilter);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ROAPI"))) {
-        	tempResult.addAll(nodeReportRepository.findAll(pageable, categoryFilter).getContent());
+        	return nodeReportRepository.findAll(pageable, categoryFilter);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(nodeReportRepository.findAllAuthorizedSP(pageable, serviceProviderName, categoryFilter).getContent());
+        	return nodeReportRepository.findAllAuthorizedSP(pageable, serviceProviderName, categoryFilter);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_IP"))) {
         	String nodeReportName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(nodeReportRepository.findAllAuthorizedIP(pageable, nodeReportName, categoryFilter).getContent());
+        	return nodeReportRepository.findAllAuthorizedIP(pageable, nodeReportName, categoryFilter);
         }
-        return new PageImpl<NodeReport>(tempResult);
+        return new PageImpl<NodeReport>(new ArrayList<NodeReport>());
 
     }
 

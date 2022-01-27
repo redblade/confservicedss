@@ -1,7 +1,6 @@
 package eu.pledgerproject.confservice.service.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -53,23 +52,22 @@ public class NodeServiceImpl implements NodeService {
     public Page<Node> findAll(Pageable pageable) {
         log.debug("Request to get all InfrastructureProviders");
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        List<Node> tempResult = new ArrayList<Node>();
 
         if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-        	tempResult.addAll(nodeRepository.findAll(pageable).getContent());
+        	return nodeRepository.findAll(pageable);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ROAPI"))) {
-        	tempResult.addAll(nodeRepository.findAll(pageable).getContent());
+        	return nodeRepository.findAll(pageable);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SP"))) {
         	String serviceProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(nodeRepository.findAllAuthorizedSP(pageable, serviceProviderName).getContent());
+        	return nodeRepository.findAllAuthorizedSP(pageable, serviceProviderName);
         }
         else if(securityContext.getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority("ROLE_IP"))) {
         	String infrastructureProviderName = securityContext.getAuthentication().getName();
-        	tempResult.addAll(nodeRepository.findAllAuthorizedIP(pageable, infrastructureProviderName).getContent());
+        	return nodeRepository.findAllAuthorizedIP(pageable, infrastructureProviderName);
         }
-        return new PageImpl<Node>(new ArrayList<Node>(tempResult));
+        return new PageImpl<Node>(new ArrayList<Node>());
 
     }
 
