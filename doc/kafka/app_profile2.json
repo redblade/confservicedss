@@ -1,0 +1,4 @@
+{
+ "service_id": "8",
+ "benchmark_name": "sysbench-cpu:max10k-time90:0"
+}
