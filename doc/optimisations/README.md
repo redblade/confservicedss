@@ -35,13 +35,13 @@ Note the "SLA monitoring period" mentioned below is the "monitoring.slaViolation
 
 - **resources**:
     - infrastructure with **edge and cloud nodes**
-    - scarce edge resources **managed by the DSS**
+    - edge resources **managed by the DSS**
     - **very varied HW performance on the edge** (mostly cpu)
     - **latency is not critical**
 
 - **offloading**:
     - infrastructure with **edge and cloud nodes**
-    - scarce edge resources **managed by separate entity** and where lack of resources requires **offloading** to the cloud
+    - edge resources **managed by separate entity** and where lack of resources requires **offloading** to the cloud
     - **very varied HW performance on the edge** (mostly cpu)
     - **latency is not critical**
 
