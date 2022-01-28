@@ -31,7 +31,7 @@ Note the "SLA monitoring period" mentioned below is the "monitoring.slaViolation
 -  '**webhook**': this invokes an external HTTP service to allow the implementation of custom optimisation algorithm. A NodeRed instance is configured in Pledger to receive webhooks from the DSS to facilitate the creation of custom algorithm using a visual tool for coding
 
 
-**Recommended** scenario for each optimisation:
+**Recommended** scenario for each optimisation, a summary is provided in [this spreadsheet](optimisations_comparision.ods):
 
 - **resources**:
     - infrastructure with **edge and cloud nodes**
