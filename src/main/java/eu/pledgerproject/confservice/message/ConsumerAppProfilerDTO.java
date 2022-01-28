@@ -56,10 +56,9 @@ public class ConsumerAppProfilerDTO {
 
     		List<Benchmark> benchmarkList = benchmarkRepository.findByBenchmarkName(message.benchmark_name);
     		if(benchmarkList.size() > 0) {
-    			String benchmarkName = benchmarkList.get(0).getName();
-	    		serviceDB.setProfile(benchmarkName);
+	    		serviceDB.setProfile(message.benchmark_name);
 	    		serviceRepository.save(serviceDB);
-	    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkName );
+	    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + message.benchmark_name );
     		}
     		else {
             	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; benchmark_name does not exist"); 
