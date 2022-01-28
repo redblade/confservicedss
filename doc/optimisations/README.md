@@ -47,7 +47,7 @@ Note the "SLA monitoring period" mentioned below is the "monitoring.slaViolation
 
 - **scaling**:
     - infrastructure with **edge and cloud nodes**
-    - scarce edge resources **managed by separate entity** and where lack of resources requires **scaling up** on the edge
+    - edge resources **managed by separate entity** and where lack of resources requires **scaling up** on the edge
     - **very varied HW performance on the edge nodes** (mostly cpu)
     - **latency is not critical**
 
@@ -58,7 +58,7 @@ Note the "SLA monitoring period" mentioned below is the "monitoring.slaViolation
 
 - **resources_latency**:
     - infrastructure with **edge and cloud nodes**
-    - scarce edge resources **managed by the DSS**
+    - edge resources **managed by the DSS**
     - **very varied HW performance on the edge nodes** (mostly cpu)
     - **latency is critical**
 
@@ -69,7 +69,7 @@ Note the "SLA monitoring period" mentioned below is the "monitoring.slaViolation
     
 - **resources_latency_faredge**:
     - infrastructure with **faredge, edge and cloud nodes**
-    - scarce edge resources **managed by the DSS**
+    - edge resources **managed by the DSS**
     - **very varied HW performance on the faredge and edge nodes** (mostly cpu)
     - **latency is critical**
     
