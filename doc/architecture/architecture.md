@@ -45,9 +45,9 @@ To take its decisions and have them applied, the DSS needs:
 In Pledger, all the data above is shared through the StreamHandler component using the Kafka protocol. The high-level architecture is shown in [this picture](confservice_dss.drawio.png)
 
 To **facilitate the system integrators** and to **reduce the dependencies on other Pledger components**, the ConfService and DSS also offer direct support to some specific infrastructures, in particular:
-1. support to opensource Kafka, without the need to have the **StreamHandler**
-2. support to Kubernetes, without the need to have the **E2CO Orchestrator**
-3. support (work still in progress) to Prometheus AlertManager to get SLA violations, without the need to have the **SLA Lite**. Currently, SLA violations over App metrics can be sent using **bash scripts** (see **doc/kafka** folder).
-4. support to Kubernetes metrics-server and GoldPinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
+1. Kafka, to communicate without the need to have the **StreamHandler**
+2. Kubernetes, to directly orchestrate Pods without the need to have the **E2CO Orchestrator**
+3. Prometheus AlertManager (work in progress) to get SLA violations, without the need to have the **SLA Lite**. Currently, SLA violations over App metrics can be sent using **bash scripts** (see **doc/kafka** folder).
+4. Kubernetes metrics-server and GoldPinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
 
 The high-level architecture with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) used for DSS the integration tests described in the **doc/optimisations** folder and allow their replication using KinD environments (see **doc/kind** folder)
