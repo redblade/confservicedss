@@ -1,7 +1,6 @@
 package eu.pledgerproject.confservice.message;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -54,15 +53,16 @@ public class ConsumerAppProfilerDTO {
     	if(serviceOpt.isPresent()) {
     		Service serviceDB = serviceOpt.get();
 
-    		List<Benchmark> benchmarkList = benchmarkRepository.findByBenchmarkName(message.benchmark_name);
-    		if(benchmarkList.size() > 0) {
-	    		serviceDB.setProfile(message.benchmark_name);
+    		String serviceProviderName = serviceDB.getApp().getServiceProvider().getName();
+    		Optional<Benchmark> benchmarkOpt = benchmarkRepository.findByBenchmarkNameAndServiceProviderName(message.benchmark_name, serviceProviderName);
+    		if(benchmarkOpt.isPresent()) {
+	    		serviceDB.setProfile(benchmarkOpt.get().getName());
 	    		serviceRepository.save(serviceDB);
-	    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + message.benchmark_name );
+	    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkOpt.get().getName() );
     		}
     		else {
-            	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; benchmark_name does not exist"); 
-            	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; benchmark_name does not exist");
+            	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; serviceProvider " + serviceProviderName + " has no benchmark with name "+ message.benchmark_name); 
+            	saveErrorEvent("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; serviceProvider " + serviceProviderName + " has no benchmark with name "+ message.benchmark_name);
     		}
     	}
     	else {
