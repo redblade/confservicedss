@@ -1,6 +1,7 @@
 package eu.pledgerproject.confservice.message;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -53,11 +54,12 @@ public class ConsumerAppProfilerDTO {
     	if(serviceOpt.isPresent()) {
     		Service serviceDB = serviceOpt.get();
 
-    		Optional<Benchmark> benchmarkOpt = benchmarkRepository.findByBenchmarkNameAndServiceProviderName(message.benchmark_name, serviceDB.getApp().getServiceProvider().getName());
-    		if(benchmarkOpt.isPresent()) {
-	    		serviceDB.setProfile(benchmarkOpt.get().getName());
+    		List<Benchmark> benchmarkList = benchmarkRepository.findByBenchmarkName(message.benchmark_name);
+    		if(benchmarkList.size() > 0) {
+    			String benchmarkName = benchmarkList.get(0).getName();
+	    		serviceDB.setProfile(benchmarkName);
 	    		serviceRepository.save(serviceDB);
-	    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkOpt.get().getName() );
+	    		saveInfoEvent("AppProfiler sent a Service->Benchmark match: " + serviceDB.getName() + " is best represented by Benchmark " + benchmarkName );
     		}
     		else {
             	log.warn("AppProfiler sent a wrong Service(id)->Benchmark(name) match: " + message.service_id + "->" + message.benchmark_name + "; benchmark_name does not exist"); 

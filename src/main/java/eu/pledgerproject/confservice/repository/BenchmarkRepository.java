@@ -17,6 +17,9 @@ import eu.pledgerproject.confservice.domain.Benchmark;
  */
 @Repository
 public interface BenchmarkRepository extends JpaRepository<Benchmark, Long> {
+	@Query(value = "select benchmark from Benchmark benchmark where benchmark.name =:benchmarkName")
+	List<Benchmark> findByBenchmarkName(@Param("benchmarkName") String benchmarkName);
+	
 	@Query(value = "select benchmark from Benchmark benchmark where benchmark.name =:benchmarkName and benchmark.serviceProvider.name =:serviceProviderName")
 	Optional<Benchmark> findByBenchmarkNameAndServiceProviderName(@Param("benchmarkName") String benchmarkName, @Param("serviceProviderName") String serviceProviderName);
 
