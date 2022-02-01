@@ -52,6 +52,8 @@ spec:
             - '/bin/sh'
             - '-c'
             - 'java -cp /app/resources/:/app/classes/:/app/libs/* eu.pledgerproject.confservice.InitDB /app/resources/config/sql/dump_base.sql'
+      nodeSelector:
+        kubernetes.io/hostname: pledger-3
       containers:
         - name: confservice-app
           image: 116.203.2.204:443/plgregistry/confservicedss:2.5.1bJENKINS_BUILD
