@@ -111,32 +111,27 @@ public class ProjectServiceImpl implements ProjectService {
     private void provision_kafka(Project project) {
     	boolean msgSent = false;
     	
-    	String namespace = ConverterJSON.getProperty(project.getProperties(), "namespace");
-        String sliceName = ConverterJSON.getProperty(project.getProperties(), "slice_name");
+    	int cpuCore = project.getQuotaCpuMillicore() / 1000;
+		int memGB = project.getQuotaMemMB() / 1024;
+		if(cpuCore >= 0 && memGB >= 0) {
+        	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
+        	if(soeEndpoint != null) {
+        		log.info("Provisioning SOE slice via Kafka");
 
-        if(namespace != null && namespace.trim().length() > 0 && sliceName != null && sliceName.trim().length() > 0) {
-        	int cpuCore = project.getQuotaCpuMillicore() / 1000;
-    		int memGB = project.getQuotaMemMB() / 1024;
-    		if(cpuCore >= 0 && memGB >= 0) {
-	        	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
-	        	if(soeEndpoint != null) {
-	        		log.info("Provisioning SOE slice via Kafka");
-	
-	                long infrastructureId = project.getInfrastructure().getId();
-	                Map<String, String> parameters = new HashMap<String, String>();
-	                parameters.put("limits_cpu", ""+cpuCore);
-	                parameters.put("limits_memory", ""+memGB);
-	                parameters.put("requests_cpu", ""+cpuCore);
-	                parameters.put("requests_memory", ""+memGB);
-	                
-	                parameters.putAll(ConverterJSON.convertToMap(project.getProperties()));
-	                
-	                orchestrationNotifierService.publish(infrastructureId, "infrastructure", "provision", parameters, new JSONArray());
-	                
-	                msgSent = true;
-	        	}
-    		}
-        }
+                long infrastructureId = project.getInfrastructure().getId();
+                Map<String, String> parameters = new HashMap<String, String>();
+                parameters.put("limits_cpu", ""+cpuCore);
+                parameters.put("limits_memory", ""+memGB);
+                parameters.put("requests_cpu", ""+cpuCore);
+                parameters.put("requests_memory", ""+memGB);
+                
+                parameters.putAll(ConverterJSON.convertToMap(project.getProperties()));
+                
+                orchestrationNotifierService.publish(infrastructureId, "infrastructure", "provision", parameters, new JSONArray());
+                
+                msgSent = true;
+        	}
+		}
         if(!msgSent) {
         	saveErrorEvent("SOE provisioning", "Missing parameters for SOE Kafka msg");
         }
