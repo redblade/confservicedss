@@ -121,17 +121,15 @@ public class ProjectServiceImpl implements ProjectService {
 	        	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
 	        	if(soeEndpoint != null) {
 	        		log.info("Provisioning SOE slice via Kafka");
-	                String k8s_cluster_id = ConverterJSON.getProperty(project.getProperties(), "k8s_cluster_id");
 	
 	                long infrastructureId = project.getInfrastructure().getId();
 	                Map<String, String> parameters = new HashMap<String, String>();
-	                parameters.put("slice_name", sliceName);
-	                parameters.put("namespace", namespace);
 	                parameters.put("limits_cpu", ""+cpuCore);
 	                parameters.put("limits_memory", ""+memGB);
 	                parameters.put("requests_cpu", ""+cpuCore);
 	                parameters.put("requests_memory", ""+memGB);
-	                parameters.put("k8s_cluster_id", k8s_cluster_id);
+	                
+	                parameters.putAll(ConverterJSON.convertToMap(project.getProperties()));
 	                
 	                orchestrationNotifierService.publish(infrastructureId, "infrastructure", "provision", parameters, new JSONArray());
 	                
