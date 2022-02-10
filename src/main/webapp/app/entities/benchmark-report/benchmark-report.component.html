@@ -24,13 +24,12 @@
                 <tr jhiSort [(predicate)]="predicate" [(ascending)]="ascending" [callback]="loadPage.bind(this)">
                     <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="time"><span>Time</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="metric"><span>Metric</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="tool"><span>Tool</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="mean"><span>Mean</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="interval"><span>Interval (hour)</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="stabilityIndex"><span>Stability Index</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="node.id"><span>Node</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="benchmark.id"><span>Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="metric"><span>Metric</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="interval"><span>Aggregation Interval</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="mean"><span>Mean Value</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="stabilityIndex"><span>Stability</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="node.id"><span>Node @ Infrastructure</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -38,28 +37,33 @@
                 <tr *ngFor="let benchmarkReport of benchmarkReports ;trackBy: trackId">
                     <td><a [routerLink]="['/benchmark-report', benchmarkReport.id, 'view']">{{ benchmarkReport.id }}</a></td>
                     <td>{{ benchmarkReport.time | date:'medium' }}</td>
-                    <td>{{ benchmarkReport.metric }}</td>
-                    <td>{{ benchmarkReport.tool }}</td>
-                    <td>{{ benchmarkReport.mean  | number:'1.0-3'}}</td>
-                    <td>{{ benchmarkReport.interval }}</td>
-                    <td>{{ benchmarkReport.stabilityIndex | number:'1.0-3'}}</td>
-                    <td>
-                        <div *ngIf="benchmarkReport.node">
-                            <a [routerLink]="['/node', benchmarkReport.node?.id, 'view']" >{{ benchmarkReport.node?.name }}</a>
-                        </div>
-                    </td>
                     <td>
                         <div *ngIf="benchmarkReport.benchmark">
                             <a [routerLink]="['/benchmark', benchmarkReport.benchmark?.id, 'view']" >{{ benchmarkReport.benchmark?.name }}</a>
                         </div>
                     </td>
-                    <td class="text-right">
+                    <td>{{ benchmarkReport.metric }}</td>
+                    <td>{{ humanizeInterval(benchmarkReport) }}</td>
+                    <td>{{ benchmarkReport.mean  | number:'1.0-3'}}</td>
+                    <td>{{ (benchmarkReport.stabilityIndex || 0) * 100 | number:'1.0-1'}}%</td>
+                    <td>
+                        <div *ngIf="benchmarkReport.node">
+                            <a [routerLink]="['/node', benchmarkReport.node?.id, 'view']" >{{benchmarkReport.node?.name}} @ {{ benchmarkReport.node?.infrastructure?.name }}</a>
+                        </div>
+                    </td>
+                  <td class="text-right">
                         <div class="btn-group">
                             <button type="submit"
                                     [routerLink]="['/benchmark-report', benchmarkReport.id, 'view']"
                                     class="btn btn-info btn-sm">
                                 <fa-icon icon="eye"></fa-icon>
                                 <span class="d-none d-md-inline">View</span>
+                            </button>
+
+                            <button class="btn btn-link btn-sm">
+                                <a [attr.href]="generateGrafanaURL(benchmarkReport)" target="_blank">
+                                  <img src="../../../content/images/grafana-logo.png" width="24px"/>
+                                </a>
                             </button>
 
                             <button type="submit"

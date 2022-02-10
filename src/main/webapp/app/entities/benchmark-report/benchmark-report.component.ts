@@ -4,7 +4,7 @@ import { ActivatedRoute, ParamMap, Router, Data } from '@angular/router';
 import { Subscription, interval, combineLatest } from 'rxjs';
 import { JhiEventManager } from 'ng-jhipster';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
+import * as humanizeDuration from 'humanize-duration';
 import { IBenchmarkReport } from 'app/shared/model/benchmark-report.model';
 
 import { ITEMS_PER_PAGE } from 'app/shared/constants/pagination.constants';
@@ -34,7 +34,7 @@ export class BenchmarkReportComponent implements OnInit, OnDestroy {
     protected eventManager: JhiEventManager,
     protected modalService: NgbModal
   ) {
-    this.subscription = this.source.subscribe(() => this.eventManager.broadcast('benchmarkReportListModification'));	
+    this.subscription = this.source.subscribe(() => this.eventManager.broadcast('benchmarkReportListModification'));
   }
 
   loadPage(page?: number, dontNavigate?: boolean): void {
@@ -99,6 +99,53 @@ export class BenchmarkReportComponent implements OnInit, OnDestroy {
       result.push('id');
     }
     return result;
+  }
+
+  humanizeInterval(r: IBenchmarkReport): string {
+    // "interval" arrives in seconds in Kafka messages, but it is stored in hours
+    // humanizeDuration() takes the interval in milliseconds
+    // So we transform interval from hours to seconds ("*60 * 60") and then to milliseconds ("* 1000")
+    return humanizeDuration((r.interval || 0) * 60 * 60 * 1000)
+  }
+
+  generateGrafanaURL(r: IBenchmarkReport): string {
+    /*
+    FIXME: very very hugly, temporary and hardcorded solution.
+
+    A better approach would be:
+
+    1. baseUrl is taken from Confservice configuration (read from env var)
+
+    2. tool, workload and version tokens are sent from the Analytics module. For this we need to
+       modify the BenchmarkReport model and the kafka message to include these values
+    OR
+    2. the full url is buid from the analyzer and sent in the Kafka message (cons: we need to persist all the urls)
+
+    TODO:
+    1. what to do about authentication?
+    2. also the provider and metric variables in Grafana could be set from the values in the benchmark report
+    3. what about doing a dashboard specific for this (not the generic "Results")
+
+    */
+
+    const baseUrl = "http://192.168.70.13:30400/charts/d/4NJSceKGz/results?orgId=1&var-datasource=BenchsuiteMetrics&var-provider=All&var-metric=All"
+
+    const [tool, workload, version] = ((r.benchmark ?? {}).name ?? "").split(':')
+    const toolNameMapping = {
+      'phoronix': 'Phoronix',
+      'iperf': 'Iperf',
+      'sysbench-cpu': 'Sysbench CPU',
+      'sysbench-mysql': 'sysbench-mysql',
+      'tfb-nodejs': 'tfb-nodejs',
+      'tfb-django': 'tfb-django',
+      'ycsb-mongodb': 'YCSB MongoDB',
+      'cloudsuite-in-memory-analytics': 'CloudSuite In Memory Analytics'
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(tool)
+
+    return baseUrl + "&var-tool=" + toolNameMapping[tool] + "&var-workload=" + workload + "&var-version=" + version
   }
 
   protected onSuccess(data: IBenchmarkReport[] | null, headers: HttpHeaders, page: number, navigate: boolean): void {

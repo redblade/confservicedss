@@ -14,7 +14,7 @@ import { BenchmarkReportUpdateComponent } from './benchmark-report-update.compon
 
 @Injectable({ providedIn: 'root' })
 export class BenchmarkReportResolve implements Resolve<IBenchmarkReport> {
-  constructor(private service: BenchmarkReportService, private router: Router) {}
+  constructor(private service: BenchmarkReportService, private router: Router) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<IBenchmarkReport> | Observable<never> {
     const id = route.params['id'];
@@ -39,8 +39,8 @@ export const benchmarkReportRoute: Routes = [
     path: '',
     component: BenchmarkReportComponent,
     data: {
-      authorities: [Authority.ADMIN,Authority.SP,Authority.IP],
-      defaultSort: 'id,asc',
+      authorities: [Authority.ADMIN, Authority.SP, Authority.IP],
+      defaultSort: 'time,desc',
       pageTitle: 'BenchmarkReports',
     },
     canActivate: [UserRouteAccessService],
@@ -52,7 +52,7 @@ export const benchmarkReportRoute: Routes = [
       benchmarkReport: BenchmarkReportResolve,
     },
     data: {
-      authorities: [Authority.ADMIN,Authority.SP,Authority.IP],
+      authorities: [Authority.ADMIN, Authority.SP, Authority.IP],
       pageTitle: 'BenchmarkReports',
     },
     canActivate: [UserRouteAccessService],
@@ -64,7 +64,7 @@ export const benchmarkReportRoute: Routes = [
       benchmarkReport: BenchmarkReportResolve,
     },
     data: {
-      authorities: [Authority.ADMIN,Authority.SP,Authority.IP],
+      authorities: [Authority.ADMIN, Authority.SP, Authority.IP],
       pageTitle: 'BenchmarkReports',
     },
     canActivate: [UserRouteAccessService],
@@ -76,7 +76,7 @@ export const benchmarkReportRoute: Routes = [
       benchmarkReport: BenchmarkReportResolve,
     },
     data: {
-      authorities: [Authority.ADMIN,Authority.SP,Authority.IP],
+      authorities: [Authority.ADMIN, Authority.SP, Authority.IP],
       pageTitle: 'BenchmarkReports',
     },
     canActivate: [UserRouteAccessService],
