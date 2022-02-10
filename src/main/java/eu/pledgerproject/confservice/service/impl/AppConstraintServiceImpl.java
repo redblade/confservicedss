@@ -1,6 +1,7 @@
 package eu.pledgerproject.confservice.service.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -45,7 +46,14 @@ public class AppConstraintServiceImpl implements AppConstraintService {
         configurationNotifierService.publish(result.getId(), "appConstraint", "update");
         return result;
     }
-
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<AppConstraint> findByServiceDstCategoryAndValueType(Long serviceSourceID, String category, String valueType) {
+        log.debug("Request to findByCategoryAndValueType AppConstraint : {}", serviceSourceID, category, valueType);
+	    return appConstraintRepository.findByServiceDstCategoryAndValueType(serviceSourceID, category, valueType);
+	}
+    
     @Override
     @Transactional(readOnly = true)
     public Page<AppConstraint> findAll(Pageable pageable) {

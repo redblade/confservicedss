@@ -25,8 +25,8 @@
                     <th scope="col"  jhiSortBy="id"><span>ID</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="name"><span>Name</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="category"><span>Category</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="value"><span>Value</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="valueType"><span>Value Type</span> <fa-icon icon="sort"></fa-icon></th>
+                    <th scope="col"  jhiSortBy="value"><span>Value</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="serviceSource.id"><span>Service Source</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="serviceDestination.id"><span>Service Destination</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"></th>
@@ -37,8 +37,8 @@
                     <td><a [routerLink]="['/app-constraint', appConstraint.id, 'view']">{{ appConstraint.id }}</a></td>
                     <td>{{ appConstraint.name }}</td>
                     <td>{{ appConstraint.category }}</td>
-                    <td>{{ appConstraint.value }}</td>
                     <td>{{ appConstraint.valueType }}</td>
+                    <td>{{ appConstraint.value }}</td>
                     <td>
                         <div *ngIf="appConstraint.serviceSource">
                             <a [routerLink]="['/service', appConstraint.serviceSource?.id, 'view']" >{{ appConstraint.serviceSource?.name }}</a>

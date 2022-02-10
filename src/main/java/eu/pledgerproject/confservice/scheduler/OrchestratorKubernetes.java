@@ -2,7 +2,9 @@ package eu.pledgerproject.confservice.scheduler;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Map;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -112,7 +114,7 @@ public class OrchestratorKubernetes {
 			ApiClient client = tokenKubernetes.getKubernetesApiClient(infrastructure);
 	
 			if(client != null) {
-				log.info("StartStopDeployment got a K8S client");
+				log.info("OrchestratorKubernetes got a K8S client");
 	
 				Configuration.setDefaultApiClient(client);
 				
@@ -142,7 +144,7 @@ public class OrchestratorKubernetes {
 			ApiClient client = tokenKubernetes.getKubernetesApiClient(infrastructure);
 	
 			if(client != null) {
-				log.info("StartStopDeployment got a K8S client");
+				log.info("OrchestratorKubernetes got a K8S client");
 	
 				Configuration.setDefaultApiClient(client);
 				
@@ -155,6 +157,60 @@ public class OrchestratorKubernetes {
 				}catch(ApiException e) {
 					log.error("OrchestratorKubernetes scale error " + e.getClass() + " " + ConverterJSON.getProperty(e.getResponseBody(), "message"));
 					saveErrorEvent("OrchestratorKubernetes scale error " + e.getClass() + " " + ConverterJSON.getProperty(e.getResponseBody(), "message"));
+				}
+			}
+		}
+	}
+	
+	private String replaceAnnotation(Map<String, String> annotationsOrig, Map<String, String> annotationsNew) {
+		JSONObject annotationsJSON = new JSONObject();
+		for(String key : annotationsOrig.keySet()) {
+			if(!annotationsNew.containsKey(key)) {
+				annotationsJSON.put(key, annotationsOrig.get(key));
+			}
+			else {
+				String newValue = annotationsNew.get(key);
+				if(!newValue.equals("")) {
+					annotationsJSON.put(key, newValue);
+				}
+			}
+		}
+		for(String key : annotationsNew.keySet()) {
+			if(!annotationsOrig.containsKey(key)) {
+				String newValue = annotationsNew.get(key);
+				if(!newValue.equals("")) {
+					annotationsJSON.put(key, newValue);
+				}
+			}
+		}
+		
+		return annotationsJSON.toString();
+	}
+	
+	public void annotate(String namespace, String deploymentName, Map<String, String> annotationsNew, Infrastructure infrastructure) {
+		log.info("OrchestratorKubernetes annotate " + deploymentName);
+		
+		if(!ControlFlags.READ_ONLY_MODE_ENABLED) {
+
+			ApiClient client = tokenKubernetes.getKubernetesApiClient(infrastructure);
+	
+			if(client != null) {
+				log.info("Annotate Deployment got a K8S client");
+	
+				Configuration.setDefaultApiClient(client);
+				
+				AppsV1Api appsV1Api = new AppsV1Api(client);
+				try {
+					V1Deployment deployment = appsV1Api.readNamespacedDeployment(deploymentName, namespace, "false", false, false);
+					Map<String, String> annotationsOrig = deployment.getMetadata().getAnnotations();
+
+					String annotationsJSON = replaceAnnotation(annotationsOrig, annotationsNew);
+					String jsonPatchStr = String.format("[{\"op\":\"replace\",\"path\":\"/metadata/annotations\",\"value\":%s}]", annotationsJSON);
+					
+					appsV1Api.patchNamespacedDeployment(deploymentName, namespace, new V1Patch(jsonPatchStr), null, null, null, null);
+				}catch(ApiException e) {
+					log.error("OrchestratorKubernetes annotate error " + e.getClass() + " " + ConverterJSON.getProperty(e.getResponseBody(), "message"));
+					saveErrorEvent("OrchestratorKubernetes annotate error " + e.getClass() + " " + ConverterJSON.getProperty(e.getResponseBody(), "message"));
 				}
 			}
 		}

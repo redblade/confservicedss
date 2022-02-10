@@ -1,5 +1,7 @@
 package eu.pledgerproject.confservice.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +19,7 @@ public interface AppConstraintRepository extends JpaRepository<AppConstraint, Lo
 	@Query(value = "select appConstraint from AppConstraint appConstraint where appConstraint.serviceSource.app.serviceProvider.name =:serviceProviderName and appConstraint.serviceDestination.app.serviceProvider.name =:serviceProviderName")
 	Page<AppConstraint> findAllAuthorizedSP(Pageable pageable, @Param("serviceProviderName") String serviceProviderName);
 	
+	@Query(value = "select appConstraint from AppConstraint appConstraint where appConstraint.serviceDestination.id =:serviceDstID and appConstraint.category =:category and appConstraint.valueType =:valueType")
+	List<AppConstraint> findByServiceDstCategoryAndValueType(@Param("serviceDstID") Long serviceDstID, @Param("category") String category, @Param("valueType") String valueType);
+
 }

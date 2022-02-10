@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.pledgerproject.confservice.domain.AppConstraint;
 import eu.pledgerproject.confservice.domain.CriticalService;
 import eu.pledgerproject.confservice.domain.Infrastructure;
 import eu.pledgerproject.confservice.domain.Node;
@@ -32,6 +33,7 @@ import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.optimisation.DeploymentOptionsManager;
 import eu.pledgerproject.confservice.optimisation.RankingManager;
 import eu.pledgerproject.confservice.optimisation.SLAViolationStatus;
+import eu.pledgerproject.confservice.repository.AppConstraintRepository;
 import eu.pledgerproject.confservice.repository.CriticalServiceRepository;
 import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
@@ -60,6 +62,8 @@ public class ServiceScheduler {
 
 	private final Logger log = LoggerFactory.getLogger(ServiceScheduler.class);
 
+	private final AppConstraintRepository appConstraintRepository;
+
 	private final DeploymentOptionsManager deploymentOptionsManager;
 	private final ProjectRepository projectRepository;
 	private final ServiceRepository serviceRepository;
@@ -74,7 +78,8 @@ public class ServiceScheduler {
 	private final BenchmarkManager benchmarkManager;
 	private final SlaViolationRepository slaViolationRepository;
 	
-	public ServiceScheduler(DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, OrchestratorDocker orchestratorDocker, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager, SlaViolationRepository slaViolationRepository) {
+	public ServiceScheduler(AppConstraintRepository appConstraintRepository, DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, OrchestratorDocker orchestratorDocker, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager, SlaViolationRepository slaViolationRepository) {
+		this.appConstraintRepository = appConstraintRepository;
 		this.deploymentOptionsManager = deploymentOptionsManager;
 		this.projectRepository = projectRepository;
 		this.serviceRepository = serviceRepository;
@@ -421,6 +426,53 @@ public class ServiceScheduler {
 		return bestNode;
 	}
 	
+	private static final String CATEGORY_SKUPPER = "skupper";
+	private static final String VALUE_TYPE_SKUPPER = "tcp";
+	private static final String SKUPPER_PROXY = "skupper.io/proxy";
+	private static final String SKUPPER_PROXY_VALUE = "tcp";
+	private static final String SKUPPER_PORT = "skupper.io/port";
+
+	// return a Service which is considered as a destination from the serviceSource according to AppConstraint
+	private void manageMulticlusterConnections(Service serviceDst) {
+		if(serviceDst.getApp().getManagementType().equals(ManagementType.MANAGED) && serviceDst.getDeployType().equals(DeployType.KUBERNETES)) {
+			
+			for(AppConstraint appConstraint : appConstraintRepository.findByServiceDstCategoryAndValueType(serviceDst.getId(), ""+CATEGORY_SKUPPER, VALUE_TYPE_SKUPPER)) {
+				Service serviceSrc = appConstraint.getServiceSource();
+				if(serviceDst.getApp().getManagementType().equals(ManagementType.MANAGED) && serviceDst.getDeployType().equals(DeployType.KUBERNETES)) {
+					
+					Infrastructure infrastructureSrc = resourceDataReader.getCurrentNode(serviceSrc).getInfrastructure();
+					Infrastructure infrastructureDst = resourceDataReader.getCurrentNode(serviceDst).getInfrastructure();
+					
+					String deploymentNameDst = serviceDst.getName();
+
+					Optional<Project> projectDst = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(serviceDst.getApp().getServiceProvider().getId(), infrastructureDst.getId());
+					if(projectDst.isPresent()) {
+						String namespaceDst = (String) ConverterJSON.convertToMap(projectDst.get().getProperties()).get("namespace");
+						
+						//if infrastructures are different create link
+						if(infrastructureSrc.getId() != infrastructureDst.getId()){
+							String appConstraintValue = appConstraint.getValue();
+							
+							Map<String, String> annotations = new HashMap<String, String>();
+							annotations.put(SKUPPER_PROXY, SKUPPER_PROXY_VALUE);
+							annotations.put(SKUPPER_PORT, appConstraintValue);
+							
+							orchestratorKubernetes.annotate(namespaceDst, deploymentNameDst, annotations, infrastructureDst);
+						}
+						//else if infrastructures are equal remove link
+						else {
+							Map<String, String> annotations = new HashMap<String, String>();
+							annotations.put(SKUPPER_PROXY, "");
+							annotations.put(SKUPPER_PORT, "");
+							
+							orchestratorKubernetes.annotate(namespaceDst, deploymentNameDst, annotations, infrastructureDst);
+						}
+					}
+				}
+			}
+		}		
+	}
+	
 	public void migrate(Service service, Node bestNode, Integer requestCpu, Integer requestMem) {
 		log.info("Service migrated " + service.getName());
 		service.setLastChangedStatus(Instant.now());
@@ -544,6 +596,9 @@ public class ServiceScheduler {
 					}
 					
 				}
+			}
+			if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+				manageMulticlusterConnections(service);
 			}
 		}
 		else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
