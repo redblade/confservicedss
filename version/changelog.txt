@@ -42,5 +42,5 @@ From here, Jenkins build number was restarted
 2.4.9b52:pledgerui_v32   - setting the ground for TTODA - initial implementation
 2.5.0b60:pledgerui_v32   - TTODA implementation + TTODA resource implementation (faredge_latency and resource_faredge_latency optimisations)
 2.5.1b76:pledgerui_v32   - updated SOE integration
-2.5.2b77:pledgerui_v32   - added initial support to K8S multicluster with Skupper.io
+2.5.2b78:pledgerui_v32   - added initial support to K8S multicluster with Skupper.io
 
