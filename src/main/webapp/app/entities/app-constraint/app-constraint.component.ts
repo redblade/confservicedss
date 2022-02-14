@@ -53,6 +53,25 @@ export class AppConstraintComponent implements OnInit, OnDestroy {
     this.registerChangeInAppConstraints();
   }
 
+  public isExposeVisible(appConstraint: IAppConstraint) : boolean {
+	return appConstraint.category === 'skupper';
+  }
+
+  public isUnexposeVisible(appConstraint: IAppConstraint) : boolean {
+	return appConstraint.category === 'skupper';
+  }
+
+  expose(appConstraint: IAppConstraint): void {
+	this.appConstraintService.expose(appConstraint).subscribe(() => {
+		
+    });    
+  }
+  unexpose(appConstraint: IAppConstraint): void {
+	this.appConstraintService.unexpose(appConstraint).subscribe(() => {
+		
+    });    
+  }
+
   protected handleNavigation(): void {
     combineLatest(this.activatedRoute.data, this.activatedRoute.queryParamMap, (data: Data, params: ParamMap) => {
       const page = params.get('page');

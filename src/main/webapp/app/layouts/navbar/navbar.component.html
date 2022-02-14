@@ -178,59 +178,60 @@
                 </a>
                 <ul class="dropdown-menu" ngbDropdownMenu aria-labelledby="entity-menu4">
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
+                        <a class="dropdown-item" routerLink="app-constraint" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                            <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
+                            <span>App Constraints</span>
+                        </a>
+                    </li>
+
+                    <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="app-deployment-options" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
                             <span>App Deployment Options</span>
-                        </a>
-                    </li>
-                    <li *jhiHasAnyAuthority="['ROLE_SP']">
-                        <a class="dropdown-item" routerLink="app-constraint" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
-                            <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>App Constraint</span>
                         </a>
                     </li>
                 
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="service-constraint" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Service Constraint</span>
+                            <span>Service Constraints</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="service-optimisation" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Service Optimisation</span>
+                            <span>Service Optimisations</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="service-benchmark-match" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Service-Benchmark match</span>
+                            <span>Service-Benchmark matches</span>
                         </a>
                     </li>
                     
                 	<li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="sla-violation" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>SLA Violation</span>
+                            <span>SLA Violations</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="critical-service" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Resource Critical Service</span>
+                            <span>Resource Critical Services</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="steady-service" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Resource Steady Service</span>
+                            <span>Resource Steady Services</span>
                         </a>
                     </li>
                     <li *jhiHasAnyAuthority="['ROLE_SP']">
                         <a class="dropdown-item" routerLink="optimisation-report" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
                             <fa-icon icon="list" [fixedWidth]="true"></fa-icon>
-                            <span>Latency Optimisation Report</span>
+                            <span>Latency Optimisation Reports</span>
                         </a>
                     </li>
                 </ul>

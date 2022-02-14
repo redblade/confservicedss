@@ -426,51 +426,65 @@ public class ServiceScheduler {
 		return bestNode;
 	}
 	
-	private static final String CATEGORY_SKUPPER = "skupper";
-	private static final String VALUE_TYPE_SKUPPER = "tcp";
-	private static final String SKUPPER_PROXY = "skupper.io/proxy";
-	private static final String SKUPPER_PROXY_VALUE = "tcp";
-	private static final String SKUPPER_PORT = "skupper.io/port";
+	public void exposeSkupper(Service service, String port) {
+		if(service.getApp().getManagementType().equals(ManagementType.MANAGED) && service.getDeployType().equals(DeployType.KUBERNETES)) {
+			Infrastructure infrastructure = resourceDataReader.getCurrentNode(service).getInfrastructure();
+			String deploymentName = service.getName();
 
-	// return a Service which is considered as a destination from the serviceSource according to AppConstraint
-	private void manageMulticlusterConnections(Service serviceDst) {
-		if(serviceDst.getApp().getManagementType().equals(ManagementType.MANAGED) && serviceDst.getDeployType().equals(DeployType.KUBERNETES)) {
-			
-			for(AppConstraint appConstraint : appConstraintRepository.findByServiceDstCategoryAndValueType(serviceDst.getId(), ""+CATEGORY_SKUPPER, VALUE_TYPE_SKUPPER)) {
-				Service serviceSrc = appConstraint.getServiceSource();
-				if(serviceDst.getApp().getManagementType().equals(ManagementType.MANAGED) && serviceDst.getDeployType().equals(DeployType.KUBERNETES)) {
-					
-					Infrastructure infrastructureSrc = resourceDataReader.getCurrentNode(serviceSrc).getInfrastructure();
-					Infrastructure infrastructureDst = resourceDataReader.getCurrentNode(serviceDst).getInfrastructure();
-					
-					String deploymentNameDst = serviceDst.getName();
+			Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
+			if(project.isPresent()) {
+				String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
+				orchestratorKubernetes.exposeSkupper(namespace, deploymentName, port, infrastructure);
+			}
+		}
+	}
+	public void unexposeSkupper(Service service, String port) {
+		if(service.getApp().getManagementType().equals(ManagementType.MANAGED) && service.getDeployType().equals(DeployType.KUBERNETES)) {
+			Infrastructure infrastructure = resourceDataReader.getCurrentNode(service).getInfrastructure();
+			String deploymentName = service.getName();
 
-					Optional<Project> projectDst = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(serviceDst.getApp().getServiceProvider().getId(), infrastructureDst.getId());
-					if(projectDst.isPresent()) {
-						String namespaceDst = (String) ConverterJSON.convertToMap(projectDst.get().getProperties()).get("namespace");
+			Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
+			if(project.isPresent()) {
+				String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
+				orchestratorKubernetes.unexposeSkupper(namespace, deploymentName, port, infrastructure);
+			}
+		}
+	}
+	
+
+	private void manageMulticlusterConnections(Long serviceDstID) {
+		Optional<Service> serviceDstDB = serviceRepository.findById(serviceDstID);
+		if(serviceDstDB.isPresent()) {
+			Service serviceDst = serviceDstDB.get();
+		
+			if(serviceDst.getApp().getManagementType().equals(ManagementType.MANAGED) && serviceDst.getDeployType().equals(DeployType.KUBERNETES)) {
+				
+				for(AppConstraint appConstraint : appConstraintRepository.findByServiceDstCategoryAndValueType(serviceDst.getId(), OrchestratorKubernetes.SKUPPER_CATEGORY, OrchestratorKubernetes.SKUPPER_VALUE_TYPE)) {
+					Service serviceSrc = appConstraint.getServiceSource();
+					if(serviceDst.getApp().getManagementType().equals(ManagementType.MANAGED) && serviceDst.getDeployType().equals(DeployType.KUBERNETES)) {
 						
-						//if infrastructures are different create link
-						if(infrastructureSrc.getId() != infrastructureDst.getId()){
-							String appConstraintValue = appConstraint.getValue();
+						Infrastructure infrastructureSrc = resourceDataReader.getCurrentNode(serviceSrc).getInfrastructure();
+						Infrastructure infrastructureDst = resourceDataReader.getCurrentNode(serviceDst).getInfrastructure();
+						
+						String deploymentNameDst = serviceDst.getName();
+	
+						Optional<Project> projectDst = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(serviceDst.getApp().getServiceProvider().getId(), infrastructureDst.getId());
+						if(projectDst.isPresent()) {
+							String namespaceDst = (String) ConverterJSON.convertToMap(projectDst.get().getProperties()).get("namespace");
 							
-							Map<String, String> annotations = new HashMap<String, String>();
-							annotations.put(SKUPPER_PROXY, SKUPPER_PROXY_VALUE);
-							annotations.put(SKUPPER_PORT, appConstraintValue);
-							
-							orchestratorKubernetes.annotate(namespaceDst, deploymentNameDst, annotations, infrastructureDst);
-						}
-						//else if infrastructures are equal remove link
-						else {
-							Map<String, String> annotations = new HashMap<String, String>();
-							annotations.put(SKUPPER_PROXY, "");
-							annotations.put(SKUPPER_PORT, "");
-							
-							orchestratorKubernetes.annotate(namespaceDst, deploymentNameDst, annotations, infrastructureDst);
+							//if infrastructures are different create link
+							if(infrastructureSrc.getId() != infrastructureDst.getId()){
+								orchestratorKubernetes.exposeSkupper(namespaceDst, deploymentNameDst, appConstraint.getValue(), infrastructureDst);
+							}
+							//else if infrastructures are equal remove link
+							else {
+								orchestratorKubernetes.unexposeSkupper(namespaceDst, deploymentNameDst, appConstraint.getValue(), infrastructureDst);
+							}
 						}
 					}
 				}
-			}
-		}		
+			}		
+		}
 	}
 	
 	public void migrate(Service service, Node bestNode, Integer requestCpu, Integer requestMem) {
@@ -598,7 +612,7 @@ public class ServiceScheduler {
 				}
 			}
 			if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
-				manageMulticlusterConnections(service);
+				manageMulticlusterConnections(service.getId());
 			}
 		}
 		else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {

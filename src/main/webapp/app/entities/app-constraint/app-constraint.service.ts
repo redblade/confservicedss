@@ -15,6 +15,14 @@ export class AppConstraintService {
 
   constructor(protected http: HttpClient) {}
 
+  expose(appConstraint: IAppConstraint): Observable<EntityResponseType> {
+    return this.http.post<IAppConstraint>(this.resourceUrl+"/expose", appConstraint, { observe: 'response' });
+  }
+
+  unexpose(appConstraint: IAppConstraint): Observable<EntityResponseType> {
+    return this.http.post<IAppConstraint>(this.resourceUrl+"/unexpose", appConstraint, { observe: 'response' });
+  }
+
   create(appConstraint: IAppConstraint): Observable<EntityResponseType> {
     return this.http.post<IAppConstraint>(this.resourceUrl, appConstraint, { observe: 'response' });
   }

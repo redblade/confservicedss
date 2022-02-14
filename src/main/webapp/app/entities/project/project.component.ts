@@ -104,7 +104,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
 
   public isProvisioningVisible(project: IProject) : boolean {
 	if(project.properties != null){
-		return project.quotaCpuMillicore != null && project.quotaCpuMillicore > 0 && project.quotaMemMB != null && project.quotaMemMB > 0 && JSON.parse(project.properties.replace(/'/g, '"')).network_chunk_id != null;
+		return project.quotaCpuMillicore != null && project.quotaCpuMillicore > 0 && project.quotaMemMB != null && project.quotaMemMB > 0 && JSON.parse(project.properties.replace(/'/g, '"')).compute_id != null;
 	}
 	return false;
   }

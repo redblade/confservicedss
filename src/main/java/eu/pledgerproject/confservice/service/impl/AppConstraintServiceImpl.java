@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import eu.pledgerproject.confservice.domain.AppConstraint;
 import eu.pledgerproject.confservice.message.PublisherConfigurationUpdate;
 import eu.pledgerproject.confservice.repository.AppConstraintRepository;
+import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 import eu.pledgerproject.confservice.security.CheckRole;
 import eu.pledgerproject.confservice.service.AppConstraintService;
 
@@ -32,10 +33,12 @@ public class AppConstraintServiceImpl implements AppConstraintService {
 
     private final AppConstraintRepository appConstraintRepository;
     private final PublisherConfigurationUpdate configurationNotifierService;
-
-    public AppConstraintServiceImpl(AppConstraintRepository appConstraintRepository, PublisherConfigurationUpdate configurationNotifierService) {
+    private final ServiceScheduler serviceScheduler;
+    
+    public AppConstraintServiceImpl(AppConstraintRepository appConstraintRepository, PublisherConfigurationUpdate configurationNotifierService, ServiceScheduler serviceScheduler) {
         this.appConstraintRepository = appConstraintRepository;
         this.configurationNotifierService = configurationNotifierService;
+        this.serviceScheduler = serviceScheduler;
     }
 
     @Override
@@ -45,6 +48,20 @@ public class AppConstraintServiceImpl implements AppConstraintService {
         AppConstraint result = appConstraintRepository.save(appConstraint);
         configurationNotifierService.publish(result.getId(), "appConstraint", "update");
         return result;
+    }
+    
+    @Override
+    public void expose(AppConstraint appConstraint) {
+        log.debug("Request to expose AppConstraint : {}", appConstraint);
+        CheckRole.block("ROLE_ROAPI");
+		serviceScheduler.exposeSkupper(appConstraint.getServiceDestination(), appConstraint.getValue());
+    }
+    
+    @Override
+    public void unexpose(AppConstraint appConstraint) {
+        log.debug("Request to unexpose AppConstraint : {}", appConstraint);
+        CheckRole.block("ROLE_ROAPI");
+		serviceScheduler.unexposeSkupper(appConstraint.getServiceDestination(), appConstraint.getValue());
     }
     
     @Override

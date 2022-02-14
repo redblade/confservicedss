@@ -2,6 +2,7 @@ package eu.pledgerproject.confservice.scheduler;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -185,6 +186,28 @@ public class OrchestratorKubernetes {
 		}
 		
 		return annotationsJSON.toString();
+	}
+	
+	public static final String SKUPPER_CATEGORY = "skupper";
+	public static final String SKUPPER_VALUE_TYPE = "tcp";
+	private static final String SKUPPER_PROXY = "skupper.io/proxy";
+	private static final String SKUPPER_PROXY_VALUE = "tcp";
+	private static final String SKUPPER_PORT = "skupper.io/port";
+
+	public void exposeSkupper(String namespace, String deploymentName, String port, Infrastructure infrastructure) {
+		
+		Map<String, String> annotations = new HashMap<String, String>();
+		annotations.put(SKUPPER_PROXY, SKUPPER_PROXY_VALUE);
+		annotations.put(SKUPPER_PORT, port);
+		
+		annotate(namespace, deploymentName, annotations, infrastructure);
+	}
+	public void unexposeSkupper(String namespace, String deploymentName, String port, Infrastructure infrastructure) {
+		Map<String, String> annotations = new HashMap<String, String>();
+		annotations.put(SKUPPER_PROXY, "");
+		annotations.put(SKUPPER_PORT, "");
+		
+		annotate(namespace, deploymentName, annotations, infrastructure);
 	}
 	
 	public void annotate(String namespace, String deploymentName, Map<String, String> annotationsNew, Infrastructure infrastructure) {

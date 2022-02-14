@@ -67,7 +67,22 @@ public class AppConstraintResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+    
+    @PostMapping("/app-constraints/expose")
+    public ResponseEntity<Void> expose(@RequestBody AppConstraint appConstraint) throws URISyntaxException {
+        log.debug("REST request to expose AppConstraint : {}", appConstraint);
+        appConstraintService.expose(appConstraint);
+        return ResponseEntity.noContent().build();
+    }
 
+    
+    @PostMapping("/app-constraints/unexpose")
+    public ResponseEntity<Void> unexpose(@RequestBody AppConstraint appConstraint) throws URISyntaxException {
+    	log.debug("REST request to unexpose AppConstraint : {}", appConstraint);
+    	appConstraintService.unexpose(appConstraint);
+        return ResponseEntity.noContent().build();
+    }
+    
     /**
      * {@code PUT  /app-constraints} : Updates an existing appConstraint.
      *

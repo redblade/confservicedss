@@ -13,14 +13,31 @@ import eu.pledgerproject.confservice.domain.AppConstraint;
  */
 public interface AppConstraintService {
 
+
     /**
-     * Save a appConstraint.
+     * save a appConstraint.
      *
      * @param appConstraint the entity to save.
      * @return the persisted entity.
      */
-    AppConstraint save(AppConstraint appConstraint);
+	AppConstraint save(AppConstraint appConstraint);
+	
+    /**
+     * expose a appConstraint.
+     *
+     * @param appConstraint the entity to expose.
+     * @return the persisted entity.
+     */
+    void expose(AppConstraint appConstraint);
 
+    /**
+     * unexpose a appConstraint.
+     *
+     * @param appConstraint the entity to unexpose.
+     * @return the persisted entity.
+     */
+    void unexpose(AppConstraint appConstraint);
+    
     /**
      * Get all the appConstraints.
      *
