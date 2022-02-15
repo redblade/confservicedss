@@ -163,6 +163,9 @@ spec:
           - mountPath: "/var/kubeconfig_i2cat"
             name: kubeconfig-i2cat-vol
             readOnly: true
+          - mountPath: "/var/kubeconfig_i2cat_30"
+            name: kubeconfig-i2cat-vol-30
+            readOnly: true            
           - mountPath: "/var/kafka_truststore"
             name: kafka-truststore
             readOnly: true
@@ -179,6 +182,9 @@ spec:
         - name: kubeconfig-i2cat-vol
           secret:
             secretName: kubeconfig-i2cat
+        - name: kubeconfig-i2cat-vol-30
+          secret:
+            secretName: kubeconfig-i2cat-30
         - name: kafka-truststore
           secret:
             secretName: kafka-truststore-secret
