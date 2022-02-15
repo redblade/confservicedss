@@ -59,7 +59,8 @@ mysqldump --host=localhost --port=3306 --user=root --password=root -p confservic
 -t service  \
 -t service_constraint  \
 -t service_optimisation  \
--t service_provider  
+-t service_provider \
+-t sla  
 > dump_conf_mysql.sql
 
 
