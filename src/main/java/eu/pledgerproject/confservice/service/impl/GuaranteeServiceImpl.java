@@ -16,9 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import eu.pledgerproject.confservice.domain.Guarantee;
-import eu.pledgerproject.confservice.domain.enumeration.ManagementType;
 import eu.pledgerproject.confservice.message.PublisherConfigurationUpdate;
-import eu.pledgerproject.confservice.monitoring.PrometheusRuleGenerator;
+import eu.pledgerproject.confservice.monitoring.PrometheusRuleManager;
 import eu.pledgerproject.confservice.repository.GuaranteeRepository;
 import eu.pledgerproject.confservice.security.CheckRole;
 import eu.pledgerproject.confservice.service.GuaranteeService;
@@ -34,33 +33,22 @@ public class GuaranteeServiceImpl implements GuaranteeService {
 
     private final GuaranteeRepository guaranteeRepository;
     private final PublisherConfigurationUpdate configurationNotifierService;
-    private final PrometheusRuleGenerator prometheusRuleGenerator;
+    private final PrometheusRuleManager prometheusRuleManager;
 
-    public GuaranteeServiceImpl(GuaranteeRepository guaranteeRepository, PublisherConfigurationUpdate configurationNotifierService, PrometheusRuleGenerator prometheusRuleGenerator) {
+    public GuaranteeServiceImpl(GuaranteeRepository guaranteeRepository, PublisherConfigurationUpdate configurationNotifierService, PrometheusRuleManager prometheusRuleManager) {
         this.guaranteeRepository = guaranteeRepository;
         this.configurationNotifierService = configurationNotifierService;
-        this.prometheusRuleGenerator = prometheusRuleGenerator;
+        this.prometheusRuleManager = prometheusRuleManager;
     }
     
-    private void managePrometheusRule(Guarantee guarantee) {
-    	if(guarantee.getSla() != null && guarantee.getSla().getService().getApp().getManagementType().equals(ManagementType.MANAGED)) {
-    		String prometheusRule = prometheusRuleGenerator.generate(guarantee, "core");
-    		if(prometheusRule != null) {
-    			log.info("\n\n\n"+prometheusRule+"\n\n\n");
-    		}
-        }
-    }
-
     @Override
     public Guarantee save(Guarantee guarantee) {
         log.debug("Request to save Guarantee : {}", guarantee);
         CheckRole.block("ROLE_ROAPI");
+        prometheusRuleManager.applyPrometheusRule(guarantee);
 
-        
         Guarantee result = guaranteeRepository.save(guarantee);
         configurationNotifierService.publish(result.getId(), "guarantee", "update");
-        
-        managePrometheusRule(guarantee);
         
         return result;
     }
@@ -87,17 +75,18 @@ public class GuaranteeServiceImpl implements GuaranteeService {
 
     @Override
     @Transactional(readOnly = true)
-    public String getPrometheusRules(Long id, String namespace) {
-        log.debug("Request to get Prometheus Rule for Guarantee : {}", id);
+    public String readPrometheusRule(Long id) {
+        log.debug("Request to read Prometheus Rule for Guarantee : {}", id);
         Optional<Guarantee> guaranteeOptional = guaranteeRepository.findById(id);
         if(guaranteeOptional.isPresent()) {
-        	return prometheusRuleGenerator.generate(guaranteeOptional.get(), namespace);	
+        	try {
+        		return prometheusRuleManager.readPrometheusRule(guaranteeOptional.get());
+        	}catch(Exception e) {
+        		throw new RuntimeException(e);
+        	}
         }
-        else {
-        	return "";
-        }
+        return null;
     }
-    
 
     @Override
     @Transactional(readOnly = true)
@@ -117,6 +106,10 @@ public class GuaranteeServiceImpl implements GuaranteeService {
     public void delete(Long id) {
         log.debug("Request to delete Guarantee : {}", id);
         CheckRole.block("ROLE_ROAPI");
+        Optional<Guarantee> guaranteeOptional = guaranteeRepository.findById(id);
+        if(guaranteeOptional.isPresent()) {
+        	prometheusRuleManager.deletePrometheusRule(guaranteeOptional.get());
+        }
 
         configurationNotifierService.publish(id, "guarantee", "delete");
         guaranteeRepository.deleteById(id);

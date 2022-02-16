@@ -106,15 +106,15 @@ public class GuaranteeResource {
     }
 
     /**
-     * {@code GET  /guarantees/prometheusrule/:id} : get the "id" guarantee.
+     * {@code GET  /guarantees/prometheusrule/:id} : read the PrometheusRule for the guarantee.
      *
      * @param id the id of the Prometheus Rule for the guarantee to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the Prometheus Rule for the guarantee, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/guarantees/prometheusrule/{id}/{namespace}")
-    public ResponseEntity<String> getGuaranteePrometheusRule(@PathVariable Long id, @PathVariable String namespace) {
-        log.debug("REST request to get Prometheus Rule for Guarantee : {}", id, namespace);
-        String prometheusRule = guaranteeService.getPrometheusRules(id, namespace);
+    public ResponseEntity<String> readGuaranteePrometheusRule(@PathVariable Long id) {
+        log.debug("REST request to read Prometheus Rule for Guarantee : {}", id);
+        String prometheusRule = guaranteeService.readPrometheusRule(id);
         return ResponseUtil.wrapOrNotFound(prometheusRule == null ? Optional.empty() : Optional.of(prometheusRule));
     }
     

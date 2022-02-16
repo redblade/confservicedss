@@ -49,10 +49,10 @@ public interface GuaranteeService {
     /**
      * Get the "id" guarantee.
      *
-     * @param id the id of the entity.
+     * @param id the id of the guarantee entity.
      * @return the Prometheus Rule.
      */
-    String getPrometheusRules(Long id, String namespace);
+    String readPrometheusRule(Long id);
 
     /**
      * Delete the "id" guarantee.

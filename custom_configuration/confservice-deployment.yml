@@ -47,7 +47,7 @@ spec:
                 sleep 10
               done
         - name: init-db
-          image: 116.203.2.204:443/plgregistry/confservicedss:2.5.2bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.5.3bJENKINS_BUILD
           command:
             - '/bin/sh'
             - '-c'
@@ -55,7 +55,7 @@ spec:
 
       containers:
         - name: confservice-app
-          image: 116.203.2.204:443/plgregistry/confservicedss:2.5.2bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.5.3bJENKINS_BUILD
           env:
             - name: SPRING_MAIL_FROM
               value: 'confservicedss@gmail.com'
@@ -127,6 +127,11 @@ spec:
               value: 'confservice'
             - name: KAFKA_CONSUMER_AUTO_OFFSET_RESET
               value: 'earliest'
+
+            - name: SLAMANAGER_URL
+              value: http://slamanager.core.svc:8088
+            - name: SLAMANAGER_RULE_NAMESPACE
+              value: core
 
             - name: JAVA_OPTS
               value: ' -Xmx256m -Xms256m'
