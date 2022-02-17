@@ -1,8 +1,20 @@
 package eu.pledgerproject.confservice.monitoring;
 
 public class ControlFlags {
-	//this is used for testing: MAKE SURE TO DISABLE IT IN PRODUCTION
-	public static final boolean READ_ONLY_MODE_ENABLED = false;
-	public static final boolean FILTER_NO_BENCHMARK_ENABLED = false;
-	public static final boolean EXPERIMENTAL_FEATURES_ENABLED = false;
+	
+	static {
+		READ_ONLY_MODE_ENABLED = "TRUE".equals(System.getenv("READ_ONLY_MODE_ENABLED"));
+		BENCHMARK_DSS_DISABLED = "TRUE".equals(System.getenv("BENCHMARK_DSS_DISABLED"));
+		DOCKER_ENABLED         = "TRUE".equals(System.getenv("DOCKER_ENABLED"));
+		MULTICLOUD_ENABLED     = "TRUE".equals(System.getenv("MULTICLOUD_ENABLED"));
+		SLAMANAGER_ENABLED     = "TRUE".equals(System.getenv("SLAMANAGER_ENABLED"));
+	}
+	
+	
+	//these flags are used for testing and should be all FALSE
+	public static final boolean READ_ONLY_MODE_ENABLED;
+	public static final boolean BENCHMARK_DSS_DISABLED;
+	public static final boolean DOCKER_ENABLED;
+	public static final boolean MULTICLOUD_ENABLED;
+	public static final boolean SLAMANAGER_ENABLED;
 }

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import eu.pledgerproject.confservice.domain.Guarantee;
 import eu.pledgerproject.confservice.message.PublisherConfigurationUpdate;
+import eu.pledgerproject.confservice.monitoring.ControlFlags;
 import eu.pledgerproject.confservice.monitoring.PrometheusRuleManager;
 import eu.pledgerproject.confservice.repository.GuaranteeRepository;
 import eu.pledgerproject.confservice.security.CheckRole;
@@ -45,8 +46,9 @@ public class GuaranteeServiceImpl implements GuaranteeService {
     public Guarantee save(Guarantee guarantee) {
         log.debug("Request to save Guarantee : {}", guarantee);
         CheckRole.block("ROLE_ROAPI");
-        prometheusRuleManager.applyPrometheusRule(guarantee);
-
+        if(ControlFlags.SLAMANAGER_ENABLED) {
+        	prometheusRuleManager.applyPrometheusRule(guarantee);
+        }
         Guarantee result = guaranteeRepository.save(guarantee);
         configurationNotifierService.publish(result.getId(), "guarantee", "update");
         
@@ -106,9 +108,11 @@ public class GuaranteeServiceImpl implements GuaranteeService {
     public void delete(Long id) {
         log.debug("Request to delete Guarantee : {}", id);
         CheckRole.block("ROLE_ROAPI");
-        Optional<Guarantee> guaranteeOptional = guaranteeRepository.findById(id);
-        if(guaranteeOptional.isPresent()) {
-        	prometheusRuleManager.deletePrometheusRule(guaranteeOptional.get());
+        if(ControlFlags.SLAMANAGER_ENABLED) {
+	        Optional<Guarantee> guaranteeOptional = guaranteeRepository.findById(id);
+	        if(guaranteeOptional.isPresent()) {
+	        	prometheusRuleManager.deletePrometheusRule(guaranteeOptional.get());
+	        }
         }
 
         configurationNotifierService.publish(id, "guarantee", "delete");

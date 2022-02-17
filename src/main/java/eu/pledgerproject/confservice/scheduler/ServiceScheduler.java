@@ -182,7 +182,7 @@ public class ServiceScheduler {
 					result = true;
 				}
 				else if (service.getDeployType().equals(DeployType.DOCKER)) {
-					if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+					if(ControlFlags.DOCKER_ENABLED) {
 						orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
 					}
 					else {
@@ -259,7 +259,7 @@ public class ServiceScheduler {
 							orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 						}
 						else if (service.getDeployType().equals(DeployType.DOCKER)) {
-							if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+							if(ControlFlags.DOCKER_ENABLED) {
 								orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, infrastructure);
 							}
 							else {
@@ -536,7 +536,7 @@ public class ServiceScheduler {
 									orchestratorKubernetes.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 								}
 								else if(service.getDeployType().equals(DeployType.DOCKER)) {
-									if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+									if(ControlFlags.DOCKER_ENABLED) {
 										orchestratorDocker.stop(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 									}
 									else {
@@ -601,7 +601,7 @@ public class ServiceScheduler {
 						orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 					}
 					else if(service.getDeployType().equals(DeployType.DOCKER)) {
-						if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+						if(ControlFlags.DOCKER_ENABLED) {
 							orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 						}
 						else {
@@ -611,7 +611,7 @@ public class ServiceScheduler {
 					
 				}
 			}
-			if(ControlFlags.EXPERIMENTAL_FEATURES_ENABLED) {
+			if(ControlFlags.MULTICLOUD_ENABLED) {
 				manageMulticlusterConnections(service.getId());
 			}
 		}

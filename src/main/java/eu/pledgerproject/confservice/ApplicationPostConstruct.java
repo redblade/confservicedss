@@ -31,19 +31,19 @@ public class ApplicationPostConstruct {
 		eventRepository.save(event);
 		
 		if(ControlFlags.READ_ONLY_MODE_ENABLED) {
-			log.error("READ_ONLY_MODE is ACTIVE");
+			log.error("READ_ONLY_MODE_ENABLED is TRUE");
 			Event eventAlert = new Event();
 			eventAlert.setSeverity(Event.ERROR);
-			eventAlert.setCategory("READ ONLY MODE");
-			eventAlert.setDetails("ACTIVE");
+			eventAlert.setCategory("READ_ONLY_MODE_ENABLED");
+			eventAlert.setDetails("TRUE");
 			eventRepository.save(eventAlert);
 		}
-		if(ControlFlags.FILTER_NO_BENCHMARK_ENABLED) {
-			log.error("NO_BENCHMARK_FILTER is ACTIVE");
+		if(ControlFlags.BENCHMARK_DSS_DISABLED) {
+			log.error("BENCHMARK_DSS_DISABLED is TRUE");
 			Event eventAlert = new Event();
 			eventAlert.setSeverity(Event.ERROR);
-			eventAlert.setCategory("NO_BENCHMARK_FILTER");
-			eventAlert.setDetails("ACTIVE");
+			eventAlert.setCategory("BENCHMARK_DSS_DISABLED");
+			eventAlert.setDetails("TRUE");
 			eventRepository.save(eventAlert);
 		}
 

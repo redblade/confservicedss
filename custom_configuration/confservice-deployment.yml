@@ -132,6 +132,18 @@ spec:
               value: http://slamanager.core.svc:8088
             - name: SLAMANAGER_RULE_NAMESPACE
               value: core
+              
+            - name: READ_ONLY_MODE_ENABLED
+              value: FALSE
+            - name: BENCHMARK_DSS_DISABLED
+              value: FALSE
+            - name: DOCKER_ENABLED
+              value: FALSE
+            - name: MULTICLOUD_ENABLED
+              value: FALSE
+            - name: SLAMANAGER_ENABLED
+              value: FALSE
+              
 
             - name: JAVA_OPTS
               value: ' -Xmx256m -Xms256m'

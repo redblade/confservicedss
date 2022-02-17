@@ -79,14 +79,14 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				if(!ControlFlags.FILTER_NO_BENCHMARK_ENABLED) {
+				if(!ControlFlags.BENCHMARK_DSS_DISABLED) {
 					log.info("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
 					saveInfoEvent("Found best node using Benchmarks using benchmarkName by AppProfiler. Node: " + nodeFound.getName());
 
 					return nodeFound;
 				}
 				else {
-					log.warn("Found best node using Benchmarks using benchmarkName by AppProfiler but FILTER is not enabled. Node: " + nodeFound.getName());
+					log.warn("Found best node using Benchmarks using benchmarkName by AppProfiler but BENCHMARK_DSS_DISABLED is TRUE. Node: " + nodeFound.getName());
 				}
 			}
 		}
@@ -107,14 +107,14 @@ public class BenchmarkManager {
 				}
 			}
 			if(nodeFound != null) {
-				if(!ControlFlags.FILTER_NO_BENCHMARK_ENABLED) {
+				if(!ControlFlags.BENCHMARK_DSS_DISABLED) {
 					log.info("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
 					saveInfoEvent("Found best node using Benchmarks using labels. Node: " + nodeFound.getName());
 
 					return nodeFound;
 				}
 				else {
-					log.warn("Found best node using Benchmarks using labels but FILTER is not enabled. Node: " + nodeFound.getName());
+					log.warn("Found best node using Benchmarks using labels but BENCHMARK_DSS_DISABLED is TRUE. Node: " + nodeFound.getName());
 				}
 			}
 		}
