@@ -43,6 +43,6 @@ From here, Jenkins build number was restarted
 2.5.0b60:pledgerui_v32   - TTODA implementation + TTODA resource implementation (faredge_latency and resource_faredge_latency optimisations)
 2.5.1b76:pledgerui_v32   - updated SOE integration
 2.5.2b81:pledgerui_v32   - added support to K8S multi cluster with Skupper.io
-2.5.3b83:pledgerui_v32   - added support to AlertManager via SlaManager microservice
+2.5.3b84:pledgerui_v32   - added support to AlertManager via SlaManager microservice
 
 
