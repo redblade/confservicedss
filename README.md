@@ -1,7 +1,8 @@
 # ConfServiceDSS
 
-This file contains the main instruction to build and run ConfService and DSS core components of the [Pledger system](https://pledger-project.eu/)
-
+ConfServiceDSS is a smart orchestrator that provides resource and latency optimisation in edge/cloud multi-clusters.
+It provides native support to Kubernetes orchestration and monitoring, and offers more advanced features when working together with the other [Pledger](https://pledger-project.eu/) core components.
+ 
 ConfService and DSS core components are two functional components built as a unique artefact in Java, from now on called "ConfServiceDSS". 
 The main documentation is in the "doc" folder, in particular the "doc/architecture" folder gives an overall of the architecture. 
 For more details, please refer to the Pledger website, [deliverables section](https://pledger-project.eu/content/deliverables)
