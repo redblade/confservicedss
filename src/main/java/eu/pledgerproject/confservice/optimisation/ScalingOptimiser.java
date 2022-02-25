@@ -54,23 +54,27 @@ public class ScalingOptimiser {
     }
     
     private void saveInfoEvent(Service service, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(service.getApp().getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("ScalingOptimiser");
-		event.severity(Event.INFO);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+    		Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("ScalingOptimiser");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
 	}
 	
     private void saveWarnEvent(Service service, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(service.getApp().getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("ScalingOptimiser");
-		event.severity(Event.WARNING);
-		eventRepository.save(event);
+    	if(log.isWarnEnabled()) {
+	    	Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("ScalingOptimiser");
+			event.severity(Event.WARNING);
+			eventRepository.save(event);
+    	}
 	}
 		
 	@Scheduled(cron = "30 */1 * * * *")
@@ -115,10 +119,6 @@ public class ScalingOptimiser {
 						//get max resource requests for the current service
 						Integer cpuRequest = ResourceDataReader.getServiceRuntimeCpuRequest(service);
 						Integer memRequest = ResourceDataReader.getServiceRuntimeMemRequest(service);
-						
-						Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
-						Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
-							
 							
 						//compute the new resource requests, for scale up/down
 						int newCpuRequested = cpuRequest;
@@ -127,6 +127,8 @@ public class ScalingOptimiser {
 						}
 						else if(steadyService) {
 							newCpuRequested = (int) (cpuRequest / (1+Integer.parseInt(autoscalePercentage)/100.0));
+							Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
+							newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 						}
 						int newMemRequested = memRequest;
 						if(criticalService) {
@@ -134,6 +136,8 @@ public class ScalingOptimiser {
 						}
 						else if(steadyService) {
 							newMemRequested = (int) (memRequest / (1+Integer.parseInt(autoscalePercentage)/100.0));
+							Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
+							newMemRequested = Math.max(newMemRequested, minMemRequest);
 						}
 
 						Integer[] remainingCapacityForSPCurrentRankingNodes = quotaMonitoringReader.getRemainingCapacityForSPCurrentRankingNodes(serviceProvider, service);
@@ -142,17 +146,17 @@ public class ScalingOptimiser {
 							if(newCpuRequested < remainingCapacityForSPCurrentRankingNodes[0] && newMemRequested < remainingCapacityForSPCurrentRankingNodes[1]) {
 								serviceScheduler.scaleVertically(service, newCpuRequested, newMemRequested, true);
 								log.info("Scaling up service " + service.getName());
-								saveInfoEvent(service, "Scaling up " + service.getName());
+								saveInfoEvent(service, "Scaling up service " + service.getName());
 							}
 							else {
 								log.warn("Not enough resources for Scaling up service " + service.getName());
 								saveWarnEvent(service, "Not enough resources for Scaling up service " + service.getName());
 							}
 						}
-						else if(steadyService && newCpuRequested >= minCpuRequest && newMemRequested >= minMemRequest){
+						else if(steadyService) {
 							serviceScheduler.scaleVertically(service, newCpuRequested, newMemRequested, false);
 							log.info("Scaling down service " + service.getName());
-							saveInfoEvent(service, "Scaling down " + service.getName());
+							saveInfoEvent(service, "Scaling down service " + service.getName());
 						}
 					}
 					else if(SCALING_HORIZONTAL.equals(scaling)){
@@ -178,7 +182,7 @@ public class ScalingOptimiser {
 						else if (steadyService && replicas > 1){
 							serviceScheduler.scaleHorizontally(service, replicas-1, false);
 							log.info("Scaling in service " + service.getName());
-							saveInfoEvent(service, "Scaling in " + service.getName());
+							saveInfoEvent(service, "Scaling in service " + service.getName());
 						}	
 					}	
 				}

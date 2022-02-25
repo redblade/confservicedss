@@ -87,12 +87,14 @@ public class MetricsServerReader {
 	}
 
 	private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("MetricsServerReader");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("MetricsServerReader");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	private static Map<String, Double> getFormattedMetric(Map<String, Double> rawMetrics) {

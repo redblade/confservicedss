@@ -106,12 +106,14 @@ public class PrometheusReaderKubernetes {
 	}
 	
 	private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("PublisherConfigurationUpdate");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("PublisherConfigurationUpdate");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	private static Map<String, BigDecimal> getQueryMetricsMap(String endpoint, String query) throws IOException, JSONException{

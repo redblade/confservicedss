@@ -43,12 +43,14 @@ public class ConsumerSlaViolationDTO {
     }
     
     private void saveInfoEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("ConsumerSlaViolation");
-		event.severity(Event.INFO);
-		eventRepository.save(event);
+    	if(log.isInfoEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("ConsumerSlaViolation");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
 	}
     
     @KafkaListener(topics = "sla_violation", groupId = "id", containerFactory = "slaViolationDTOListener") 

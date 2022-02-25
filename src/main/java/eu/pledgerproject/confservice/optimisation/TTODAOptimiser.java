@@ -65,23 +65,27 @@ public class TTODAOptimiser {
 	}
 	
 	private void saveInfoEvent(Service service, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(service.getApp().getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("TTODAOptimiser");
-		event.severity(Event.INFO);
-		eventRepository.save(event);
+    	if(log.isInfoEnabled()) {
+    		Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("TTODAOptimiser");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
 	}
 	
 	private void saveErrorEvent(ServiceProvider serviceProvider, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(serviceProvider);
-		event.setDetails(msg);
-		event.setCategory("TTODAOptimiser");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(serviceProvider);
+			event.setDetails(msg);
+			event.setCategory("TTODAOptimiser");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	

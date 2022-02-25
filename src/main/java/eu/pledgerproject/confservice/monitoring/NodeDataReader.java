@@ -50,12 +50,14 @@ public class NodeDataReader {
 	}
 	
 	private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("NodeDataReader");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("NodeDataReader");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	@Scheduled(cron = "0 */1 * * * *")

@@ -51,12 +51,14 @@ public class QuotaMonitoringReader {
 	}
 	
 	private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("QuotaMonitoringReader");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+    		Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("QuotaMonitoringReader");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	private double getCpuUsageByServiceProviderAndInfrastructure(ServiceProvider serviceProvider, Infrastructure infrastructure) {

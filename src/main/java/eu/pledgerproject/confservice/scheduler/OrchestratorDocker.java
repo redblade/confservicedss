@@ -32,12 +32,14 @@ public class OrchestratorDocker {
 	}
 	
 	private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("OrchestratorKubernetes");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("OrchestratorKubernetes");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	private static String getContainerID(String endpoint, String serviceName) throws IOException{

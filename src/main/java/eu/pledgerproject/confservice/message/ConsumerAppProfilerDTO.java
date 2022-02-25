@@ -29,20 +29,24 @@ public class ConsumerAppProfilerDTO {
     }
     
     private void saveInfoEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("ConsumerAppProfilerDTO");
-		event.severity(Event.INFO);
-		eventRepository.save(event);
+    	if(log.isInfoEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("ConsumerAppProfilerDTO");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
 	}
     private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("ConsumerAppProfilerDTO");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+	    	Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("ConsumerAppProfilerDTO");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
     
     @KafkaListener(topics = "app_profiler", groupId = "id", containerFactory = "appProfilerDTOListener") 

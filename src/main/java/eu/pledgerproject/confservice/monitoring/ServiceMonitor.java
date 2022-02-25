@@ -70,13 +70,15 @@ public class ServiceMonitor {
 	}
 	
 	private void saveErrorEvent(Service service, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(service.getApp().getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("ServiceMonitor");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("ServiceMonitor");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	@Scheduled(cron = "0 */1 * * * *")

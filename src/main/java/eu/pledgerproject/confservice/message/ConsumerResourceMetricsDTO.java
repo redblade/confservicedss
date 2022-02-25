@@ -43,12 +43,14 @@ public class ConsumerResourceMetricsDTO {
     }
     
     private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("ConsumerResourceMetricsDTO");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("ConsumerResourceMetricsDTO");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
     
     @KafkaListener(topics = "UC-metrics", groupId = "id", containerFactory = "resourceMetricDTOListener") 

@@ -65,12 +65,14 @@ public class GoldPingerReader {
 	}
 	
 	private void saveErrorEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("GoldPingerReader");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("GoldPingerReader");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	public void storeMetrics(Infrastructure infrastructure, String goldPingerEndpoint, Instant timestamp) {

@@ -40,12 +40,14 @@ public class BenchmarkManager {
 	}
 	
 	private void saveInfoEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("BenchmarkManager");
-		event.severity(Event.INFO);
-		eventRepository.save(event);
+    	if(log.isInfoEnabled()) {
+    		Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("BenchmarkManager");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
 	}
 	
 	//returns the best Nodes to host a service in a set of possible options.

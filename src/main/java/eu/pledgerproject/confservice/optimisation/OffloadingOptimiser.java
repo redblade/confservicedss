@@ -47,24 +47,28 @@ public class OffloadingOptimiser {
     }
     
     private void saveInfoEvent(Service service, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(service.getApp().getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("OffloadingOptimiser");
-		event.severity(Event.INFO);
-		eventRepository.save(event);
+    	if(log.isInfoEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("OffloadingOptimiser");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
 	}
 	
     
     private void saveWarnEvent(Service service, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(service.getApp().getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("OffloadingOptimiser");
-		event.severity(Event.WARNING);
-		eventRepository.save(event);
+    	if(log.isWarnEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("OffloadingOptimiser");
+			event.severity(Event.WARNING);
+			eventRepository.save(event);
+    	}
 	}
 	
 		

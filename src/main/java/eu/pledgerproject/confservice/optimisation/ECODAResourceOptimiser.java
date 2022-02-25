@@ -67,22 +67,26 @@ public class ECODAResourceOptimiser {
 	}
 	
 	private void saveInfoEvent(Service service, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(service.getApp().getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("EcodaResourceOptimiser");
-		event.severity(Event.INFO);
-		eventRepository.save(event);
+    	if(log.isInfoEnabled()) {
+    		Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("EcodaResourceOptimiser");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
 	}
 	private void saveErrorEvent(ServiceProvider serviceProvider, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(serviceProvider);
-		event.setDetails(msg);
-		event.setCategory("EcodaResourceOptimiser");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+    		Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(serviceProvider);
+			event.setDetails(msg);
+			event.setCategory("EcodaResourceOptimiser");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 	
 	//Each SP has his own set of Nodes to work on, named "NodeGroup"

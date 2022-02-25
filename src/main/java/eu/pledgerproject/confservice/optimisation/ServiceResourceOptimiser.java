@@ -79,10 +79,14 @@ public class ServiceResourceOptimiser {
 			}
 			else {
 				newMemRequested = (int) (maxServiceReservedMem / (1+Integer.parseInt(autoscalePercentage)/100.0));
+				Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
+				newMemRequested = Math.max(newMemRequested, minMemRequest);
 			}
 			int newCpuRequested;
 			if(increaseResources) {
 				newCpuRequested = (int) (maxServiceReservedCpu * (1+Integer.parseInt(autoscalePercentage)/100.0));
+				Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
+				newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 			}
 			else {
 				newCpuRequested = (int) (maxServiceReservedCpu / (1+Integer.parseInt(autoscalePercentage)/100.0));

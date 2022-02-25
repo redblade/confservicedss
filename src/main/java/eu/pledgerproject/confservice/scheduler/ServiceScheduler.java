@@ -299,7 +299,7 @@ public class ServiceScheduler {
 	
 	
 	public void scaleHorizontally(Service service, int newReplicas, boolean increaseResources) {
-		log.info("Service scaled horizontally " + service.getName());
+		log.info("Service scaled horizontally " + (increaseResources?"OUT":"IN") + " " + service.getName());
 		service.setLastChangedStatus(Instant.now());
 		service.setStatus(ExecStatus.RUNNING);
 		serviceRepository.save(service);
@@ -345,7 +345,7 @@ public class ServiceScheduler {
 	}
 
 	public void scaleVertically(Service service, String requestCpu, String requestMem, boolean increaseResources) {
-		log.info("Service scaled vertically " + service.getName());
+		log.info("Service scaled vertically " + (increaseResources?"UP":"DOWN") + " " + service.getName());
 		service.setLastChangedStatus(Instant.now());
 		service.setStatus(ExecStatus.RUNNING);
 		serviceRepository.save(service);

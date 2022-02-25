@@ -62,12 +62,14 @@ public class ProjectServiceImpl implements ProjectService {
     //private static final String REST_TEMPLATE = "{\n  \"k8s_ns_name\": \"PLACEHOLDER_NAMESPACE\",\n  \"k8s_resource_quota_name\": \"PLACEHOLDER_SLICE\",\n  \"limits_cpu\": \"PLACEHOLDER_CPU\",\n  \"limits_memory\": \"PLACEHOLDER_MEMGi\",\n  \"requests_cpu\": \"PLACEHOLDER_CPU\",\n  \"requests_memory\": \"PLACEHOLDER_MEMGi\"\n}";
     
     private void saveErrorEvent(String category, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory(category);
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory(category);
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
 
     /*

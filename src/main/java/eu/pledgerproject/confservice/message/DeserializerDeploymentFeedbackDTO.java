@@ -19,7 +19,6 @@ public class DeserializerDeploymentFeedbackDTO implements Deserializer<Deploymen
 			
 			DeploymentFeedbackDTO result = new DeploymentFeedbackDTO();
 			result.id = jsonObject.getLong("id");
-			result.entity = jsonObject.getString("entity");
 			result.status = jsonObject.getString("status");
 			return result;
 		}catch(RuntimeException e) {

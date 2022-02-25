@@ -52,12 +52,14 @@ public class MailService {
     }
     
     private void saveWarningEvent(String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("MailService");
-		event.severity(Event.WARNING);
-		eventRepository.save(event);
+    	if(log.isWarnEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("MailService");
+			event.severity(Event.WARNING);
+			eventRepository.save(event);
+    	}
 	}
 
     @Async

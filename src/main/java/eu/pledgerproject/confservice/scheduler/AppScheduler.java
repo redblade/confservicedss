@@ -47,13 +47,15 @@ public class AppScheduler {
 	}
 	
 	private void saveWarningEvent(App app, String msg) {
-		Event event = new Event();
-		event.setServiceProvider(app.getServiceProvider());
-		event.setTimestamp(Instant.now());
-		event.setDetails(msg);
-		event.setCategory("AppScheduler");
-		event.severity(Event.WARNING);
-		eventRepository.save(event);
+    	if(log.isWarnEnabled()) {
+			Event event = new Event();
+			event.setServiceProvider(app.getServiceProvider());
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("AppScheduler");
+			event.severity(Event.WARNING);
+			eventRepository.save(event);
+    	}
 	}
 
 	@Async

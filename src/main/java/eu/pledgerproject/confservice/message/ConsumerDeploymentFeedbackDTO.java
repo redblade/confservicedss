@@ -40,13 +40,24 @@ public class ConsumerDeploymentFeedbackDTO {
 	    	if(serviceOptional.isPresent()) {
 	    		Service service = serviceOptional.get();
 	    		if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
-	    			ExecStatus serviceStatus = ExecStatus.valueOf(status);
-	    			service.setStatus(serviceStatus);
-	    			serviceRepository.save(service);
-	    			if(serviceStatus.equals(ExecStatus.ERROR)) {
-	    				App app = service.getApp();
-	    				app.setStatus(serviceStatus);
-	    				appRepository.save(app);
+	    			ExecStatus serviceStatus = null;
+	    			if(status.equals("DEPLOYED")) {
+	    				serviceStatus = ExecStatus.RUNNING;
+	    			}
+	    			else if(status.equals("ERROR")) {
+	    				serviceStatus = ExecStatus.ERROR;
+	    			}
+	    			else if(status.equals("STOPPED")) {
+	    				serviceStatus = ExecStatus.STOPPED;
+	    			}
+	    			if(serviceStatus != null) {
+		    			service.setStatus(serviceStatus);
+		    			serviceRepository.save(service);
+		    			if(serviceStatus.equals(ExecStatus.ERROR)) {
+		    				App app = service.getApp();
+		    				app.setStatus(serviceStatus);
+		    				appRepository.save(app);
+		    			}
 	    			}
 	    		}
 	    	}

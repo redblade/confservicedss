@@ -54,13 +54,15 @@ public class AppServiceImpl implements AppService {
     }
     
 	private void saveErrorEvent(App app, String msg) {
-		Event event = new Event();
-		event.setTimestamp(Instant.now());
-		event.setServiceProvider(app.getServiceProvider());
-		event.setDetails(msg);
-		event.setCategory("AppServiceImpl");
-		event.severity(Event.ERROR);
-		eventRepository.save(event);
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(app.getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("AppServiceImpl");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
 	}
     
     private void createServices(App app) {
