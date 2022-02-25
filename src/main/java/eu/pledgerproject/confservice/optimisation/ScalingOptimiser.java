@@ -153,7 +153,7 @@ public class ScalingOptimiser {
 								saveWarnEvent(service, "Not enough resources for Scaling up service " + service.getName());
 							}
 						}
-						else if(steadyService) {
+						else if(steadyService && newMemRequested < memRequest && newCpuRequested < cpuRequest) {
 							serviceScheduler.scaleVertically(service, newCpuRequested, newMemRequested, false);
 							log.info("Scaling down service " + service.getName());
 							saveInfoEvent(service, "Scaling down service " + service.getName());

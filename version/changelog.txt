@@ -44,5 +44,5 @@ From here, Jenkins build number was restarted
 2.5.1b76:pledgerui_v32   - updated SOE integration
 2.5.2b81:pledgerui_v32   - added support to K8S multi cluster with Skupper.io
 2.5.3b84:pledgerui_v32   - added support to AlertManager via SlaManager microservice
-2.5.3b85:pledgerui_v32   - improved support to logging level and events. Fix about scaling optimisation
+2.5.3b86:pledgerui_v32   - improved support to logging level and events. Fix about scaling optimisation
 
