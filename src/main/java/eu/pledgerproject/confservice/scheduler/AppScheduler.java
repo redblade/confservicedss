@@ -32,16 +32,16 @@ public class AppScheduler {
 	private final AppRepository appRepository;
 	private final ServiceRepository serviceRepository;
 	private final RankingManager rankingManager;
-	private final ECODAHelper eCODAHelper;
+	private final ECODAHelper ecodaHelper;
 	private final BenchmarkManager benchmarkManager;
 	private final EventRepository eventRepository;
 
-	public AppScheduler(ServiceScheduler serviceScheduler, AppRepository appRepository, ServiceRepository serviceRepository, RankingManager rankingManager, ECODAHelper eCODAHelper, BenchmarkManager benchmarkManager, EventRepository eventRepository) {
+	public AppScheduler(ServiceScheduler serviceScheduler, AppRepository appRepository, ServiceRepository serviceRepository, RankingManager rankingManager, ECODAHelper ecodaHelper, BenchmarkManager benchmarkManager, EventRepository eventRepository) {
 		this.serviceScheduler = serviceScheduler;
 		this.appRepository = appRepository;
 		this.serviceRepository = serviceRepository;
 		this.rankingManager = rankingManager;
-		this.eCODAHelper = eCODAHelper;
+		this.ecodaHelper = ecodaHelper;
 		this.benchmarkManager = benchmarkManager;
 		this.eventRepository = eventRepository;
 	}
@@ -77,7 +77,7 @@ public class AppScheduler {
 						ServiceOptimisationType.resources_latency.name().equals(service.getServiceOptimisation().getOptimisation())
 					)
 			) {
-				List<NodeGroup> nodeGroupList = eCODAHelper.getNodeGroupListForSPWithRemainingCapacityThatCanHostRequestsAndFilterByServiceContraints(service.getApp().getServiceProvider(), service, initialRequestCpu, initialRequestMem);
+				List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithRemainingCapacityThatCanHostRequestsAndFilterByServiceContraints(service.getApp().getServiceProvider(), service, initialRequestCpu, initialRequestMem);
 				if(nodeGroupList.size() > 0) {
 					Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(service, nodeGroupList.get(0).nodes);
 					
@@ -85,7 +85,7 @@ public class AppScheduler {
 				}
 				else {
 					started = false;
-					String warningMessage = "App " + app.getName() + " has no Nodes with 'node_type' equals to 'edge' or 'cloud' available"; 
+					String warningMessage = "App " + app.getName() + " has no Nodes configured, please add ServiceConstrants and verify the DeploymentOptions"; 
 					saveWarningEvent(app, warningMessage);
 					log.warn("AppScheduler.start warning: " + warningMessage);
 				}

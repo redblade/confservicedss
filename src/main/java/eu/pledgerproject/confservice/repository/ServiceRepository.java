@@ -50,8 +50,8 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
 	@Query(value = "select service from Service service where service.app.serviceProvider.id = :serviceProviderId and service.status='RUNNING' and service.serviceOptimisation.optimisation=:serviceOptimisation")
 	List<Service> getRunningServiceListByServiceProviderAndServiceOptimisation(@Param("serviceProviderId") Long serviceProviderId, @Param("serviceOptimisation") String serviceOptimisation);
 	
-	@Query(value = "select service from Service service where service.app.serviceProvider = :serviceProvider and service.serviceOptimisation.optimisation = :serviceOptimisation and service.lastChangedStatus < :timestamp")
-	List<Service> findServiceListByServiceProviderServiceOptimisationSinceTimestamp(@Param("serviceProvider") ServiceProvider serviceProvider, @Param("serviceOptimisation") String serviceOptimisation, @Param("timestamp") Instant timestamp);
+	@Query(value = "select service from Service service where service.app.serviceProvider = :serviceProvider and service.status='RUNNING' and service.serviceOptimisation.optimisation = :serviceOptimisation and service.lastChangedStatus < :timestamp")
+	List<Service> getRunningServiceListByServiceProviderServiceOptimisationSinceTimestamp(@Param("serviceProvider") ServiceProvider serviceProvider, @Param("serviceOptimisation") String serviceOptimisation, @Param("timestamp") Instant timestamp);
 
 
 }

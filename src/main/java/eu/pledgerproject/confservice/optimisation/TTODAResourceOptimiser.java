@@ -220,8 +220,10 @@ public class TTODAResourceOptimiser {
 		};
 		
 		//get the percentage of autoscale
-		String autoscalePercentage = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
-		int autoscalePercentageInt = Integer.parseInt(autoscalePercentage.length() == 0 ? DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentage);
+		String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
+		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? AutoscalePercentage.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+		String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
+		int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
 		//get the monitoringSlaViolationPeriodSec 
 		Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
@@ -231,8 +233,8 @@ public class TTODAResourceOptimiser {
 		Instant timestampCritical = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
 		List<SlaViolation> slaViolationListCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources_latency_faredge.name(), timestampCritical);
 		if(slaViolationListCritical.size() > 0) {
-			result[0] = (int) (result[0] * (100.0 + autoscalePercentageInt)/100.0);
-			result[1] = (int) (result[1] * (100.0 + autoscalePercentageInt)/100.0);
+			result[0] = (int) (result[0] * (100.0 + autoscalePercentageAddInt)/100.0);
+			result[1] = (int) (result[1] * (100.0 + autoscalePercentageAddInt)/100.0);
 			return new ServiceResourcePlan(result, "Increased resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
 		}
 		//if, on the other hand, the service has been running and no violations have been received so far, then we need to decrease resources
@@ -244,8 +246,8 @@ public class TTODAResourceOptimiser {
 				int minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 				int minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 				
-				int cpuRequestTemp = (int) (result[0] * (100.0 - autoscalePercentageInt)/100.0);
-				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageInt)/100.0); 
+				int cpuRequestTemp = (int) (result[0] * (100.0 - autoscalePercentageDecreaseInt)/100.0);
+				int memRequestTemp = (int) (result[1] * (100.0 - autoscalePercentageDecreaseInt)/100.0); 
 				result[0] = cpuRequestTemp > minCpuRequest ? cpuRequestTemp : minCpuRequest;
 				result[1] = memRequestTemp > minMemRequest ? memRequestTemp : minMemRequest;
 				if(result[0] != minCpuRequest || result[1] != minMemRequest) {

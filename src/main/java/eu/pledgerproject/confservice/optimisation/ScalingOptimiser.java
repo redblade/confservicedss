@@ -113,7 +113,11 @@ public class ScalingOptimiser {
 					List<SlaViolation> slaViolationCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.scaling.name(), startTime);
 					steadyService = slaViolationCritical.size() == 0 && service.getLastChangedStatus().isBefore(startTime);
 					
-					String autoscalePercentage = preferences.get("autoscale.percentage");
+					String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
+					int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? AutoscalePercentage.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+					String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
+					int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
+
 					String scaling = ConverterJSON.convertToMap(service.getInitialConfiguration()).get("scaling"); 
 					if(SCALING_VERTICAL.equals(scaling)){
 						//get max resource requests for the current service
@@ -123,19 +127,19 @@ public class ScalingOptimiser {
 						//compute the new resource requests, for scale up/down
 						int newCpuRequested = cpuRequest;
 						if(criticalService) {
-							newCpuRequested = (int) (cpuRequest * (1+Integer.parseInt(autoscalePercentage)/100.0));
+							newCpuRequested = (int) (cpuRequest * (1+autoscalePercentageAddInt)/100.0);
 						}
 						else if(steadyService) {
-							newCpuRequested = (int) (cpuRequest / (1+Integer.parseInt(autoscalePercentage)/100.0));
+							newCpuRequested = (int) (cpuRequest / (1+autoscalePercentageDecreaseInt)/100.0);
 							Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 							newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 						}
 						int newMemRequested = memRequest;
 						if(criticalService) {
-							newMemRequested = (int) (memRequest * (1+Integer.parseInt(autoscalePercentage)/100.0));
+							newMemRequested = (int) (memRequest * (1+autoscalePercentageAddInt)/100.0);
 						}
 						else if(steadyService) {
-							newMemRequested = (int) (memRequest / (1+Integer.parseInt(autoscalePercentage)/100.0));
+							newMemRequested = (int) (memRequest / (1+autoscalePercentageDecreaseInt)/100.0);
 							Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 							newMemRequested = Math.max(newMemRequested, minMemRequest);
 						}
@@ -145,8 +149,8 @@ public class ScalingOptimiser {
 						if(criticalService) {
 							if(newCpuRequested < remainingCapacityForSPCurrentRankingNodes[0] && newMemRequested < remainingCapacityForSPCurrentRankingNodes[1]) {
 								serviceScheduler.scaleVertically(service, newCpuRequested, newMemRequested, true);
-								log.info("Scaling up service " + service.getName());
-								saveInfoEvent(service, "Scaling up service " + service.getName());
+								log.info("Scaling up service " + service.getName() + " to cpu-mem " + newCpuRequested + "-" + newMemRequested);
+								saveInfoEvent(service, "Scaling up service " + service.getName() + " to cpu-mem " + newCpuRequested + "-" + newMemRequested);
 							}
 							else {
 								log.warn("Not enough resources for Scaling up service " + service.getName());
@@ -155,8 +159,8 @@ public class ScalingOptimiser {
 						}
 						else if(steadyService && newMemRequested < memRequest && newCpuRequested < cpuRequest) {
 							serviceScheduler.scaleVertically(service, newCpuRequested, newMemRequested, false);
-							log.info("Scaling down service " + service.getName());
-							saveInfoEvent(service, "Scaling down service " + service.getName());
+							log.info("Scaling down service " + service.getName() + " to cpu-mem " + newCpuRequested + "-" + newMemRequested);
+							saveInfoEvent(service, "Scaling down service " + service.getName() + " to cpu-mem " + newCpuRequested + "-" + newMemRequested);
 						}
 					}
 					else if(SCALING_HORIZONTAL.equals(scaling)){
@@ -170,9 +174,10 @@ public class ScalingOptimiser {
 						
 						if(criticalService) {
 							if((replicas+1)*cpuRequest < remainingCapacityForSPCurrentRankingNodes[0] && (replicas+1)*memRequest < remainingCapacityForSPCurrentRankingNodes[1]) {
-								serviceScheduler.scaleHorizontally(service, replicas+1, true);
-								log.info("Scaling out service " + service.getName());
-								saveInfoEvent(service, "Scaling out service " + service.getName());
+								int newReplicas = replicas-1;
+								serviceScheduler.scaleHorizontally(service, newReplicas, true);
+								log.info("Scaling out service " + service.getName() + " to replicas " + newReplicas);
+								saveInfoEvent(service, "Scaling out service " + service.getName() + " to replicas " + newReplicas);
 							}
 							else {
 								log.warn("Not enough resources for Scaling out service " + service.getName());
@@ -180,9 +185,10 @@ public class ScalingOptimiser {
 							}
 						}
 						else if (steadyService && replicas > 1){
-							serviceScheduler.scaleHorizontally(service, replicas-1, false);
-							log.info("Scaling in service " + service.getName());
-							saveInfoEvent(service, "Scaling in service " + service.getName());
+							int newReplicas = replicas-1;
+							serviceScheduler.scaleHorizontally(service, newReplicas, false);
+							log.info("Scaling in service " + service.getName() + " to replicas " + newReplicas);
+							saveInfoEvent(service, "Scaling in service " + service.getName() + " to replicas " + newReplicas);
 						}	
 					}	
 				}

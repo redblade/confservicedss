@@ -38,6 +38,7 @@ Its goal is to reduce reserved resources if no SLA violations are received after
 
 @Component
 public class ResourceSteadyOptimiser {
+
 	public static final String NO_ACTION_TAKEN = "No action taken - score within limits";
     private final Logger log = LoggerFactory.getLogger(ResourceSteadyOptimiser.class);
     
@@ -88,12 +89,12 @@ public class ResourceSteadyOptimiser {
 				//an event to track activities
 				Event event = new Event();
 				event.setCategory("ResourceSteadyServiceOptimiser");
-				event.setDetails("monitoring started");
+				event.setDetails("monitoring found new steady services");
 				eventRepository.save(event);
 			}
 			
 			//then, we check what to do with them
-			for(SteadyService steadyService : steadyServiceRepository.getAllOrderedByScoreDesc()) {
+			for(SteadyService steadyService : steadyServiceRepository.getAllOpenOrderedByScoreDesc()) {
 				log.info("ResourceSteadyService " + steadyService + " has score " + steadyService.getScore());
 				
 				//is the service is stopped, we can close the steadyService entry
@@ -156,7 +157,7 @@ public class ResourceSteadyOptimiser {
 			Instant timestampSteady = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
 			log.info("ResourceSteadyOptimizer started for serviceProvider " + serviceProvider.getName());
 			
-			List<Service> runningServiceList = serviceRepository.findServiceListByServiceProviderServiceOptimisationSinceTimestamp(serviceProvider, ServiceOptimisationType.resources.name(), timestampSteady);
+			List<Service> runningServiceList = serviceRepository.getRunningServiceListByServiceProviderServiceOptimisationSinceTimestamp(serviceProvider, ServiceOptimisationType.resources.name(), timestampSteady);
 			for(Service service : runningServiceList) {
 				List<SlaViolation> slaViolationCriticalList = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.resources.name(), timestampSteady); 
 				if(slaViolationCriticalList.size() == 0) {
@@ -231,13 +232,10 @@ public class ResourceSteadyOptimiser {
 
 		//we consider STEADY a service that uses less than the min percentage (eg. min is 70%, if it is currently 75%, then we skip steady optimisation)
 		if(	percMemUsed > resourceUsedSteadyPerc || percCpuUsed > resourceUsedSteadyPerc ) {
+			
 			return SCORE_THRESHOLD;
 		}
-		//we also DO NOT consider STEADY a service that is "too close" to the min values. Basically, we stop reducing when below a min value.
-		//min value is min * (100 + autoscale)/100
-		if(maxServiceReservedMem < minConfiguredServiceMem * (100.0 + autoscalePercentage)/100.0 || maxServiceReservedCpu < minConfiguredServiceCpu * (100.0 + autoscalePercentage)/100.0) {
-			return SCORE_THRESHOLD;
-		}
+
 		//high score is given to services which use less. 100 means nothing to do, 200 is max
 		long score_mem = (long) (SCORE_THRESHOLD * (1.0 + (100-percMemUsed) / 100.0));
 		long score_cpu = (long) (SCORE_THRESHOLD * (1.0 + (100-percCpuUsed) / 100.0));
@@ -288,6 +286,18 @@ public class ResourceSteadyOptimiser {
 		}
 	}
 	
+	private void saveInfoEvent(Service service, String msg) {
+    	if(log.isInfoEnabled()) {
+    		Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("EcodaResourceOptimiser");
+			event.severity(Event.INFO);
+			eventRepository.save(event);
+    	}
+	}
+	
 	private long getScoreScalingHorizontal(Service service, int resourceUsedSteadyPerc, int replicas, long maxServiceUsedMem, long maxServiceReservedMem, long maxServiceUsedCpu, long maxServiceReservedCpu) {
 		//compute percentage of resources used
 		int percMemUsed =  (int) (100.0 * maxServiceUsedMem / (maxServiceReservedMem*replicas));
@@ -296,10 +306,12 @@ public class ResourceSteadyOptimiser {
 		
 		//we DO NOT consider STEADY a service that uses more than minimal margin
 		if(	percMemUsed > resourceUsedSteadyPerc || percCpuUsed > resourceUsedSteadyPerc ) {
+			saveInfoEvent(service, "percMemUsed is " + resourceUsedSteadyPerc + "% and percCpuUsed is " + resourceUsedSteadyPerc + "%, service is using almost all its resources, it is not steady, no need to scale down");
 			return SCORE_THRESHOLD;
 		}
 		//we also DO NOT consider STEADY a service that has 1 replica
 		if(replicas == 1) {
+			saveInfoEvent(service, "replicas is 1, no need to scale down");
 			return SCORE_THRESHOLD;
 		}
 		

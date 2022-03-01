@@ -74,6 +74,7 @@ public class ResourceCriticalOptimiser {
 		}
 	}
 	
+    //here we remove any criticalservice which refers to services which are in the set of critical services AND that have "NO_ACTION_TAKEN"
 	private void keepOnlyThisListAndOldRecordsWithActions(List<CriticalService> criticalServiceList) {
 		Set<eu.pledgerproject.confservice.domain.Service> serviceListToKeep = new HashSet<eu.pledgerproject.confservice.domain.Service>();
 		for(CriticalService criticalService : criticalServiceList) {
@@ -108,13 +109,13 @@ public class ResourceCriticalOptimiser {
 				//an event to track activities
 				Event event = new Event();
 				event.setCategory("ResourceCriticalServiceOptimiser");
-				event.setDetails("monitoring started");
+				event.setDetails("monitoring found new critical services");
 				eventRepository.save(event);
 			}
 	
 			
 			//then, we check what to do with them
-			for(CriticalService criticalService : criticalServiceRepository.getAllOrderedByScoreDesc()) {
+			for(CriticalService criticalService : criticalServiceRepository.getAllOpenOrderedByScoreDesc()) {
 				log.info("ResourceCriticalService " + criticalService + " has score " + criticalService.getScore());
 				
 				// we activate only if the score is greater than the warning threshold

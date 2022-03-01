@@ -24,7 +24,7 @@ public interface SteadyServiceRepository extends JpaRepository<SteadyService, Lo
 	@Query(value = "select steadyService from SteadyService steadyService where steadyService.service.id= :serviceId")
 	Optional<SteadyService> getByServiceID(@Param("serviceId") Long serviceId);
 	
-	@Query(value = "select steadyService from SteadyService steadyService order by steadyService.score desc")
-	List<SteadyService> getAllOrderedByScoreDesc();
+	@Query(value = "select steadyService from SteadyService steadyService where steadyService.actionTaken is null order by steadyService.score desc")
+	List<SteadyService> getAllOpenOrderedByScoreDesc();
 
 }

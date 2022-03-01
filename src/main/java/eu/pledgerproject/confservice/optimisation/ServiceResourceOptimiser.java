@@ -59,9 +59,11 @@ public class ServiceResourceOptimiser {
 		String message = "no nodes or resources available";
 		
 		//get the percentage of autoscale
-		Map<String, String> serviceProviderPreferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
-		String autoscalePercentage = serviceProviderPreferences.get("autoscale.percentage");
-		
+		String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
+		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? AutoscalePercentage.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+		String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
+		int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
+
     	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
 		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
 		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
@@ -75,21 +77,21 @@ public class ServiceResourceOptimiser {
 			//compute the new resource requests, for scale up/down
 			int newMemRequested;
 			if(increaseResources) {
-				newMemRequested = (int) (maxServiceReservedMem * (1+Integer.parseInt(autoscalePercentage)/100.0));
+				newMemRequested = (int) (maxServiceReservedMem * (1+autoscalePercentageAddInt/100.0));
 			}
 			else {
-				newMemRequested = (int) (maxServiceReservedMem / (1+Integer.parseInt(autoscalePercentage)/100.0));
+				newMemRequested = (int) (maxServiceReservedMem / (1+autoscalePercentageDecreaseInt/100.0));
 				Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 				newMemRequested = Math.max(newMemRequested, minMemRequest);
 			}
 			int newCpuRequested;
 			if(increaseResources) {
-				newCpuRequested = (int) (maxServiceReservedCpu * (1+Integer.parseInt(autoscalePercentage)/100.0));
+				newCpuRequested = (int) (maxServiceReservedCpu * (1+autoscalePercentageAddInt/100.0));
 				Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 				newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 			}
 			else {
-				newCpuRequested = (int) (maxServiceReservedCpu / (1+Integer.parseInt(autoscalePercentage)/100.0));
+				newCpuRequested = (int) (maxServiceReservedCpu / (1+autoscalePercentageDecreaseInt/100.0));
 			}
 
 			//get the currentRanking...
@@ -118,10 +120,10 @@ public class ServiceResourceOptimiser {
 				else {
 					log.info("Action is to resize");
 					if(increaseResources) {
-						message = "Scaled up: increased cpu/mem by " + autoscalePercentage + "%";
+						message = "Scaled up: increased by " + autoscalePercentageAddInt + "% cpu,mem: " + newCpuRequested + "," + newMemRequested;
 					}
 					else {
-						message = "Scaled down: reduced cpu/mem by " + autoscalePercentage + "%";
+						message = "Scaled down: reduced by " + autoscalePercentageDecreaseInt + "% cpu,mem: " + newCpuRequested + "," + newMemRequested;
 					}
 					
 					serviceScheduler.scaleVertically(service, newCpuRequested, newMemRequested, increaseResources);

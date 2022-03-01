@@ -18,7 +18,14 @@
         <span>No events found</span>
     </div>
 
+
 	<div class="form-group" align=right>
+        <button hidden (click)="reload()" id="jh-delete-entity" class="btn btn-primary btn-sm float-left jh-delete-entity delete-event">
+            <span>
+            Delete all
+            </span>
+        </button> 
+
         <label>Filter by severity</label>
         <select [(ngModel)]="severityFilter" name="severityFilter" id="field_severityFilter">
             <option value=""></option>
