@@ -161,10 +161,11 @@ public class ServiceMonitor {
 			service.setStatus(ExecStatus.RUNNING);
 		}
 		else {
-			log.warn("ServiceMonitor: service " + service.getName() + " status is ERROR. Data: " + servicePhase);
+			log.error("ServiceMonitor: service " + service.getName() + " status is ERROR. Data: " + servicePhase);
 			service.setStatus(ExecStatus.ERROR);
 			service.getApp().setStatus(ExecStatus.ERROR);
 			appRepository.save(service.getApp());
+			saveErrorEvent(service, "service " + service.getName() + " status is ERROR. Data: " + servicePhase);
 		}
 		serviceRepository.save(service);
 	}
