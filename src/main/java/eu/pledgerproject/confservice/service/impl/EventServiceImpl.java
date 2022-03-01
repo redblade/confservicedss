@@ -72,5 +72,11 @@ public class EventServiceImpl implements EventService {
         log.debug("Request to delete Event : {}", id);
         eventRepository.deleteById(id);
     }
+
+	@Override
+	public void deleteAll() {
+        log.debug("Request to delete all Events");
+        eventRepository.deleteAll();
+	}
     
 }

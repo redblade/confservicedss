@@ -37,6 +37,10 @@ export class EventService {
       .pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)));
   }
 
+  deleteAll(): Observable<IEvent> {
+    return this.http.post<IEvent>(this.resourceUrl+"/deleteAll", { observe: 'response' });
+  }
+
   query(severityFilter: string, req?: any): Observable<EntityArrayResponseType> {
     let options = createRequestOption(req);
     options = options.set("severityFilter", severityFilter);

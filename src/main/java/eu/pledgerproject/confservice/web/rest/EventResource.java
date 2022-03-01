@@ -69,6 +69,13 @@ public class EventResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+    
+    @PostMapping("/events/deleteAll")
+    public ResponseEntity<Void> deleteAll() throws URISyntaxException {
+        log.debug("REST request to delete all events");
+        eventService.deleteAll();
+        return ResponseEntity.noContent().build();
+    }
 
     /**
      * {@code PUT  /events} : Updates an existing event.

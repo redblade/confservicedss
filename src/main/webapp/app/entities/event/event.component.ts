@@ -75,6 +75,12 @@ export class EventComponent implements OnInit, OnDestroy {
     }
   }
 
+  deleteAll(): void {
+	this.eventService.deleteAll().subscribe(() => {
+		this.loadPage();
+    });    
+  }
+
   trackId(index: number, item: IEvent): number {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return item.id!;

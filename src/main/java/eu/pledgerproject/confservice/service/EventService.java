@@ -43,4 +43,11 @@ public interface EventService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+    
+
+    /**
+     * Delete all the events.
+     *
+     */
+    void deleteAll();
 }
