@@ -1,8 +1,5 @@
 package eu.pledgerproject.confservice.optimisation;
 
-import java.time.Instant;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -64,16 +61,14 @@ public class ServiceResourceOptimiser {
 		String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
 		int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
-    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
-		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
-		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
-
 		//get max resource requests for the current service
-		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
-		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
+		Integer maxServiceReservedMem = resourceDataReader.getLastServiceMaxResourceReservedMem(service);
+		Integer maxServiceReservedCpu = resourceDataReader.getLastServiceMaxResourceReservedCpu(service);
 		
 		if(maxServiceReservedMem != null && maxServiceReservedCpu != null) {
-			
+			Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
+			Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
+
 			//compute the new resource requests, for scale up/down
 			int newMemRequested;
 			if(increaseResources) {
@@ -81,17 +76,15 @@ public class ServiceResourceOptimiser {
 			}
 			else {
 				newMemRequested = (int) (maxServiceReservedMem / (1+autoscalePercentageDecreaseInt/100.0));
-				Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 				newMemRequested = Math.max(newMemRequested, minMemRequest);
 			}
 			int newCpuRequested;
 			if(increaseResources) {
 				newCpuRequested = (int) (maxServiceReservedCpu * (1+autoscalePercentageAddInt/100.0));
-				Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
-				newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 			}
 			else {
 				newCpuRequested = (int) (maxServiceReservedCpu / (1+autoscalePercentageDecreaseInt/100.0));
+				newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 			}
 
 			//get the currentRanking...
@@ -122,6 +115,9 @@ public class ServiceResourceOptimiser {
 					if(increaseResources) {
 						message = "Scaled up: increased by " + autoscalePercentageAddInt + "% cpu,mem: " + newCpuRequested + "," + newMemRequested;
 					}
+					else if(newCpuRequested == minCpuRequest && newMemRequested == minMemRequest){
+						message = "Scaled down to min resources: cpu,mem: " + newCpuRequested + "," + newMemRequested;
+					}
 					else {
 						message = "Scaled down: reduced by " + autoscalePercentageDecreaseInt + "% cpu,mem: " + newCpuRequested + "," + newMemRequested;
 					}
@@ -140,13 +136,9 @@ public class ServiceResourceOptimiser {
 		String replicasString = ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
 		int replicas = replicasString == null ? 1 : Integer.parseInt(replicasString);
 		
-    	Map<String, String> preferences = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences());
-		int monitoringSlaViolationPeriodSec = Integer.valueOf(preferences.get("monitoring.slaViolation.periodSec"));
-		Instant timestamp = Instant.now().minusSeconds(monitoringSlaViolationPeriodSec);
-
 		//get max resource requests for the current service
-		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp) * replicas;
-		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp) * replicas;
+		Integer maxServiceReservedMem = resourceDataReader.getLastServiceMaxResourceReservedMem(service) * replicas;
+		Integer maxServiceReservedCpu = resourceDataReader.getLastServiceMaxResourceReservedCpu(service) * replicas;
 
 		int newMemRequested = maxServiceReservedMem*replicas;
 		int newCpuRequested = maxServiceReservedCpu*replicas;

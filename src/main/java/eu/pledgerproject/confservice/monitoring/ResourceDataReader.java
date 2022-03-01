@@ -167,6 +167,16 @@ public class ResourceDataReader {
 		return result;
 	}
 
+	public Integer getLastServiceMaxResourceReservedCpu(Service service) {
+		Instant timestamp = service.getLastChangedStatus();
+		List<ServiceReport> serviceReportCpu = serviceReportRepository.findServiceReportByServiceIdCategoryNameInPeriod(service.getId(), MAX_REQUEST_LABEL, MonitoringService.CPU_LABEL, timestamp);
+		
+		Integer result = null; try{result = serviceReportCpu.get(0).getValue().intValue();}catch(Exception e) {}
+		if(result == null) {
+			result = ResourceDataReader.getServiceInitialCpuRequest(service);
+		}
+		return result;
+	}
 	public Integer getServiceMaxResourceReservedCpuInPeriod(Service service, Instant timestamp) {
 		List<ServiceReport> serviceReportCpu = serviceReportRepository.findServiceReportByServiceIdCategoryNameInPeriod(service.getId(), MAX_REQUEST_LABEL, MonitoringService.CPU_LABEL, timestamp);
 		
@@ -176,6 +186,17 @@ public class ResourceDataReader {
 		}
 		return result;
 	}
+	public Integer getLastServiceMaxResourceReservedMem(Service service) {
+		Instant timestamp = service.getLastChangedStatus();
+		List<ServiceReport> serviceReportMem = serviceReportRepository.findServiceReportByServiceIdCategoryNameInPeriod(service.getId(), MAX_REQUEST_LABEL, MonitoringService.MEMORY_LABEL, timestamp);
+
+		Integer result = null; try{result = serviceReportMem.get(0).getValue().intValue();}catch(Exception e) {}
+		if(result == null) {
+			result = ResourceDataReader.getServiceInitialMemRequest(service);
+		}
+		return result;
+	}
+
 	public Integer getServiceMaxResourceReservedMemInPeriod(Service service, Instant timestamp) {
 		List<ServiceReport> serviceReportMem = serviceReportRepository.findServiceReportByServiceIdCategoryNameInPeriod(service.getId(), MAX_REQUEST_LABEL, MonitoringService.MEMORY_LABEL, timestamp);
 

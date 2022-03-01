@@ -183,8 +183,8 @@ public class ResourceSteadyOptimiser {
 	private void addSteadyServiceForVerticalScaling(Instant timestamp, List<SteadyService> result, Service service, Map<String, String> serviceInitialConfigurationProperties, int slaViolationMonitoringPeriodSec) {
 		
 		//get the resource requested
-		Integer maxServiceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
-		Integer maxServiceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
+		Integer maxServiceReservedMem = resourceDataReader.getLastServiceMaxResourceReservedMem(service);
+		Integer maxServiceReservedCpu = resourceDataReader.getLastServiceMaxResourceReservedCpu(service);
 		
 		//get the max resource used in the last period
 		Integer maxServiceUsedMem = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
