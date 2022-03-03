@@ -94,13 +94,17 @@ public class ScalingOptimiser {
 					
 					boolean criticalService = false;
 					boolean steadyService = false;
+					log.info("service " + service.getName() + ", checking 'elab_resources_needed' violations since " + startTime);
 					for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.scaling.name(), startTime)) {
+						log.info("service " + service.getName() + ", found SLA violation with id:" + slaViolation.getId());
 						if(service.getLastChangedStatus().isBefore(slaViolation.getTimestamp())) {
+							log.info("service " + service.getName() + ", SLA violation with id:" + slaViolation.getId() + " will be counted as happended AFTER service last start (" + service.getLastChangedStatus() + ")");
 							slaViolation.setStatus(SLAViolationStatus.closed_critical.toString());
 							slaViolationRepository.save(slaViolation);
 							criticalService = true;
 						}
 						else {
+							log.info("service " + service.getName() + ", SLA violation with id:" + slaViolation.getId() + " will be ignored as happended ("+slaViolation.getTimestamp()+") BEFORE service last start (" + service.getLastChangedStatus() + ")");
 							slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 							slaViolationRepository.save(slaViolation);
 						}
@@ -112,9 +116,11 @@ public class ScalingOptimiser {
 
 					List<SlaViolation> slaViolationCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.scaling.name(), startTime);
 					steadyService = slaViolationCritical.size() == 0 && service.getLastChangedStatus().isBefore(startTime);
+					log.info("service " + service.getName() + ", checking 'closed_critical' violations since " + startTime + ", found " + slaViolationCritical.size());
+					log.info("service " + service.getName() + " is critical/steady ? " + criticalService + "/" + steadyService);
 					
 					String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
-					int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? AutoscalePercentage.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+					int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? OptimisationConstants.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
 					String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
 					int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
@@ -127,19 +133,19 @@ public class ScalingOptimiser {
 						//compute the new resource requests, for scale up/down
 						int newCpuRequested = cpuRequest;
 						if(criticalService) {
-							newCpuRequested = (int) (cpuRequest * (100+autoscalePercentageAddInt)/100.0);
+							newCpuRequested = (int) (cpuRequest * (100.0+autoscalePercentageAddInt)/100.0);
 						}
 						else if(steadyService) {
-							newCpuRequested = (int) (cpuRequest / (100+autoscalePercentageDecreaseInt)/100.0);
+							newCpuRequested = (int) (cpuRequest * (100.0-autoscalePercentageDecreaseInt)/100.0);
 							Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 							newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 						}
 						int newMemRequested = memRequest;
 						if(criticalService) {
-							newMemRequested = (int) (memRequest * (100+autoscalePercentageAddInt)/100.0);
+							newMemRequested = (int) (memRequest * (100.0+autoscalePercentageAddInt)/100.0);
 						}
 						else if(steadyService) {
-							newMemRequested = (int) (memRequest / (100+autoscalePercentageDecreaseInt)/100.0);
+							newMemRequested = (int) (memRequest * (100.0-autoscalePercentageDecreaseInt)/100.0);
 							Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 							newMemRequested = Math.max(newMemRequested, minMemRequest);
 						}

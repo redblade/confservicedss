@@ -57,7 +57,7 @@ public class ServiceResourceOptimiser {
 		
 		//get the percentage of autoscale
 		String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
-		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? AutoscalePercentage.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? OptimisationConstants.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
 		String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
 		int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
@@ -72,18 +72,18 @@ public class ServiceResourceOptimiser {
 			//compute the new resource requests, for scale up/down
 			int newMemRequested;
 			if(increaseResources) {
-				newMemRequested = (int) (maxServiceReservedMem * (1+autoscalePercentageAddInt/100.0));
+				newMemRequested = (int) (maxServiceReservedMem * (100.0+autoscalePercentageAddInt)/100.0);
 			}
 			else {
-				newMemRequested = (int) (maxServiceReservedMem / (1+autoscalePercentageDecreaseInt/100.0));
+				newMemRequested = (int) (maxServiceReservedMem * (100.0-autoscalePercentageDecreaseInt)/100.0);
 				newMemRequested = Math.max(newMemRequested, minMemRequest);
 			}
 			int newCpuRequested;
 			if(increaseResources) {
-				newCpuRequested = (int) (maxServiceReservedCpu * (1+autoscalePercentageAddInt/100.0));
+				newCpuRequested = (int) (maxServiceReservedCpu * (100.0+autoscalePercentageAddInt)/100.0);
 			}
 			else {
-				newCpuRequested = (int) (maxServiceReservedCpu / (1+autoscalePercentageDecreaseInt/100.0));
+				newCpuRequested = (int) (maxServiceReservedCpu * (100.0-autoscalePercentageDecreaseInt)/100.0);
 				newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 			}
 

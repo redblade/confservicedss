@@ -19,7 +19,7 @@ import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 
 /*
-TTODA algorithm is described here (TODO add link once the paper is accepted) 
+TTODA algorithm is described here https://doi.org/10.36227/techrxiv.19169021.v1 
 
 R & M are 0..1 
 

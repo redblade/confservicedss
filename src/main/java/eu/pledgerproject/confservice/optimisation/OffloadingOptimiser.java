@@ -89,14 +89,17 @@ public class OffloadingOptimiser {
 					
 					boolean criticalService = false;
 					boolean steadyService = false;
-					
+					log.info("service " + service.getName() + ", checking 'elab_resources_needed' violations since " + startTime);
 					for(SlaViolation slaViolation : slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.elab_resources_needed.name(), ServiceOptimisationType.offloading.name(), startTime)) {
+						log.info("service " + service.getName() + ", found SLA violation with id:" + slaViolation.getId());
 						if(service.getLastChangedStatus().isBefore(slaViolation.getTimestamp())) {
+							log.info("service " + service.getName() + ", SLA violation with id:" + slaViolation.getId() + " will be counted as happended AFTER service last start (" + service.getLastChangedStatus() + ")");
 							slaViolation.setStatus(SLAViolationStatus.closed_critical.toString());
 							slaViolationRepository.save(slaViolation);
 							criticalService = true;
 						}
 						else {
+							log.info("service " + service.getName() + ", SLA violation with id:" + slaViolation.getId() + " will be ignored as happended ("+slaViolation.getTimestamp()+") BEFORE service last start (" + service.getLastChangedStatus() + ")");
 							slaViolation.setStatus(SLAViolationStatus.closed_not_critical.toString());
 							slaViolationRepository.save(slaViolation);
 						}
@@ -107,7 +110,9 @@ public class OffloadingOptimiser {
 					}
 					List<SlaViolation> slaViolationCritical = slaViolationRepository.findAllByServiceAndStatusAndServiceOptimisationTypeSinceTimestamp(service, SLAViolationStatus.closed_critical.name(), ServiceOptimisationType.offloading.name(), startTime);
 					steadyService = slaViolationCritical.size() == 0 && service.getLastChangedStatus().isBefore(startTime);
-					
+					log.info("service " + service.getName() + ", checking 'closed_critical' violations since " + startTime + ", found " + slaViolationCritical.size());
+					log.info("service " + service.getName() + " is critical/steady ? " + criticalService + "/" + steadyService);
+
 					if(criticalService) {
 						Node bestNode = serviceScheduler.migrateToRanking(service, false);
 						if(bestNode != null) {

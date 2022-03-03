@@ -221,7 +221,7 @@ public class TTODAResourceOptimiser {
 		
 		//get the percentage of autoscale
 		String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
-		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? AutoscalePercentage.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? OptimisationConstants.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
 		String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
 		int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
