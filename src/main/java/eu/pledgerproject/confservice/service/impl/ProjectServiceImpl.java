@@ -113,8 +113,8 @@ public class ProjectServiceImpl implements ProjectService {
     private void provision_kafka(Project project) {
     	boolean msgSent = false;
     	
-    	int cpuCore = project.getQuotaCpuMillicore() / 1000;
-		int memGB = project.getQuotaMemMB() / 1024;
+    	int cpuCore = project.getQuotaCpuMillicore();
+		int memGB = project.getQuotaMemMB();
 		if(cpuCore >= 0 && memGB >= 0) {
         	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
         	if(soeEndpoint != null) {
