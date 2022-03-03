@@ -127,19 +127,19 @@ public class ScalingOptimiser {
 						//compute the new resource requests, for scale up/down
 						int newCpuRequested = cpuRequest;
 						if(criticalService) {
-							newCpuRequested = (int) (cpuRequest * (1+autoscalePercentageAddInt)/100.0);
+							newCpuRequested = (int) (cpuRequest * (100+autoscalePercentageAddInt)/100.0);
 						}
 						else if(steadyService) {
-							newCpuRequested = (int) (cpuRequest / (1+autoscalePercentageDecreaseInt)/100.0);
+							newCpuRequested = (int) (cpuRequest / (100+autoscalePercentageDecreaseInt)/100.0);
 							Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 							newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 						}
 						int newMemRequested = memRequest;
 						if(criticalService) {
-							newMemRequested = (int) (memRequest * (1+autoscalePercentageAddInt)/100.0);
+							newMemRequested = (int) (memRequest * (100+autoscalePercentageAddInt)/100.0);
 						}
 						else if(steadyService) {
-							newMemRequested = (int) (memRequest / (1+autoscalePercentageDecreaseInt)/100.0);
+							newMemRequested = (int) (memRequest / (100+autoscalePercentageDecreaseInt)/100.0);
 							Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 							newMemRequested = Math.max(newMemRequested, minMemRequest);
 						}
