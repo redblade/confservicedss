@@ -15,8 +15,8 @@ import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.NodeReport;
 import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.ServiceReport;
+import eu.pledgerproject.confservice.optimisation.Constants;
 import eu.pledgerproject.confservice.optimisation.ResourceSteadyOptimiser;
-import eu.pledgerproject.confservice.optimisation.ServiceResourceOptimiser;
 import eu.pledgerproject.confservice.repository.NodeReportRepository;
 import eu.pledgerproject.confservice.repository.NodeRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
@@ -60,7 +60,7 @@ public class ResourceDataReader {
 		
     	//get service scaling type
 		Map<String, String> serviceInitialConfigurationProperties = ConverterJSON.convertToMap(service.getInitialConfiguration());
-		String scaling = serviceInitialConfigurationProperties.get("scaling");
+		String scaling = serviceInitialConfigurationProperties.get(Constants.SCALING);
 
 		//get the max resource reserved
 		Integer maxServiceReservedMem = getServiceMaxResourceReservedMemInPeriod(service, timestamp);
@@ -70,14 +70,14 @@ public class ResourceDataReader {
 		Integer maxServiceUsedMem = getServiceMaxMemUsedInPeriod(service, timestamp);
 		Integer maxServiceUsedCpu = getServiceMaxCpuUsedInPeriod(service, timestamp);
 
-		if(ServiceResourceOptimiser.SCALING_VERTICAL.equals(scaling)) {			
+		if(Constants.SCALING_VERTICAL.equals(scaling)) {			
 			//compute percentage of resources used
 			int percMemUsed =  (int) (100.0 * maxServiceUsedMem / (maxServiceReservedMem));
 			int percCpuUsed =  (int) (100.0 * maxServiceUsedCpu / (maxServiceReservedCpu));
 			return Math.max(percMemUsed, percCpuUsed);
 		}
-		else if(ServiceResourceOptimiser.SCALING_HORIZONTAL.equals(scaling)) {
-			int replicas = Integer.parseInt(ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas"));
+		else if(Constants.SCALING_HORIZONTAL.equals(scaling)) {
+			int replicas = ResourceDataReader.getServiceReplicas(service);
 			int percMemUsed =  (int) (100.0 * maxServiceUsedMem / (maxServiceReservedMem*replicas));
 			int percCpuUsed =  (int) (100.0 * maxServiceUsedCpu / (maxServiceReservedCpu*replicas));
 			return Math.max(percMemUsed, percCpuUsed);
@@ -133,25 +133,46 @@ public class ResourceDataReader {
 	}
 	
 	public static int getServiceInitialCpuRequest(Service service) {
-		int result = 0; 
-		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_CPU_MILLICORE));}catch(Exception e) {}
+		int result = Constants.DEFAULT_INITIAL_CPU_MILLICORE; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.INITIAL_CPU_MILLICORE));}catch(Exception e) {}
 		return result;
 	}
 	public static int getServiceInitialMemRequest(Service service) {
-		int result = 0; 
-		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_MEMORY_MB));}catch(Exception e) {}
+		int result = Constants.DEFAULT_INITIAL_MEMORY_MB;
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.INITIAL_MEMORY_MB));}catch(Exception e) {}
 		return result;
 	}
 	public static Integer getServiceMinCpuRequest(Service service) {
-		Integer result = 0; 
-		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.MIN_CPU_MILLICORE));}catch(Exception e) {}
+		Integer result = Constants.DEFAULT_MIN_CPU_MILLICORE;
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.MIN_CPU_MILLICORE));}catch(Exception e) {}
 		return result;
 	}
 	public static Integer getServiceMinMemRequest(Service service) {
-		Integer result = 0; 
-		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.MIN_MEMORY_MB));}catch(Exception e) {}
+		Integer result = Constants.DEFAULT_MIN_MEMORY_MB;
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.MIN_MEMORY_MB));}catch(Exception e) {}
 		return result;
 	}
+	public static Integer getServiceMaxCpuRequest(Service service) {
+		Integer result = Constants.DEFAULT_MAX_CPU_MILLICORE;
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.MAX_CPU_MILLICORE));}catch(Exception e) {}
+		return result;
+	}
+	public static Integer getServiceMaxMemRequest(Service service) {
+		Integer result = Constants.DEFAULT_MAX_MEMORY_MB;
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.MAX_MEMORY_MB));}catch(Exception e) {}
+		return result;
+	}
+	public static Integer getServiceReplicas(Service service) {
+		Integer result = Constants.DEFAULT_REPLICAS;
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.REPLICAS));}catch(Exception e) {}
+		return result;
+	}
+	public static Integer getServiceMaxReplicas(Service service) {
+		Integer result = Constants.DEFAULT_MAX_REPLICAS;
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.MAX_REPLICAS));}catch(Exception e) {}
+		return result;
+	}
+
 	public Integer getServiceMaxCpuUsedInPeriod(Service service, Instant timestamp) {
 		Integer result = serviceReportRepository.findMaxResourceUsedByServiceIdCategoryKeyTimestamp(service.getId(), ResourceSteadyOptimiser.RESOURCE_USAGE_CATEGORY, MonitoringService.MEMORY_LABEL, timestamp);
 		if(result == null) {

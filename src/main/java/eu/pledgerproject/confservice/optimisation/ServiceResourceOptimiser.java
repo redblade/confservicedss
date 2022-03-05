@@ -18,10 +18,6 @@ public class ServiceResourceOptimiser {
     public static final String RESOURCE_USAGE_CATEGORY = "resource-used";
     public static int SCORE_THRESHOLD = 100;
     
-    public static final String SCALING_HORIZONTAL = "horizontal";
-    public static final String SCALING_VERTICAL = "vertical";
-
-    
     private final DeploymentOptionsManager deploymentOptionsManager;
     private final ResourceDataReader resourceDataReader;
     private final ServiceScheduler serviceScheduler;
@@ -40,11 +36,11 @@ public class ServiceResourceOptimiser {
 	public String optimise(Service service, boolean increaseResources) {
 		String message = "Nothing to do, neither horizontal or vertical scaling is configured";
 		
-		String scaling = ConverterJSON.convertToMap(service.getInitialConfiguration()).get("scaling"); 
-		if(SCALING_VERTICAL.equals(scaling)){
+		String scaling = ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.SCALING); 
+		if(Constants.SCALING_VERTICAL.equals(scaling)){
 			message = verticalScaling(service, increaseResources);
 		}
-		else if(SCALING_HORIZONTAL.equals(scaling)){
+		else if(Constants.SCALING_HORIZONTAL.equals(scaling)){
 			message = horizontalScaling(service, increaseResources);
 		}	
 		
@@ -57,7 +53,7 @@ public class ServiceResourceOptimiser {
 		
 		//get the percentage of autoscale
 		String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
-		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? OptimisationConstants.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+		int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? Constants.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
 		String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
 		int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
@@ -68,23 +64,27 @@ public class ServiceResourceOptimiser {
 		if(maxServiceReservedMem != null && maxServiceReservedCpu != null) {
 			Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 			Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
+			Integer maxMemRequest = ResourceDataReader.getServiceMaxMemRequest(service);
+			Integer maxCpuRequest = ResourceDataReader.getServiceMaxCpuRequest(service);
 
 			//compute the new resource requests, for scale up/down
-			int newMemRequested;
-			if(increaseResources) {
-				newMemRequested = (int) (maxServiceReservedMem * (100.0+autoscalePercentageAddInt)/100.0);
-			}
-			else {
-				newMemRequested = (int) (maxServiceReservedMem * (100.0-autoscalePercentageDecreaseInt)/100.0);
-				newMemRequested = Math.max(newMemRequested, minMemRequest);
-			}
 			int newCpuRequested;
 			if(increaseResources) {
 				newCpuRequested = (int) (maxServiceReservedCpu * (100.0+autoscalePercentageAddInt)/100.0);
+				newCpuRequested = Math.min(newCpuRequested, maxCpuRequest);
 			}
 			else {
 				newCpuRequested = (int) (maxServiceReservedCpu * (100.0-autoscalePercentageDecreaseInt)/100.0);
 				newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
+			}
+			int newMemRequested;
+			if(increaseResources) {
+				newMemRequested = (int) (maxServiceReservedMem * (100.0+autoscalePercentageAddInt)/100.0);
+				newMemRequested = Math.min(newMemRequested, maxMemRequest);
+			}
+			else {
+				newMemRequested = (int) (maxServiceReservedMem * (100.0-autoscalePercentageDecreaseInt)/100.0);
+				newMemRequested = Math.max(newMemRequested, minMemRequest);
 			}
 
 			//get the currentRanking...
@@ -133,8 +133,7 @@ public class ServiceResourceOptimiser {
 		String message = "no nodes or resources available";
 		
 		//get the replicas
-		String replicasString = ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
-		int replicas = replicasString == null ? 1 : Integer.parseInt(replicasString);
+		int replicas = ResourceDataReader.getServiceReplicas(service);
 		
 		//get max resource requests for the current service
 		Integer maxServiceReservedMem = resourceDataReader.getLastServiceMaxResourceReservedMem(service) * replicas;
@@ -152,7 +151,14 @@ public class ServiceResourceOptimiser {
 			log.info("found a  with different ranking:  is " + bestRankingData.getRanking() + " while current is " + currentRanking);
 			boolean isOffload = bestRankingData.getRanking() != currentRanking;
 			
-			int newReplicas = increaseResources ? replicas+1 : replicas == 1 ? 1 : replicas -1;
+			int newReplicas;
+			if(increaseResources) {
+				int maxReplicas = ResourceDataReader.getServiceMaxReplicas(service);
+				newReplicas = replicas < maxReplicas ? replicas+1 : maxReplicas;
+			}
+			else {
+				newReplicas = replicas == 1 ? 1 : replicas -1;
+			}
 			
 			//if offload is possible, we do it
 			if(isOffload) {

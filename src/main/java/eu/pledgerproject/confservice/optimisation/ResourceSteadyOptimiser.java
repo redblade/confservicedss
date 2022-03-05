@@ -163,13 +163,13 @@ public class ResourceSteadyOptimiser {
 				if(slaViolationCriticalList.size() == 0) {
 					//get service scaling type
 					Map<String, String> serviceInitialConfigurationProperties = ConverterJSON.convertToMap(service.getInitialConfiguration());
-					String scaling = serviceInitialConfigurationProperties.get("scaling");
+					String scaling = serviceInitialConfigurationProperties.get(Constants.SCALING);
 					//and skip the check if scaling is not "horizontal" or "vertical"
-					if(ServiceResourceOptimiser.SCALING_VERTICAL.equals(scaling)) {
+					if(Constants.SCALING_VERTICAL.equals(scaling)) {
 						log.info("ResourceSteadyOptimizer found a steady service with vertical scaling to be checked " + service.getName());
 						addSteadyServiceForVerticalScaling(timestampSteady, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
 					}
-					else if(ServiceResourceOptimiser.SCALING_HORIZONTAL.equals(scaling)) {
+					else if(Constants.SCALING_HORIZONTAL.equals(scaling)) {
 						log.info("ResourceSteadyOptimizer found a steady service with horizontal scaling to be checked " + service.getName());
 						addSteadyServiceForHorizontalScaling(timestampSteady, result, service, serviceInitialConfigurationProperties, monitoringSlaViolationPeriodSec);
 					}
@@ -263,10 +263,10 @@ public class ResourceSteadyOptimiser {
 			
 			//get params
 			String resourceUsedSteadyPercentage = ConverterJSON.convertToMap(service.getApp().getServiceProvider().getPreferences()).get("monitoring.steadyServices.maxResourceUsedPercentage");
-			String replicas = ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
+			int replicas = ResourceDataReader.getServiceReplicas(service);
 
 			//compute score
-			long score = getScoreScalingHorizontal(service, Integer.parseInt(resourceUsedSteadyPercentage), Integer.parseInt(replicas), maxServiceUsedMem, maxServiceReservedMem, maxServiceUsedCpu, maxServiceReservedCpu);
+			long score = getScoreScalingHorizontal(service, Integer.parseInt(resourceUsedSteadyPercentage), replicas, maxServiceUsedMem, maxServiceReservedMem, maxServiceUsedCpu, maxServiceReservedCpu);
 			log.info("ResourceSteadyOptimizer computed the steady service " + service.getName() + " score " + score);
 
 			//create a steadyService per Service if score is above threshold

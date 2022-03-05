@@ -30,12 +30,7 @@ public class MonitoringService {
 	public static String CPU_LABEL = "cpu_millicore";
 	public static String MEMORY = "memory";
 	public static String MEMORY_LABEL = "memory_mb";
-	
-	public static final String INITIAL_MEMORY_MB = "initial_memory_mb";
-	public static final String INITIAL_CPU_MILLICORE = "initial_cpu_millicore";
-	public static final String MIN_MEMORY_MB = "min_memory_mb";
-	public static final String MIN_CPU_MILLICORE = "min_cpu_millicore";
-	
+	public static String NAMESPACE = "namespace";
 	
 	public MonitoringService(InfrastructureRepository infrastructureRepository, MetricsServerReader metricsServerReader, PrometheusReaderKubernetes prometheusReaderKubernetes, GoldPingerReader goldPingerReader, EventRepository eventRepository, NodeAutodiscovery nodeAutodiscovery, QuotaMonitoringReader quotaMonitoringReader) {
 		this.infrastructureRepository = infrastructureRepository;

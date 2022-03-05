@@ -31,9 +31,6 @@ this optimiser implements "scaling" Optimisation
 
 @Component
 public class ScalingOptimiser {
-    public static final String SCALING_HORIZONTAL = "horizontal";
-    public static final String SCALING_VERTICAL = "vertical";
-
 
     private final Logger log = LoggerFactory.getLogger(ScalingOptimiser.class);
     
@@ -120,33 +117,39 @@ public class ScalingOptimiser {
 					log.info("service " + service.getName() + " is critical/steady ? " + criticalService + "/" + steadyService);
 					
 					String autoscalePercentageAdd = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage");
-					int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? OptimisationConstants.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
+					int autoscalePercentageAddInt = Integer.parseInt(autoscalePercentageAdd.length() == 0 ? Constants.DEFAULT_AUTOSCALE_PERCENTAGE : autoscalePercentageAdd);
 					String autoscalePercentageDecrease = ConverterJSON.getProperty(service.getApp().getServiceProvider().getPreferences(), "autoscale.percentage.decrease");
 					int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
-					String scaling = ConverterJSON.convertToMap(service.getInitialConfiguration()).get("scaling"); 
-					if(SCALING_VERTICAL.equals(scaling)){
-						//get max resource requests for the current service
-						Integer cpuRequest = ResourceDataReader.getServiceRuntimeCpuRequest(service);
-						Integer memRequest = ResourceDataReader.getServiceRuntimeMemRequest(service);
-							
+					//get max resource requests for the current service
+					Integer cpuRequest = ResourceDataReader.getServiceRuntimeCpuRequest(service);
+					Integer memRequest = ResourceDataReader.getServiceRuntimeMemRequest(service);
+
+					String scaling = ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.SCALING); 
+					if(Constants.SCALING_VERTICAL.equals(scaling)){
+						
+						Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
+						Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
+						Integer maxMemRequest = ResourceDataReader.getServiceMaxMemRequest(service);
+						Integer maxCpuRequest = ResourceDataReader.getServiceMaxCpuRequest(service);
+
 						//compute the new resource requests, for scale up/down
 						int newCpuRequested = cpuRequest;
 						if(criticalService) {
 							newCpuRequested = (int) (cpuRequest * (100.0+autoscalePercentageAddInt)/100.0);
+							newCpuRequested = Math.min(newCpuRequested, maxCpuRequest);
 						}
 						else if(steadyService) {
 							newCpuRequested = (int) (cpuRequest * (100.0-autoscalePercentageDecreaseInt)/100.0);
-							Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 							newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 						}
 						int newMemRequested = memRequest;
 						if(criticalService) {
 							newMemRequested = (int) (memRequest * (100.0+autoscalePercentageAddInt)/100.0);
+							newMemRequested = Math.min(newMemRequested, maxMemRequest);
 						}
 						else if(steadyService) {
 							newMemRequested = (int) (memRequest * (100.0-autoscalePercentageDecreaseInt)/100.0);
-							Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 							newMemRequested = Math.max(newMemRequested, minMemRequest);
 						}
 
@@ -169,18 +172,17 @@ public class ScalingOptimiser {
 							saveInfoEvent(service, "Scaling down service " + service.getName() + " to cpu-mem " + newCpuRequested + "-" + newMemRequested);
 						}
 					}
-					else if(SCALING_HORIZONTAL.equals(scaling)){
-						Integer cpuRequest = ResourceDataReader.getServiceRuntimeCpuRequest(service);
-						Integer memRequest = ResourceDataReader.getServiceRuntimeMemRequest(service);
+					else if(Constants.SCALING_HORIZONTAL.equals(scaling)){
 						
-						String replicasString = ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
-						int replicas = replicasString == null ? 1 : Integer.parseInt(replicasString);
+						int replicas = ResourceDataReader.getServiceReplicas(service);
 
 						Integer[] remainingCapacityForSPCurrentRankingNodes = quotaMonitoringReader.getRemainingCapacityForSPCurrentRankingNodes(serviceProvider, service);
 						
 						if(criticalService) {
-							if((replicas+1)*cpuRequest < remainingCapacityForSPCurrentRankingNodes[0] && (replicas+1)*memRequest < remainingCapacityForSPCurrentRankingNodes[1]) {
-								int newReplicas = replicas-1;
+							int maxReplicas = ResourceDataReader.getServiceMaxReplicas(service);
+							int newReplicas = replicas < maxReplicas ? replicas+1 : maxReplicas;
+
+							if((newReplicas)*cpuRequest < remainingCapacityForSPCurrentRankingNodes[0] && (newReplicas)*memRequest < remainingCapacityForSPCurrentRankingNodes[1]) {
 								serviceScheduler.scaleHorizontally(service, newReplicas, true);
 								log.info("Scaling out service " + service.getName() + " to replicas " + newReplicas);
 								saveInfoEvent(service, "Scaling out service " + service.getName() + " to replicas " + newReplicas);

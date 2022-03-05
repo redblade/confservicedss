@@ -14,9 +14,9 @@ import eu.pledgerproject.confservice.domain.Service;
 import eu.pledgerproject.confservice.domain.enumeration.ExecStatus;
 import eu.pledgerproject.confservice.monitoring.BenchmarkManager;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
-import eu.pledgerproject.confservice.monitoring.MonitoringService;
 import eu.pledgerproject.confservice.optimisation.ECODAHelper;
 import eu.pledgerproject.confservice.optimisation.NodeGroup;
+import eu.pledgerproject.confservice.optimisation.Constants;
 import eu.pledgerproject.confservice.optimisation.RankingData;
 import eu.pledgerproject.confservice.optimisation.RankingManager;
 import eu.pledgerproject.confservice.optimisation.ServiceOptimisationType;
@@ -67,8 +67,8 @@ public class AppScheduler {
 		List<Service> serviceList = serviceRepository.findAllByAppId(app.getId());
 		for(Service service : serviceList) {
 			
-			int initialRequestCpu = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_CPU_MILLICORE));
-			int initialRequestMem = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(MonitoringService.INITIAL_MEMORY_MB));
+			int initialRequestCpu = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.INITIAL_CPU_MILLICORE));
+			int initialRequestMem = Integer.parseInt(ConverterJSON.convertToMap(service.getInitialConfiguration()).get(Constants.INITIAL_MEMORY_MB));
 
 			if(service.getServiceOptimisation() != null &&
 					(

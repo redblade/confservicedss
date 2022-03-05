@@ -62,7 +62,7 @@ public class SLAViolationManager {
 					}
 					//we ignore any SLAviolations happened within the grace period from the latest service status change
 					//basically, if the service just started, a SLA violation is ignored if happens in the next 60s (grace period)
-					else if(slaViolation.getTimestamp().isBefore(service.getLastChangedStatus().plusSeconds(OptimisationConstants.GRACE_PERIOD_SERVICE_START_FOR_SLA_SEC))) {
+					else if(slaViolation.getTimestamp().isBefore(service.getLastChangedStatus().plusSeconds(Constants.GRACE_PERIOD_SERVICE_START_FOR_SLA_SEC))) {
 						log.info("service " + service.getName() + " is RUNNING, slaViolation " + slaViolation.getId() + " is too close ("+slaViolation.getTimestamp()+") to service last status change ("+service.getLastChangedStatus()+") and will be ignored");
 						slaViolation.setStatus(SLAViolationStatus.closed_ignored.name());
 						slaViolationRepository.save(slaViolation);	

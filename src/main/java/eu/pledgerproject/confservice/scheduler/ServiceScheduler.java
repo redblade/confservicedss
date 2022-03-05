@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import eu.pledgerproject.confservice.domain.AppConstraint;
 import eu.pledgerproject.confservice.domain.CriticalService;
+import eu.pledgerproject.confservice.domain.Event;
 import eu.pledgerproject.confservice.domain.Infrastructure;
 import eu.pledgerproject.confservice.domain.Node;
 import eu.pledgerproject.confservice.domain.Project;
@@ -30,11 +31,13 @@ import eu.pledgerproject.confservice.monitoring.ControlFlags;
 import eu.pledgerproject.confservice.monitoring.ConverterJSON;
 import eu.pledgerproject.confservice.monitoring.MonitoringService;
 import eu.pledgerproject.confservice.monitoring.ResourceDataReader;
+import eu.pledgerproject.confservice.optimisation.Constants;
 import eu.pledgerproject.confservice.optimisation.DeploymentOptionsManager;
 import eu.pledgerproject.confservice.optimisation.RankingManager;
 import eu.pledgerproject.confservice.optimisation.SLAViolationStatus;
 import eu.pledgerproject.confservice.repository.AppConstraintRepository;
 import eu.pledgerproject.confservice.repository.CriticalServiceRepository;
+import eu.pledgerproject.confservice.repository.EventRepository;
 import eu.pledgerproject.confservice.repository.ProjectRepository;
 import eu.pledgerproject.confservice.repository.ServiceReportRepository;
 import eu.pledgerproject.confservice.repository.ServiceRepository;
@@ -50,10 +53,10 @@ public class ServiceScheduler {
 	private static final Map<String, String> PLACEHOLDER_MAP = new HashMap<String, String>();
 	static {
 		PLACEHOLDER_MAP.put(RUNTIME_NODE_SELECTED, "PLACEHOLDER_HOSTNAME");
-		PLACEHOLDER_MAP.put("replicas", "PLACEHOLDER_REPLICAS");
-		PLACEHOLDER_MAP.put("namespace", "PLACEHOLDER_NAMESPACE");
-		PLACEHOLDER_MAP.put("cpu_millicore", "PLACEHOLDER_CPU_MILLICORE");
-		PLACEHOLDER_MAP.put("memory_mb", "PLACEHOLDER_MEMORY_MB");
+		PLACEHOLDER_MAP.put(Constants.REPLICAS, "PLACEHOLDER_REPLICAS");
+		PLACEHOLDER_MAP.put(MonitoringService.NAMESPACE, "PLACEHOLDER_NAMESPACE");
+		PLACEHOLDER_MAP.put(MonitoringService.CPU_LABEL, "PLACEHOLDER_CPU_MILLICORE");
+		PLACEHOLDER_MAP.put(MonitoringService.MEMORY_LABEL, "PLACEHOLDER_MEMORY_MB");
 	}
 	
 	public static String NUMERIC = "numeric";
@@ -62,6 +65,7 @@ public class ServiceScheduler {
 
 	private final Logger log = LoggerFactory.getLogger(ServiceScheduler.class);
 
+	private final EventRepository eventRepository;
 	private final AppConstraintRepository appConstraintRepository;
 
 	private final DeploymentOptionsManager deploymentOptionsManager;
@@ -78,7 +82,8 @@ public class ServiceScheduler {
 	private final BenchmarkManager benchmarkManager;
 	private final SlaViolationRepository slaViolationRepository;
 	
-	public ServiceScheduler(AppConstraintRepository appConstraintRepository, DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, OrchestratorDocker orchestratorDocker, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager, SlaViolationRepository slaViolationRepository) {
+	public ServiceScheduler(EventRepository eventRepository, AppConstraintRepository appConstraintRepository, DeploymentOptionsManager deploymentOptionsManager, ProjectRepository projectRepository, ServiceRepository serviceRepository, OrchestratorKubernetes orchestratorKubernetes, OrchestratorDocker orchestratorDocker, ResourceDataReader resourceDataReader, ServiceReportRepository serviceReportRepository, SteadyServiceRepository steadyServiceRepository, CriticalServiceRepository criticalServiceRepository, RankingManager rankingManager, PublisherOrchestrationUpdate publisherOrchestrationUpdate, BenchmarkManager benchmarkManager, SlaViolationRepository slaViolationRepository) {
+		this.eventRepository = eventRepository;
 		this.appConstraintRepository = appConstraintRepository;
 		this.deploymentOptionsManager = deploymentOptionsManager;
 		this.projectRepository = projectRepository;
@@ -137,73 +142,125 @@ public class ServiceScheduler {
 		return result;
 	}
 	
+	private boolean isServiceValid(Service service) {
+		Map<String, String> serviceInitialConfigurationProperties = ConverterJSON.convertToMap(service.getInitialConfiguration());
+		if(!serviceInitialConfigurationProperties.containsKey(Constants.INITIAL_CPU_MILLICORE)) {
+			return false;
+		}
+		if(!serviceInitialConfigurationProperties.containsKey(Constants.INITIAL_MEMORY_MB)) {
+			return false;
+		}
+		String scaling = serviceInitialConfigurationProperties.get(Constants.SCALING);
+		
+		if(Constants.SCALING_VERTICAL.equals(scaling)) {
+			if(!serviceInitialConfigurationProperties.containsKey(Constants.MIN_CPU_MILLICORE)) {
+				return false;
+			}
+			if(!serviceInitialConfigurationProperties.containsKey(Constants.MIN_MEMORY_MB)) {
+				return false;
+			}
+			if(!serviceInitialConfigurationProperties.containsKey(Constants.MAX_CPU_MILLICORE)) {
+				return false;
+			}
+			if(!serviceInitialConfigurationProperties.containsKey(Constants.MAX_MEMORY_MB)) {
+				return false;
+			}
+		}
+		if(Constants.SCALING_HORIZONTAL.equals(scaling)) {
+			if(!serviceInitialConfigurationProperties.containsKey(Constants.REPLICAS)) {
+				return false;
+			}
+			if(!serviceInitialConfigurationProperties.containsKey(Constants.MAX_REPLICAS)) {
+				return false;
+			}
+		}
+
+		
+		return true;
+	}
+	
+	private void saveErrorEvent(Service service, String msg) {
+    	if(log.isWarnEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setServiceProvider(service.getApp().getServiceProvider());
+			event.setDetails(msg);
+			event.setCategory("ServiceScheduler");
+			event.severity(Event.ERROR);
+			eventRepository.save(event);
+    	}
+	}
+	
 	public boolean start(Service service, Node node, int requestCpu, int requestMem) {
 		boolean result = false;
-		
-		log.info("request to have Service started " + service.getName());
-		Infrastructure infrastructure = node.getInfrastructure();
-
-		Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
-		if(project.isPresent()) {
-			Map<String, String> runtimeConfigurationMap = new HashMap<String, String>();
+		if(!isServiceValid(service)) {
+			log.error("Service " + service.getName() + " is missing mandatory initial parameters about min/max resources and replicas");
+			saveErrorEvent(service, "Service " + service.getName() + " is missing mandatory initial parameters about min/max resources and replicas");
+		}
+		else {
 			
-			String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
-			runtimeConfigurationMap.put(RUNTIME_NAMESPACE, namespace);
-			runtimeConfigurationMap.put(RUNTIME_NODE_SELECTED, node.getName());
-			runtimeConfigurationMap.put(RUNTIME_INFRASTRUCTURE_SELECTED, ""+infrastructure.getId());
-
-			runtimeConfigurationMap.put(MonitoringService.CPU_LABEL, ""+requestCpu);
-			runtimeConfigurationMap.put(MonitoringService.MEMORY_LABEL, ""+requestMem);
-
-			String replicasFromInitialConfiguration = (String) ConverterJSON.convertToMap(service.getInitialConfiguration()).get("replicas");
-			if(replicasFromInitialConfiguration == null || replicasFromInitialConfiguration.isEmpty()) {
-				replicasFromInitialConfiguration = "1";
-			}
-			runtimeConfigurationMap.put("replicas", replicasFromInitialConfiguration);
-					
-			service.setRuntimeConfiguration(ConverterJSON.convertToJSON(runtimeConfigurationMap));
-			
-			//update the Service
-			serviceRepository.save(service);
-
-			String appGroup = project.get().getServiceProvider().getName() + " on " + project.get().getInfrastructure().getName();
-			saveOrUpdateServiceRequest(service, appGroup, MonitoringService.CPU_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestCpu);
-			saveOrUpdateServiceRequest(service, appGroup, MonitoringService.MEMORY_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestMem);
-					
-			if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
-				
-				String deploymentName = service.getName();
-				
-				String deploymentDescriptor = service.getDeployDescriptor();
-				deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, node.getName(), replicasFromInitialConfiguration);
-					
-				if(service.getDeployType().equals(DeployType.KUBERNETES)) {	
-					orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
-					result = true;
-				}
-				else if (service.getDeployType().equals(DeployType.DOCKER)) {
-					if(ControlFlags.DOCKER_ENABLED) {
-						orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
-					}
-					else {
-						throw new RuntimeException("start not supported for DeployType " + service.getDeployType());
-					}
-					
-				}
-				service.setLastChangedStatus(Instant.now());
-				service.setStatus(ExecStatus.RUNNING);
-				serviceRepository.save(service);
-
-			}
+			log.info("request to have Service started " + service.getName());
+			Infrastructure infrastructure = node.getInfrastructure();
 	
-			else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
-				publisherOrchestrationUpdate.publish(service.getId(), "service", "start", getMessageParameters(service, infrastructure), getMessagePlaceholders(service));
-				service.setLastChangedStatus(Instant.now());
-				service.setStatus(ExecStatus.RUNNING);
-				serviceRepository.save(service);
-				result = true;
+			Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
+			if(project.isPresent()) {
+				Map<String, String> runtimeConfigurationMap = new HashMap<String, String>();
 				
-				log.info("Delegated: service " + service.getName() + " start");
+				String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
+				runtimeConfigurationMap.put(RUNTIME_NAMESPACE, namespace);
+				runtimeConfigurationMap.put(RUNTIME_NODE_SELECTED, node.getName());
+				runtimeConfigurationMap.put(RUNTIME_INFRASTRUCTURE_SELECTED, ""+infrastructure.getId());
+	
+				runtimeConfigurationMap.put(MonitoringService.CPU_LABEL, ""+requestCpu);
+				runtimeConfigurationMap.put(MonitoringService.MEMORY_LABEL, ""+requestMem);
+	
+				String replicasFromInitialConfiguration = ""+ResourceDataReader.getServiceReplicas(service);
+				runtimeConfigurationMap.put(Constants.REPLICAS, replicasFromInitialConfiguration);
+						
+				service.setRuntimeConfiguration(ConverterJSON.convertToJSON(runtimeConfigurationMap));
+				
+				//update the Service
+				serviceRepository.save(service);
+	
+				String appGroup = project.get().getServiceProvider().getName() + " on " + project.get().getInfrastructure().getName();
+				saveOrUpdateServiceRequest(service, appGroup, MonitoringService.CPU_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestCpu);
+				saveOrUpdateServiceRequest(service, appGroup, MonitoringService.MEMORY_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestMem);
+						
+				if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
+					
+					String deploymentName = service.getName();
+					
+					String deploymentDescriptor = service.getDeployDescriptor();
+					deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, node.getName(), replicasFromInitialConfiguration);
+						
+					if(service.getDeployType().equals(DeployType.KUBERNETES)) {	
+						orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
+						result = true;
+					}
+					else if (service.getDeployType().equals(DeployType.DOCKER)) {
+						if(ControlFlags.DOCKER_ENABLED) {
+							orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
+						}
+						else {
+							throw new RuntimeException("start not supported for DeployType " + service.getDeployType());
+						}
+						
+					}
+					service.setLastChangedStatus(Instant.now());
+					service.setStatus(ExecStatus.RUNNING);
+					serviceRepository.save(service);
+	
+				}
+		
+				else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
+					publisherOrchestrationUpdate.publish(service.getId(), "service", "start", getMessageParameters(service, infrastructure), getMessagePlaceholders(service));
+					service.setLastChangedStatus(Instant.now());
+					service.setStatus(ExecStatus.RUNNING);
+					serviceRepository.save(service);
+					result = true;
+					
+					log.info("Delegated: service " + service.getName() + " start");
+				}
 			}
 		}
 		
@@ -230,15 +287,15 @@ public class ServiceScheduler {
 					Map<String, String> initialConfigurationMap = ConverterJSON.convertToMap(service.getInitialConfiguration());
 					Integer serviceMaxResourceReservedCpu = resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp);
 					if(serviceMaxResourceReservedCpu != null) {
-						initialConfigurationMap.put(MonitoringService.INITIAL_CPU_MILLICORE, ""+serviceMaxResourceReservedCpu);
+						initialConfigurationMap.put(Constants.INITIAL_CPU_MILLICORE, ""+serviceMaxResourceReservedCpu);
 					}
 					Integer serviceMaxResourceReservedMem = resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp);
 					if(serviceMaxResourceReservedMem != null) {
-						initialConfigurationMap.put(MonitoringService.INITIAL_MEMORY_MB, ""+serviceMaxResourceReservedMem);
+						initialConfigurationMap.put(Constants.INITIAL_MEMORY_MB, ""+serviceMaxResourceReservedMem);
 					}
 					
-					String replicasFromRuntimeConfiguration = (String) ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
-					initialConfigurationMap.put("replicas", replicasFromRuntimeConfiguration);
+					String replicasFromRuntimeConfiguration = ""+ResourceDataReader.getServiceReplicas(service);
+					initialConfigurationMap.put(Constants.REPLICAS, replicasFromRuntimeConfiguration);
 					service.setInitialConfiguration(ConverterJSON.convertToJSON(initialConfigurationMap));
 
 					//clear the runtimeConfiguration
@@ -315,7 +372,7 @@ public class ServiceScheduler {
 				if(project.isPresent()) {
 					
 					Map<String, String> runtimeConfigurationMap = ConverterJSON.convertToMap(service.getRuntimeConfiguration());
-					runtimeConfigurationMap.put("replicas", newReplicas+"");
+					runtimeConfigurationMap.put(Constants.REPLICAS, newReplicas+"");
 					service.setRuntimeConfiguration(ConverterJSON.convertToJSON(runtimeConfigurationMap));
 					serviceRepository.save(service);
 						
@@ -374,7 +431,7 @@ public class ServiceScheduler {
 								
 							String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
 							String deploymentDescriptor = service.getDeployDescriptor();
-							String replicasFromRuntimeConfiguration = (String) ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
+							String replicasFromRuntimeConfiguration = ""+ResourceDataReader.getServiceReplicas(service);
 
 							deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, requestCpu, requestMem, currentNode.getName(), replicasFromRuntimeConfiguration);
 
@@ -512,11 +569,11 @@ public class ServiceScheduler {
 
 								//save resources and replicas in initConfiguration
 								Map<String, String> initialConfigurationMap = ConverterJSON.convertToMap(service.getInitialConfiguration());
-								initialConfigurationMap.put(MonitoringService.INITIAL_CPU_MILLICORE, ""+resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp));
-								initialConfigurationMap.put(MonitoringService.INITIAL_MEMORY_MB, ""+resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp));
+								initialConfigurationMap.put(Constants.INITIAL_CPU_MILLICORE, ""+resourceDataReader.getServiceMaxResourceReservedCpuInPeriod(service, timestamp));
+								initialConfigurationMap.put(Constants.INITIAL_MEMORY_MB, ""+resourceDataReader.getServiceMaxResourceReservedMemInPeriod(service, timestamp));
 								
-								String replicasFromRuntimeConfiguration = (String) ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get("replicas");
-								initialConfigurationMap.put("replicas", replicasFromRuntimeConfiguration);
+								String replicasFromRuntimeConfiguration = ""+ResourceDataReader.getServiceReplicas(service);
+								initialConfigurationMap.put(Constants.REPLICAS, replicasFromRuntimeConfiguration);
 								service.setInitialConfiguration(ConverterJSON.convertToJSON(initialConfigurationMap));
 
 								//clear the runtimeConfiguration
@@ -577,11 +634,8 @@ public class ServiceScheduler {
 					runtimeConfigurationMap.put(MonitoringService.MEMORY_LABEL, ""+requestMem);
 
 					
-					String replicasFromInitialConfiguration = (String) ConverterJSON.convertToMap(service.getInitialConfiguration()).get("replicas");
-					if(replicasFromInitialConfiguration == null || replicasFromInitialConfiguration.isEmpty()) {
-						replicasFromInitialConfiguration = "1";
-					}
-					runtimeConfigurationMap.put("replicas", replicasFromInitialConfiguration);
+					String replicasFromInitialConfiguration = ""+ResourceDataReader.getServiceReplicas(service);
+					runtimeConfigurationMap.put(Constants.REPLICAS, replicasFromInitialConfiguration);
 					
 					service.setRuntimeConfiguration(ConverterJSON.convertToJSON(runtimeConfigurationMap));
 					
