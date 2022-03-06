@@ -174,7 +174,7 @@ public class ScalingOptimiser {
 					}
 					else if(Constants.SCALING_HORIZONTAL.equals(scaling)){
 						
-						int replicas = ResourceDataReader.getServiceReplicas(service);
+						int replicas = ResourceDataReader.getServiceRuntimeReplicas(service);
 
 						Integer[] remainingCapacityForSPCurrentRankingNodes = quotaMonitoringReader.getRemainingCapacityForSPCurrentRankingNodes(serviceProvider, service);
 						

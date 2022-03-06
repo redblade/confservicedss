@@ -120,7 +120,12 @@ public class ResourceDataReader {
 		Integer result = 1000; try{result = serviceReportStartupTime.get(0).getValue().intValue();}catch(Exception e) {}
 		return result;
 	}
-	
+
+	public static int getServiceRuntimeReplicas(Service service) {
+		int result = 1; 
+		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get(Constants.REPLICAS));}catch(Exception e) {}
+		return result;
+	}
 	public static int getServiceRuntimeCpuRequest(Service service) {
 		int result = 0; 
 		try{result = Integer.parseInt(ConverterJSON.convertToMap(service.getRuntimeConfiguration()).get(MonitoringService.CPU_LABEL));}catch(Exception e) {}

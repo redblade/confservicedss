@@ -179,14 +179,14 @@ public class ServiceScheduler {
 		return true;
 	}
 	
-	private void saveErrorEvent(Service service, String msg) {
+	private void saveWarningEvent(Service service, String msg) {
     	if(log.isWarnEnabled()) {
 			Event event = new Event();
 			event.setTimestamp(Instant.now());
 			event.setServiceProvider(service.getApp().getServiceProvider());
 			event.setDetails(msg);
 			event.setCategory("ServiceScheduler");
-			event.severity(Event.ERROR);
+			event.severity(Event.WARNING);
 			eventRepository.save(event);
     	}
 	}
@@ -194,73 +194,71 @@ public class ServiceScheduler {
 	public boolean start(Service service, Node node, int requestCpu, int requestMem) {
 		boolean result = false;
 		if(!isServiceValid(service)) {
-			log.error("Service " + service.getName() + " is missing mandatory initial parameters about min/max resources and replicas");
-			saveErrorEvent(service, "Service " + service.getName() + " is missing mandatory initial parameters about min/max resources and replicas");
+			log.warn("Service " + service.getName() + " is missing mandatory initial parameters about min/max resources and max replicas, using default values");
+			saveWarningEvent(service, "Service " + service.getName() + " is missing mandatory initial parameters about min/max resources and max replicas, using default values");
 		}
-		else {
 			
-			log.info("request to have Service started " + service.getName());
-			Infrastructure infrastructure = node.getInfrastructure();
-	
-			Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
-			if(project.isPresent()) {
-				Map<String, String> runtimeConfigurationMap = new HashMap<String, String>();
-				
-				String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
-				runtimeConfigurationMap.put(RUNTIME_NAMESPACE, namespace);
-				runtimeConfigurationMap.put(RUNTIME_NODE_SELECTED, node.getName());
-				runtimeConfigurationMap.put(RUNTIME_INFRASTRUCTURE_SELECTED, ""+infrastructure.getId());
-	
-				runtimeConfigurationMap.put(MonitoringService.CPU_LABEL, ""+requestCpu);
-				runtimeConfigurationMap.put(MonitoringService.MEMORY_LABEL, ""+requestMem);
-	
-				String replicasFromInitialConfiguration = ""+ResourceDataReader.getServiceReplicas(service);
-				runtimeConfigurationMap.put(Constants.REPLICAS, replicasFromInitialConfiguration);
-						
-				service.setRuntimeConfiguration(ConverterJSON.convertToJSON(runtimeConfigurationMap));
-				
-				//update the Service
-				serviceRepository.save(service);
-	
-				String appGroup = project.get().getServiceProvider().getName() + " on " + project.get().getInfrastructure().getName();
-				saveOrUpdateServiceRequest(service, appGroup, MonitoringService.CPU_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestCpu);
-				saveOrUpdateServiceRequest(service, appGroup, MonitoringService.MEMORY_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestMem);
-						
-				if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
+		log.info("request to have Service started " + service.getName());
+		Infrastructure infrastructure = node.getInfrastructure();
+
+		Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
+		if(project.isPresent()) {
+			Map<String, String> runtimeConfigurationMap = new HashMap<String, String>();
+			
+			String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
+			runtimeConfigurationMap.put(RUNTIME_NAMESPACE, namespace);
+			runtimeConfigurationMap.put(RUNTIME_NODE_SELECTED, node.getName());
+			runtimeConfigurationMap.put(RUNTIME_INFRASTRUCTURE_SELECTED, ""+infrastructure.getId());
+
+			runtimeConfigurationMap.put(MonitoringService.CPU_LABEL, ""+requestCpu);
+			runtimeConfigurationMap.put(MonitoringService.MEMORY_LABEL, ""+requestMem);
+
+			String replicasFromInitialConfiguration = ""+ResourceDataReader.getServiceReplicas(service);
+			runtimeConfigurationMap.put(Constants.REPLICAS, replicasFromInitialConfiguration);
 					
-					String deploymentName = service.getName();
+			service.setRuntimeConfiguration(ConverterJSON.convertToJSON(runtimeConfigurationMap));
+			
+			//update the Service
+			serviceRepository.save(service);
+
+			String appGroup = project.get().getServiceProvider().getName() + " on " + project.get().getInfrastructure().getName();
+			saveOrUpdateServiceRequest(service, appGroup, MonitoringService.CPU_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestCpu);
+			saveOrUpdateServiceRequest(service, appGroup, MonitoringService.MEMORY_LABEL, ResourceDataReader.MAX_REQUEST_LABEL, RESOURCE_REQUEST_PRIORITY, NUMERIC, ""+requestMem);
 					
-					String deploymentDescriptor = service.getDeployDescriptor();
-					deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, node.getName(), replicasFromInitialConfiguration);
-						
-					if(service.getDeployType().equals(DeployType.KUBERNETES)) {	
-						orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
-						result = true;
-					}
-					else if (service.getDeployType().equals(DeployType.DOCKER)) {
-						if(ControlFlags.DOCKER_ENABLED) {
-							orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
-						}
-						else {
-							throw new RuntimeException("start not supported for DeployType " + service.getDeployType());
-						}
-						
-					}
-					service.setLastChangedStatus(Instant.now());
-					service.setStatus(ExecStatus.RUNNING);
-					serviceRepository.save(service);
-	
-				}
-		
-				else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
-					publisherOrchestrationUpdate.publish(service.getId(), "service", "start", getMessageParameters(service, infrastructure), getMessagePlaceholders(service));
-					service.setLastChangedStatus(Instant.now());
-					service.setStatus(ExecStatus.RUNNING);
-					serviceRepository.save(service);
+			if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
+				
+				String deploymentName = service.getName();
+				
+				String deploymentDescriptor = service.getDeployDescriptor();
+				deploymentDescriptor = DescriptorParserKubernetes.parseDeploymentDescriptor(deploymentDescriptor, namespace, ""+requestCpu, ""+requestMem, node.getName(), replicasFromInitialConfiguration);
+					
+				if(service.getDeployType().equals(DeployType.KUBERNETES)) {	
+					orchestratorKubernetes.start(namespace, deploymentName, deploymentDescriptor, project.get().getInfrastructure());
 					result = true;
-					
-					log.info("Delegated: service " + service.getName() + " start");
 				}
+				else if (service.getDeployType().equals(DeployType.DOCKER)) {
+					if(ControlFlags.DOCKER_ENABLED) {
+						orchestratorDocker.start(namespace, deploymentName, deploymentDescriptor, infrastructure);
+					}
+					else {
+						throw new RuntimeException("start not supported for DeployType " + service.getDeployType());
+					}
+					
+				}
+				service.setLastChangedStatus(Instant.now());
+				service.setStatus(ExecStatus.RUNNING);
+				serviceRepository.save(service);
+
+			}
+	
+			else if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
+				publisherOrchestrationUpdate.publish(service.getId(), "service", "start", getMessageParameters(service, infrastructure), getMessagePlaceholders(service));
+				service.setLastChangedStatus(Instant.now());
+				service.setStatus(ExecStatus.RUNNING);
+				serviceRepository.save(service);
+				result = true;
+				
+				log.info("Delegated: service " + service.getName() + " start");
 			}
 		}
 		
@@ -371,11 +369,18 @@ public class ServiceScheduler {
 				Optional<Project> project = projectRepository.getProjectByServiceProviderIdAndInfrastructureId(service.getApp().getServiceProvider().getId(), infrastructure.getId());
 				if(project.isPresent()) {
 					
+					//save replicas in initConfiguration
+					Map<String, String> initialConfigurationMap = ConverterJSON.convertToMap(service.getInitialConfiguration());
+					
+					initialConfigurationMap.put(Constants.REPLICAS, newReplicas+"");
+					service.setInitialConfiguration(ConverterJSON.convertToJSON(initialConfigurationMap));
+
 					Map<String, String> runtimeConfigurationMap = ConverterJSON.convertToMap(service.getRuntimeConfiguration());
 					runtimeConfigurationMap.put(Constants.REPLICAS, newReplicas+"");
 					service.setRuntimeConfiguration(ConverterJSON.convertToJSON(runtimeConfigurationMap));
-					serviceRepository.save(service);
-						
+					
+					//update the Service
+					serviceRepository.save(service);						
 					if(service.getApp().getManagementType().equals(ManagementType.MANAGED)) {
 						String namespace = (String) ConverterJSON.convertToMap(project.get().getProperties()).get("namespace");
 

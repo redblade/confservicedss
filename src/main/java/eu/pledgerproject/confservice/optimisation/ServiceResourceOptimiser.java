@@ -19,15 +19,13 @@ public class ServiceResourceOptimiser {
     public static int SCORE_THRESHOLD = 100;
     
     private final DeploymentOptionsManager deploymentOptionsManager;
-    private final ResourceDataReader resourceDataReader;
     private final ServiceScheduler serviceScheduler;
     private final RankingManager rankingManager;
     private final BenchmarkManager benchmarkManager;
     
     
-    public ServiceResourceOptimiser(DeploymentOptionsManager deploymentOptionsManager, ResourceDataReader resourceDataReader, ServiceScheduler serviceScheduler, RankingManager rankingManager, BenchmarkManager benchmarkManager) {
+    public ServiceResourceOptimiser(DeploymentOptionsManager deploymentOptionsManager, ServiceScheduler serviceScheduler, RankingManager rankingManager, BenchmarkManager benchmarkManager) {
         this.deploymentOptionsManager = deploymentOptionsManager;
-    	this.resourceDataReader = resourceDataReader;
     	this.serviceScheduler = serviceScheduler;
     	this.rankingManager = rankingManager;
     	this.benchmarkManager = benchmarkManager;
@@ -58,10 +56,10 @@ public class ServiceResourceOptimiser {
 		int autoscalePercentageDecreaseInt = autoscalePercentageDecrease.length() == 0 ? autoscalePercentageAddInt : Integer.parseInt(autoscalePercentageDecrease);
 
 		//get max resource requests for the current service
-		Integer maxServiceReservedMem = resourceDataReader.getLastServiceMaxResourceReservedMem(service);
-		Integer maxServiceReservedCpu = resourceDataReader.getLastServiceMaxResourceReservedCpu(service);
+		Integer cpuRequest = ResourceDataReader.getServiceRuntimeCpuRequest(service);
+		Integer memRequest = ResourceDataReader.getServiceRuntimeMemRequest(service);
 		
-		if(maxServiceReservedMem != null && maxServiceReservedCpu != null) {
+		if(cpuRequest != null && memRequest != null) {
 			Integer minMemRequest = ResourceDataReader.getServiceMinMemRequest(service);
 			Integer minCpuRequest = ResourceDataReader.getServiceMinCpuRequest(service);
 			Integer maxMemRequest = ResourceDataReader.getServiceMaxMemRequest(service);
@@ -70,20 +68,20 @@ public class ServiceResourceOptimiser {
 			//compute the new resource requests, for scale up/down
 			int newCpuRequested;
 			if(increaseResources) {
-				newCpuRequested = (int) (maxServiceReservedCpu * (100.0+autoscalePercentageAddInt)/100.0);
+				newCpuRequested = (int) (cpuRequest * (100.0+autoscalePercentageAddInt)/100.0);
 				newCpuRequested = Math.min(newCpuRequested, maxCpuRequest);
 			}
 			else {
-				newCpuRequested = (int) (maxServiceReservedCpu * (100.0-autoscalePercentageDecreaseInt)/100.0);
+				newCpuRequested = (int) (cpuRequest * (100.0-autoscalePercentageDecreaseInt)/100.0);
 				newCpuRequested = Math.max(newCpuRequested, minCpuRequest);
 			}
 			int newMemRequested;
 			if(increaseResources) {
-				newMemRequested = (int) (maxServiceReservedMem * (100.0+autoscalePercentageAddInt)/100.0);
+				newMemRequested = (int) (memRequest * (100.0+autoscalePercentageAddInt)/100.0);
 				newMemRequested = Math.min(newMemRequested, maxMemRequest);
 			}
 			else {
-				newMemRequested = (int) (maxServiceReservedMem * (100.0-autoscalePercentageDecreaseInt)/100.0);
+				newMemRequested = (int) (memRequest * (100.0-autoscalePercentageDecreaseInt)/100.0);
 				newMemRequested = Math.max(newMemRequested, minMemRequest);
 			}
 
@@ -133,14 +131,14 @@ public class ServiceResourceOptimiser {
 		String message = "no nodes or resources available";
 		
 		//get the replicas
-		int replicas = ResourceDataReader.getServiceReplicas(service);
+		int replicas = ResourceDataReader.getServiceRuntimeReplicas(service);
 		
 		//get max resource requests for the current service
-		Integer maxServiceReservedMem = resourceDataReader.getLastServiceMaxResourceReservedMem(service) * replicas;
-		Integer maxServiceReservedCpu = resourceDataReader.getLastServiceMaxResourceReservedCpu(service) * replicas;
+		Integer cpuRequest = ResourceDataReader.getServiceRuntimeCpuRequest(service);
+		Integer memRequest = ResourceDataReader.getServiceRuntimeMemRequest(service);
 
-		int newMemRequested = maxServiceReservedMem*replicas;
-		int newCpuRequested = maxServiceReservedCpu*replicas;
+		int newCpuRequested = cpuRequest*replicas;
+		int newMemRequested = memRequest*replicas;
 		
 		//get the currentRanking...
 		int currentRanking = deploymentOptionsManager.getRankingInDeploymentOptions(service.getId());
