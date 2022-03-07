@@ -99,42 +99,49 @@ public class GoldPingerReader {
 				
 				Optional<Node> nodeDestination = nodeRepository.findByIpaddress("%"+responseHostIP+"%");
 				if(nodeDestination.isPresent()) {
-					JSONObject responsePodResults = responses.getJSONObject(responsePodName).getJSONObject("response").getJSONObject("podResults");					
-					Iterator<String> responsePodResultsKeys = responsePodResults.keys();
-					while(responsePodResultsKeys.hasNext()) {
-						String responsePodResultsKey =  responsePodResultsKeys.next();
-
-						JSONObject responsePodResult = responsePodResults.getJSONObject(responsePodResultsKey);
-						String nodeIP = responsePodResult.getString("HostIP");
-						if(nodeIP != null && !nodeIP.equals(responseHostIP)) {
-						
-							Optional<Node> nodeSource = nodeRepository.findByIpaddress("%"+nodeIP+"%");
-							if(nodeSource.isPresent()) {
-								Integer responseTimeMs = null;
-								try {
-									responseTimeMs = responsePodResult.getInt("response-time-ms");
-								}catch(Exception e) {}
-								
-								if(responseTimeMs != null) {
-									double latencyMs = (int)(1+responseTimeMs/2);
-									Optional<NodeReport> nodeReportDB = nodeReportRepository.getNodeReportByNodeSourceIDNodeDestinationIDCategory(nodeSource.get().getId(), nodeDestination.get().getId(), "latency-ms");
-									if(nodeReportDB.isPresent()) {
-										nodeReportDB.get().setValue(latencyMs);
-										nodeReportRepository.save(nodeReportDB.get());
-									}
-									else {
-										NodeReport nodeReport = new NodeReport();
-										nodeReport.setTimestamp(timestamp);
-										nodeReport.setCategory(HEADER);
-										nodeReport.setKey("latency-ms");
-										nodeReport.setNode(nodeSource.get());
-										nodeReport.setNodeDestination(nodeDestination.get());
-										nodeReport.setValue(latencyMs);
-										nodeReportRepository.save(nodeReport);
+					JSONObject podResponse = responses.getJSONObject(responsePodName);
+					JSONObject podResponseObject = podResponse.optJSONObject("response");
+					if(podResponseObject != null) {
+						JSONObject responsePodResults = podResponseObject.getJSONObject("podResults");					
+						Iterator<String> responsePodResultsKeys = responsePodResults.keys();
+						while(responsePodResultsKeys.hasNext()) {
+							String responsePodResultsKey =  responsePodResultsKeys.next();
+	
+							JSONObject responsePodResult = responsePodResults.getJSONObject(responsePodResultsKey);
+							String nodeIP = responsePodResult.getString("HostIP");
+							if(nodeIP != null && !nodeIP.equals(responseHostIP)) {
+							
+								Optional<Node> nodeSource = nodeRepository.findByIpaddress("%"+nodeIP+"%");
+								if(nodeSource.isPresent()) {
+									Integer responseTimeMs = null;
+									try {
+										responseTimeMs = responsePodResult.getInt("response-time-ms");
+									}catch(Exception e) {}
+									
+									if(responseTimeMs != null) {
+										double latencyMs = (int)(1+responseTimeMs/2);
+										Optional<NodeReport> nodeReportDB = nodeReportRepository.getNodeReportByNodeSourceIDNodeDestinationIDCategory(nodeSource.get().getId(), nodeDestination.get().getId(), "latency-ms");
+										if(nodeReportDB.isPresent()) {
+											nodeReportDB.get().setValue(latencyMs);
+											nodeReportRepository.save(nodeReportDB.get());
+										}
+										else {
+											NodeReport nodeReport = new NodeReport();
+											nodeReport.setTimestamp(timestamp);
+											nodeReport.setCategory(HEADER);
+											nodeReport.setKey("latency-ms");
+											nodeReport.setNode(nodeSource.get());
+											nodeReport.setNodeDestination(nodeDestination.get());
+											nodeReport.setValue(latencyMs);
+											nodeReportRepository.save(nodeReport);
+										}
 									}
 								}
 							}
 						}
+					}
+					else {
+						log.warn("No 'response' field in GoldPingerReader data: " + podResponse.toString());
 					}
 				}
 			}
