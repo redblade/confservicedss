@@ -147,6 +147,4 @@ java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspen
 ```
 
 
-###### This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871536.
-
-
+![EU Flag](http://www.consilium.europa.eu/images/img_flag-eu.gif) This work has received funding by the European Commission under grant agreement No. 871536, Pledger project.
