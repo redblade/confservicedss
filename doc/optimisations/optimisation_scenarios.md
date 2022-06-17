@@ -36,6 +36,9 @@ To test the DSS optimisations, it is possible to configure **two different test 
    - 'scaling'
    - 'latency'
    - 'resources_latency'
+   - 'resources_latency_energy' - TO BE UPDATED
+   
+   
 
 2) **cloud-edge-faredge** (see the [instructions](../kind/cloud-edge-faredge/README.md)). This is used for optimisations:
    - 'latency_faredge'
