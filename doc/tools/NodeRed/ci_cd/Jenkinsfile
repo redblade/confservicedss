@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+    
+    environment {
+      APP_NAME = "confservicedss-nodered"
+      ARTIFACTORY_SERVER = "https://116.203.2.204:443/artifactory/plgregistry/"
+      ARTIFACTORY_DOCKER_REGISTRY = "116.203.2.204:443/plgregistry/"
+      BRANCH_NAME = "master"
+      DOCKER_IMAGE_TAG = "$APP_NAME:1.0.0b${env.BUILD_ID}"
+      MYBUILD_ID = "${env.BUILD_ID}"
+    }
+
+    stages {
+		stage('Checkout') {
+		    steps {
+		          echo 'Checkout SCM'
+		          checkout scm
+		          checkout([$class: 'GitSCM',
+		                    branches: [[name: env.BRANCH_NAME]],
+		                    extensions: [[$class: 'CleanBeforeCheckout']],
+		                    userRemoteConfigs: scm.userRemoteConfigs
+		          ])
+		    }
+		}
+
+	    stage('Build image') { // build and tag docker image
+	        steps {
+	            echo 'Starting to build docker image'
+	            script {
+	                def dockerImage = docker.build(ARTIFACTORY_DOCKER_REGISTRY + DOCKER_IMAGE_TAG)
+	            }
+	        }
+	    }
+	
+	    stage ('Push image to Artifactory') {
+	        steps {
+	          withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'Artifacts', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+	              echo 'Login to Artifactory Registry'
+	              sh "docker login --password=${PASSWORD} --username=${USERNAME} ${ARTIFACTORY_SERVER}"
+	
+	              echo 'Pull image with Build-ID'
+	              sh 'docker push "$ARTIFACTORY_DOCKER_REGISTRY$DOCKER_IMAGE_TAG"'
+	
+				  echo 'Remove image from CI server'
+				  sh 'docker rmi "$ARTIFACTORY_DOCKER_REGISTRY$DOCKER_IMAGE_TAG"'
+	
+	              echo 'Logout from Registry'
+	              sh 'docker logout $ARTIFACTORY_SERVER'
+	          }
+	        }
+	    }
+	    
+	    stage('apply Kubernetes deployment') {
+	        steps {
+	        	withKubeConfig([credentialsId: 'Jenkins_ServiceAccount' , serverUrl: 'https://192.168.70.5:6443/', namespace:'core']) {
+	            	sh "cat ./k8s/deployment.yml | sed 's/JENKINS_BUILD/$MYBUILD_ID/g' | kubectl apply -f -"
+	        	}
+	        }
+	    }
+    }
+	    
+	
+
+}

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confservicedss-nodered
+  namespace: core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: confservicedss-nodered
+      version: 'v1'
+  template:
+    metadata:
+      labels:
+        app: confservicedss-nodered
+        version: 'v1'
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - confservicedss-nodered
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      containers:
+        - name: confservicedss-nodered
+          image: 116.203.2.204:443/plgregistry/confservicedss-nodered:1.0.0bJENKINS_BUILD
+          env:
+            - name: KAFKA_CERTIFICATEROOT_LOCATION
+              value: /var/kafka_certificateroot/certificateroot.pem
+            - name: KAFKA_CERTIFICATE_LOCATION
+              value: /var/kafka_certificate/certificate.pem
+            - name: KAFKA_KEY_LOCATION
+              value: /var/kafka_key/my.pem
+
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: static.180.8.203.116.clients.your-server.de:9093,static.194.8.203.116.clients.your-server.de:9093,static.240.8.203.116.clients.your-server.de:9093
+            
+          resources:
+            requests:
+              memory: '200Mi'
+              cpu: '200m'
+            limits:
+              memory: '800Mi'
+              cpu: '800m'
+          ports:
+            - name: http
+              containerPort: 1880
+         
+          volumeMounts:
+          - mountPath: "/var/kafka_certificateroot"
+            name: kafka-certificateroot
+            readOnly: true
+          - mountPath: "/var/kafka_certificate"
+            name: kafka-certificate
+            readOnly: true
+          - mountPath: "/var/kafka_key"
+            name: kafka-key
+            readOnly: true
+      volumes:
+        - name: kafka-certificateroot
+          secret:
+            secretName: kafka-certificateroot-secret
+        - name: kafka-certificate
+          secret:
+            secretName: kafka-certificate-secret
+        - name: kafka-key
+          secret:
+            secretName: kafka-key-secret
+
+

@@ -1,0 +1,48 @@
+kubectl run node-red --image=ubuntu:20.04 -- /bin/sh -c "sleep 777d"
+kubectl expose po node-red --port 1880 --type NodePort 
+kubectl exec -it node-red -- bash
+
+#https://askubuntu.com/questions/909277/avoiding-user-interaction-with-tzdata-when-installing-certbot-in-a-docker-contai
+export TZ=Europe/Rome
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+apt-get update
+apt-get install nodejs npm -y
+
+#https://nodered.org/docs/getting-started/local
+npm install -g --unsafe-perm node-red
+
+#https://flows.nodered.org/node/node-red-contrib-kafka-client
+npm install -g --unsafe-perm  node-red-contrib-kafka-client 
+
+node-red
+
+
+#list alias in JKS
+keytool -v -list -keystore mykeystore
+
+#extract rootcertificate, user certificate and key - in general
+#https://serverfault.com/questions/715827/how-to-generate-key-and-crt-file-from-jks-file-for-httpd-apache-server
+keytool -export -alias myalias -file myfile.der -keystore mystore.jks
+openssl x509 -inform der -in myfile.der -out certificate.pem
+keytool -importkeystore -srckeystore mystore.jks -destkeystore mystore.p12 -deststoretype PKCS12
+openssl pkcs12 -in mystore.p12  -nodes -nocerts -out my.key
+
+#extract user certificate (certificate.pem) and key (my.key) from the keystore kafka.client.keystore.jks
+keytool -export -alias cert -file mycert.der -keystore kafka.client.keystore.jks
+openssl x509 -inform der -in mycert.der -out certificate.pem
+keytool -importkeystore -srckeystore kafka.client.keystore.jks -destkeystore mykeystore.p12 -deststoretype PKCS12
+openssl pkcs12 -in mykeystore.p12  -nodes -nocerts -out my.key
+
+#extract user certificate (certificate.pem) and key (my.key) from the truststore kafka.client.truststore.jks
+keytool -export -alias caroot -file myrootcert.der -keystore kafka.client.truststore.jks  
+openssl x509 -inform der -in myrootcert.der -out rootcertificate.pem
+
+#copy rootcertificate.pem, certificate.pem, my.key to ubuntu
+
+#configure node-red for Kafka - https://flows.nodered.org/node/node-red-contrib-kafkajs
+hosts: static.180.8.203.116.clients.your-server.de:9093,static.194.8.203.116.clients.your-server.de:9093,static.240.8.203.116.clients.your-server.de:9093
+use TLS: true
+self sign: true
+
+
+docker build . --tag node-red-dss
