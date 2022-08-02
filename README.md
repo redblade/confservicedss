@@ -147,4 +147,4 @@ java -jar target/*.jar -Pprod -agentlib:jdwp=transport=dt_socket,server=y,suspen
 ```
 
 
-![EU Flag](http://www.consilium.europa.eu/images/img_flag-eu.gif) This work has received funding by the European Commission under grant agreement No. 871536, Pledger project.
+![EU Flag](https://www.consilium.europa.eu/images/img_flag-eu.gif) This work has received funding by the European Commission under grant agreement No. 871536, Pledger project.
