@@ -28,9 +28,7 @@
                     <th scope="col"  jhiSortBy="properties"><span>Properties</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="quotaCpuMillicore"><span>Quota Cpu (millicore)</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="quotaMemMB"><span>Quota Mem (MB)</span> <fa-icon icon="sort"></fa-icon></th>
-                    <div hidden>
                     <th scope="col"  jhiSortBy="quotaDiskGB"><span>Quota Disk (GB)</span> <fa-icon icon="sort"></fa-icon></th>
-                    </div>
                     <th scope="col"  jhiSortBy="credentials"><span>Credentials</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="enableBenchmark"><span>Enable Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="privateBenchmark"><span>Private Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
@@ -47,10 +45,7 @@
                     <td>{{ project.properties }}</td>
                     <td>{{ project.quotaCpuMillicore }}</td>
                     <td>{{ project.quotaMemMB }}</td>
-                    <div hidden>
                     <td>{{ project.quotaDiskGB }}</td>
-                    </div>
-                    <td>hidden</td>
                     <td>{{ project.enableBenchmark }}</td>
                     <td>{{ project.privateBenchmark }}</td>
                     <td>

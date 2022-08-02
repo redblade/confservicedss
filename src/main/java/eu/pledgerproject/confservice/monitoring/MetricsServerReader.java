@@ -92,7 +92,18 @@ public class MetricsServerReader {
 			event.setTimestamp(Instant.now());
 			event.setDetails(msg);
 			event.setCategory("MetricsServerReader");
-			event.severity(Event.ERROR);
+			event.setSeverity(Event.ERROR);
+			eventRepository.save(event);
+    	}
+	}
+	
+	private void saveWarnEvent(String msg) {
+    	if(log.isErrorEnabled()) {
+			Event event = new Event();
+			event.setTimestamp(Instant.now());
+			event.setDetails(msg);
+			event.setCategory("MetricsServerReader");
+			event.setSeverity(Event.WARNING);
 			eventRepository.save(event);
     	}
 	}
@@ -133,8 +144,8 @@ public class MetricsServerReader {
 				Map<String, Double> infrastructureMetrics = new HashMap<String, Double>();
 				
 				if(list == null) {
-					log.error("Unable to get MetricsServer metrics");
-					saveErrorEvent("Unable to get MetricsServer metrics");
+					log.warn("Got empty MetricsServer metrics list");
+					saveWarnEvent("Got empty MetricsServer metrics list");
 				}
 				else {
 					//then let's cycle through the metrics

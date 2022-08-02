@@ -315,6 +315,4 @@ public class ResourceDataReader {
 		return result;
 	}
 	
-	
-
 }

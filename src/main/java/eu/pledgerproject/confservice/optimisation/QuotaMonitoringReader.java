@@ -91,8 +91,11 @@ public class QuotaMonitoringReader {
 			return new Integer[] {0, 0};
 		}
 	}
-	
 	public Integer[] getRemainingCapacityForSPOnNodes(ServiceProvider serviceProvider, Collection<Node> nodeSet) {
+		return getRemainingCapacityForSPOnNodes(serviceProvider, nodeSet, 100);
+	}
+	
+	public Integer[] getRemainingCapacityForSPOnNodes(ServiceProvider serviceProvider, Collection<Node> nodeSet, int maxPercentageToUse) {
 		int cpu = 0;
 		int mem = 0;
 
@@ -123,16 +126,19 @@ public class QuotaMonitoringReader {
 
 		return new Integer[] {cpu, mem};
 	}
-	
 	public Integer[] getTotalCapacityForSPOnNodes(ServiceProvider serviceProvider, Collection<Node> nodeSet) {
+		return getTotalCapacityForSPOnNodes(serviceProvider, nodeSet, 100);
+	}
+	
+	public Integer[] getTotalCapacityForSPOnNodes(ServiceProvider serviceProvider, Collection<Node> nodeSet, int maxPercentageToUse) {
 		int cpu = 0;
 		int mem = 0;
 
 		Map<Node, Integer[]> nodesCapacity = resourceDataReader.getTotalNodeCapacityCpuMem(nodeSet);		
 		for(Node node : nodeSet) {
 			Integer[] nodeCapacity = nodesCapacity.get(node);
-			cpu +=nodeCapacity[0];
-			mem +=nodeCapacity[1];
+			cpu +=(nodeCapacity[0]*maxPercentageToUse/100);
+			mem +=(nodeCapacity[1]*maxPercentageToUse/100);
 		}
 
 		Infrastructure infrastructure = nodeSet.iterator().next().getInfrastructure();

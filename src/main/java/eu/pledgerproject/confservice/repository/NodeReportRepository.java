@@ -55,4 +55,13 @@ public interface NodeReportRepository extends JpaRepository<NodeReport, Long> {
 	@Query(value = "delete from NodeReport nodeReport where nodeReport.timestamp < :timestamp")
 	void deleteOld(@Param("timestamp") Instant timestamp);
 
+	@Query(value = "select nodeReport from NodeReport nodeReport where nodeReport.node = :node and nodeReport.category =:category and nodeReport.key = :key and nodeReport.timestamp = :timestamp order by nodeReport.timestamp desc")
+	Page<NodeReport> findByNodeCategoryKeyAndTimestamp(Pageable pageable, @Param("node") Node node, @Param("category") String category, @Param("key") String key, @Param("timestamp") Instant timestamp);
+	
+	@Query(value = "select max(nodeReport.timestamp) from NodeReport nodeReport where nodeReport.category=:category ")
+	Optional<Instant> findMaxTimestampForCategory(@Param("category") String category);
+
+	@Query(value = "select distinct nodeReport.timestamp from NodeReport nodeReport where nodeReport.category=:category and nodeReport.timestamp > :timestamp order by nodeReport.timestamp desc ")
+	List<Instant> findLastDistinctTimestampsForCategory(@Param("category") String category, @Param("timestamp") Instant timestamp);
+
 }

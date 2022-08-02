@@ -13,7 +13,8 @@ Two environments are provided, please use the corresponding sub-folder with inst
     - "offload"
     - "scaling"
     - "latency" (aka "ECODA")
-    - "resources_latency" (which combines "resource" with "ECODA")    
+    - "resources_latency", which combines "resource" with "ECODA"
+    - "resources_latency_energy", aka "EA_ECODA", which combines "resources_latency" with energy considerations   
     
     
 - **"cloud-edge-faredge"**: three-tier cloud-edge-faredge infrastructures to test DSS optimisations:

@@ -374,4 +374,80 @@ get the requests, put them in the [TTODA spreadsheet](TTODA.ods) and check the e
 result#3: the TTODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
 
 
+<h2> DSS SCENARIO #8 </h2>
+<H4>Test environment: "cloud-edge"</h4>
+<H4>show how Apps are offloaded to edge/cloud nodes based on EA-ECODA algorithm AND also resources allocated change as in "resources" optimisation</H4>
+
+<u><b>initial configuration</b></u> 
+
+The following Apps are configured with 'resources_latency_energy' optimisation, then started and running:
+- example-app-bash1
+- example-app-bash2
+- example-app-bash3
+- example-app-bash4
+
+see that
+example-app-bash1 and example-app-bash2 are instantiated on the edge
+example-app-bash3 and example-app-bash4 are instantiated on the cloud
+
+from ServiceReport, wait for startup time to be available
+get the requests and put them in the [EA-ECODA spreadsheet](EA-ECODA.ods) and check the expected offloads, or check the "OptimisationReport" in the ConfServiceDSS UI
+
+check the nodes where the pods are allocated
+
+```
+kubectl --kubeconfig kind-kubeconfig1.yaml get po -n testsp1 -o wide
+```
+
+
+<u><b>test #8.1</b></u>
+
+The idea is to have a spreadsheet similar to ECODA to facilitate comparision. 
+EA-ECODA extends ECODA with a threshold that changes the amount of resources available on the edge; such threshold is computed changing data in new tabs as follows:
+
+First, EA-ECODA needs metrics, we need to produce and feed them to the DSS. To feed them, we go directly with SQL inserts in the DB.
+Open EA-ECODA.ods, go on “EA-ECODA” tab, choose a date and the amount of time slots since midnight you want data about, then insert values in B1 and B3. This will produce metrics from midnight to the time shown in B4.
+Go in “export_to_mysql_allinone" tab, copy and paste metrics in the DSS DB.
+
+Second, we need to show an insight of the DSS optimisation and show that its behaviour is aligned with the spreadsheet.
+The DSS computes a threshold and shows it in the UI events. The threshold in the DSS logs is the same in  “EA-ECODA” cell B15. 
+DSS uses such threshold to trigger offloads on edge/cloud. To verify, go on tab “user_testsp1_on_infra_cluster1”, change the threshold in G9, see the offloads expected in column $R match with those announced by the DSS in the logs.
+ 
+As a test, we can use:
+- 4 Apps above with different cpu/mem requests (250,300,300,200) and priority 1
+- initial threshold 95%
+- initial battery is 50%
+
+As a result, example-app-bash1 and example-app-bash2 are offloaded on edge, the rest on the cloud.
+Then, metrics are produced up to 5:00pm, EA-ECODA produces threshold 89%. This forces example-app-bash2 to be offloaded to the cloud.
+
+result: the EA-ECODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
+
+
+<u><b>test #8.2</b></u>
+wait some time without SLA violations
+
+result#1: Apps' resources are scaled down by 10%
+
+<u><b>test #8.3</b></u>
+
+on example-app-bash2 simulate high CPU usage
+
+```
+APPNAME=example-app-bash2
+kubectl --kubeconfig kind-kubeconfig2.yaml exec -it `kubectl --kubeconfig kind-kubeconfig2.yaml get po -n testsp2 | grep $APPNAME | awk '{ print $1}'` -n testsp2 -- sh
+#simulate high CPU usage with 'stress'
+stress --cpu 8
+```
+
+send a SLA violation about resources (sla_violation_sla_bash2.json)
+
+```
+./send_dev_kafka.sh -t sla_violation -f sla_violation_sla_bash2.json
+```
+
+result#1: resource requests changes and so is the offload plan
+get the requests, put them in the [EA-ECODA spreadsheet](EA-ECODA.ods) and check the expected offloads, or check the "OptimisationReport" in the ConfServiceDSS UI
+the EA-ECODA offloads are coherent with the spreadsheet or with the "OptimisationReport" in the ConfServiceDSS UI
+
 

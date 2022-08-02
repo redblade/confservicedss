@@ -8,7 +8,7 @@ The DSS implements the following optimisations (see **eu.pledgerproject.confserv
 - "resources_latency" (combines "latency" and "resources")
 - "latency_faredge" (implements "TTODA" algorithm)
 - "resources_latency_faredge" (combines "latency_faredge" and "resources")
-- "resources_latency_energy" (implements the EA-ECODA algorithm) - TO BE UPDATED
+- "resources_latency_energy" (implements the EA-ECODA algorithm, which combines "resources_latency" with energy considerations)
 - "webhook"
 
 **Main actions** taken by the DSS:
@@ -74,12 +74,12 @@ Note the "SLA monitoring period" mentioned below is the "monitoring.slaViolation
     - **very varied HW performance on the faredge and edge nodes** (mostly cpu)
     - **latency is critical**
 
-- **resources_latency_energy**: - TO BE UPDATED
+- **resources_latency_energy**: 
     - infrastructure with **edge and cloud nodes**
     - edge resources **managed by the DSS**
     - **very varied HW performance on the edge nodes** (mostly cpu)
     - **latency is critical**
-    - **energy is critical**
+    - **energy is critical: consumed(based on cpu load), stored(based on solar radiance) and battery level**
 
     
 - **webhook**:

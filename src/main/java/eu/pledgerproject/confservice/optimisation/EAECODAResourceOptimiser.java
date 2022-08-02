@@ -29,21 +29,24 @@ import eu.pledgerproject.confservice.scheduler.ServiceScheduler;
 import eu.pledgerproject.confservice.util.DoubleFormatter;
 
 /**
-this optimiser implements "resources_latency" Optimisation which uses ECODA algorithm combined with "resources" optimisation
-See ECODAHelper.class for ECODA algorithm details
+this optimiser implements "resources_latency_energy" Optimisation which uses ECODA algorithm combined with "resources" optimisation WITH THE ADDITION OF energy consumption evaluations. This is the EA-ECODA algorithm.
+See EAECODAHelper.class for EA-ECODA algorithm details. 
+NOTE: this class is identical to ECODAResourceOptimiser.java, except:
+      - it points to EAECODAHelper.java, which contains the EA-ECODA differences
+      - in doOptimise() method, it invokes updateMaxPercentageToUse() to update EA-ECODA threshold
 
- */
 
+*/
 
 
 @Component
-public class ECODAResourceOptimiser {
+public class EAECODAResourceOptimiser {
 	public static final String DEFAULT_AUTOSCALE_PERCENTAGE = "10";
 
-	private final Logger log = LoggerFactory.getLogger(ECODAResourceOptimiser.class);
+	private final Logger log = LoggerFactory.getLogger(EAECODAResourceOptimiser.class);
 	
 	private final ResourceDataReader resourceDataReader;
-	private final ECODAHelper ecodaHelper;
+	private final EAECODAHelper eaEcodaHelper;
 	private final ServiceProviderRepository serviceProviderRepository;
 	private final SlaViolationRepository slaViolationRepository;
 	private final BenchmarkManager benchmarkManager;
@@ -55,9 +58,9 @@ public class ECODAResourceOptimiser {
 	//One service can belong to multiple Sets, which means it can be offloaded to multiple "infrastructures".
 	//So, the Groups are built as all the possible Node sets for all the services. Then, Group by Group, the optimisation decides where a service could go
 
-	public ECODAResourceOptimiser(ResourceDataReader resourceDataReader, ECODAHelper ecodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
+	public EAECODAResourceOptimiser(ResourceDataReader resourceDataReader, EAECODAHelper eaEcodaHelper, ServiceProviderRepository serviceProviderRepository, SlaViolationRepository slaViolationRepository, BenchmarkManager benchmarkManager, ServiceScheduler serviceScheduler, ServiceRepository serviceRepository, EventRepository eventRepository) {
 		this.resourceDataReader = resourceDataReader;
-		this.ecodaHelper = ecodaHelper;
+		this.eaEcodaHelper = eaEcodaHelper;
 		this.serviceProviderRepository = serviceProviderRepository;
 		this.slaViolationRepository = slaViolationRepository;
 		this.benchmarkManager = benchmarkManager;
@@ -72,7 +75,7 @@ public class ECODAResourceOptimiser {
 			event.setTimestamp(Instant.now());
 			event.setServiceProvider(service.getApp().getServiceProvider());
 			event.setDetails(msg);
-			event.setCategory("EcodaResourceOptimiser");
+			event.setCategory("EAEcodaResourceOptimiser");
 			event.severity(Event.INFO);
 			eventRepository.save(event);
     	}
@@ -83,7 +86,7 @@ public class ECODAResourceOptimiser {
 			event.setTimestamp(Instant.now());
 			event.setServiceProvider(serviceProvider);
 			event.setDetails(msg);
-			event.setCategory("EcodaResourceOptimiser");
+			event.setCategory("EAEcodaResourceOptimiser");
 			event.severity(Event.ERROR);
 			eventRepository.save(event);
     	}
@@ -95,7 +98,7 @@ public class ECODAResourceOptimiser {
 	public void doOptimise() {
 		if(!ControlFlags.READ_ONLY_MODE_ENABLED){
 
-			log.info("ECODAResourceOptimiser started");
+			log.info("EA-ECODAResourceOptimiser started");
 			
 			//the optimisation is done by SP. We assume the NodeGroup are mostly separated, apart from the cloud which is the worse option possible
 			for(ServiceProvider serviceProvider : serviceProviderRepository.findAll()) {
@@ -117,33 +120,35 @@ public class ECODAResourceOptimiser {
 				//then we optimise the services
 				//HERE we assume a SP DOES one ECODA on ALL the services which are labelled with ECODA.
 				//Nodes preferences in ServiceConstraints are considered for ALL the services (in AND)
-				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency.name());
+				List<Service> serviceList = serviceRepository.getRunningServiceListByServiceProviderAndServiceOptimisation(serviceProvider.getId(), ServiceOptimisationType.resources_latency_energy.name());
 				doOptimise(serviceProvider, serviceList);
 			}
 		}
 	}
-	
+
 	public List<ServiceData> getNewOrderedServiceDataList(ServiceProvider serviceProvider, List<Service> serviceList, boolean saveServiceResourcePlanInEvent) {
-		List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+		List<NodeGroup> nodeGroupList = eaEcodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
 
 		int totalEdgeCpu4SP = 0;
 		int totalEdgeMem4SP = 0;
 		
 		NodeGroup nodeSetOnFarEdge = nodeGroupList.get(0);
 		if(nodeSetOnFarEdge.location.equals(NodeGroup.NODE_EDGE)) {
-			Integer[] total4SP = ecodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
+			Integer[] total4SP = eaEcodaHelper.getTotalCapacityForSPOnNodeSet(serviceProvider, nodeSetOnFarEdge.nodes);
 			totalEdgeCpu4SP += total4SP[0];
 			totalEdgeMem4SP += total4SP[1];
 		}
 			
 		NodeGroup nodeSetOnEdge = nodeGroupList.get(0);
 		if(nodeSetOnEdge.location.equals(NodeGroup.NODE_EDGE) && totalEdgeCpu4SP > 0 && totalEdgeMem4SP > 0) {
+			boolean isMaxPercentageToUseOnEdgeChanged = eaEcodaHelper.isMaxPercentageToUseOnEdgeChanged(serviceProvider);
+			log.info("EA-ECODAResourceOptimiser maxPercentageToUseOnEdge changed for serviceProvider " + serviceProvider.getName());
 			
 			List<ServiceData> serviceDataList = new ArrayList<ServiceData>();
 			for(Service service: serviceList) {
 
 				//Here we want to desired resource amount, not the actual request! no SLAViolation=>reduce, SLAViolation=>increase
-				ServiceResourcePlan serviceResourcePlan = getServiceResourcePlan(service);
+				ServiceResourcePlan serviceResourcePlan = getServiceResourcePlan(service, isMaxPercentageToUseOnEdgeChanged);
 				if(serviceResourcePlan != null) {
 					if(saveServiceResourcePlanInEvent) {
 						saveInfoEvent(service, serviceResourcePlan.msg);
@@ -153,7 +158,7 @@ public class ECODAResourceOptimiser {
 				
 					ServiceData serviceData = new ServiceData(service, requestCpuMillicore, requestMemoryMB);
 					serviceData.currentNode = resourceDataReader.getCurrentNode(service);
-					serviceData.score = ecodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
+					serviceData.score = eaEcodaHelper.getOptimisationScore(serviceData, nodeSetOnEdge.nodes, totalEdgeCpu4SP, totalEdgeMem4SP);
 					serviceDataList.add(serviceData);
 				}
  			}
@@ -165,31 +170,35 @@ public class ECODAResourceOptimiser {
 	
 	private void doOptimise(ServiceProvider serviceProvider, List<Service> serviceList) {
 		if(serviceList.size() > 0) {
-			List<NodeGroup> nodeGroupList = ecodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
+			
+			//this line of code is EA-ECODA specific and computes the EA-ECODA edge threshold. The rest is equal to ECODAResourceOptimiser.java
+			eaEcodaHelper.updateMaxPercentageToUseOnEdge(serviceProvider);
+			
+			List<NodeGroup> nodeGroupList = eaEcodaHelper.getNodeGroupListForSPWithTotalCapacityAndFilterByServiceContraints(serviceProvider, serviceList);
 			
 			List<ServiceData> serviceDataList = getNewOrderedServiceDataList(serviceProvider, serviceList, true);
 			if(serviceDataList != null) {
 
 				//the allocation plan, based on the optimised ServiceData list
-				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = ECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
+				Map<ServiceData, NodeGroup> serviceOptimisedAllocationPlan = EAECODAHelper.getServiceOptimisedAllocationPlan(serviceDataList, nodeGroupList);
 				if(serviceOptimisedAllocationPlan == null) {
-					log.error("ECODAResourceOptimiser error: not enough resources on the worse option(cloud)");
+					log.error("EA-ECODAResourceOptimiser error: not enough resources on the worse option(cloud)");
 					saveErrorEvent(serviceProvider, "Not enough resources on the worse option(cloud)");
 				}
 				else { 
 					if(serviceOptimisedAllocationPlan.keySet().size() == 0) {
-						log.info("ECODAResourceOptimiser: no offloadings needed");
+						log.info("EA-ECODAResourceOptimiser: no offloadings needed");
 					}
 					else {
 						for(ServiceData serviceData : serviceOptimisedAllocationPlan.keySet()) {
-							log.info("ECODAResourceOptimiser: Service " + serviceData.service.getName() + " has ECODA score " + DoubleFormatter.format(serviceData.score));
+							log.info("EA-ECODAResourceOptimiser: Service " + serviceData.service.getName() + " has EA-ECODA score " + DoubleFormatter.format(serviceData.score));
 
 							NodeGroup nodeGroup = serviceOptimisedAllocationPlan.get(serviceData);
-							log.info("ECODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
+							log.info("EA-ECODAResourceOptimiser: offloading Service " + serviceData.service.getName() + " on nodeGroup " + nodeGroup.getNodeCSV());
 							Node bestNode = benchmarkManager.getBestNodeUsingBenchmark(serviceData.service, nodeGroup.nodes);
 							
 							serviceScheduler.migrate(serviceData.service, bestNode, serviceData.requestCpuMillicore, serviceData.requestMemoryMB);
-							saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode);
+							saveInfoEvent(serviceData.service, "Service " + serviceData.service.getName() + " migrated to node " + bestNode.getName());
 						}
 					}
 				}
@@ -197,7 +206,7 @@ public class ECODAResourceOptimiser {
 		}
 	}
 	
-	private ServiceResourcePlan getServiceResourcePlan(Service service) {
+	private ServiceResourcePlan getServiceResourcePlan(Service service, boolean forceReturnServiceResourcePlan) {
 		int[] result = new int[] {
 			ResourceDataReader.getServiceRuntimeCpuRequest(service),
 			ResourceDataReader.getServiceRuntimeMemRequest(service)
@@ -251,8 +260,13 @@ public class ECODAResourceOptimiser {
 					return new ServiceResourcePlan(result, "Min resources for service " + service.getName() + " ### cpu/mem: " + result[0] + "/" + result[1]);
 				}
 			}
+			//THIS IS NECESSARY as in ECODA the only two events when a ServiceResourcePlan was produced were with critical or steady state. Here we want ALSO to produce a plan ANYTIME EA-ECODA threshold changes
+			else if(forceReturnServiceResourcePlan) {
+				return new ServiceResourcePlan(result, "Service " + service.getName() + " plan to be checked as EA-ECODA threshold on edge changed");
+			}
 		}
 
 		return null;
 	}
+
 }

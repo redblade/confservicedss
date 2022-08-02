@@ -47,7 +47,7 @@ spec:
                 sleep 10
               done
         - name: init-db
-          image: 116.203.2.204:443/plgregistry/confservicedss:2.6.0bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.7.0bJENKINS_BUILD
           command:
             - '/bin/sh'
             - '-c'
@@ -55,7 +55,7 @@ spec:
 
       containers:
         - name: confservice-app
-          image: 116.203.2.204:443/plgregistry/confservicedss:2.6.0bJENKINS_BUILD
+          image: 116.203.2.204:443/plgregistry/confservicedss:2.7.0bJENKINS_BUILD
           env:
             - name: SPRING_MAIL_FROM
               value: 'confservicedss@gmail.com'

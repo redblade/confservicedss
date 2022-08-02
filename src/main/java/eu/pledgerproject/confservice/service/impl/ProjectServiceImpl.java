@@ -114,8 +114,9 @@ public class ProjectServiceImpl implements ProjectService {
     	boolean msgSent = false;
     	
     	int cpuCore = project.getQuotaCpuMillicore();
-		int memGB = project.getQuotaMemMB();
-		if(cpuCore >= 0 && memGB >= 0) {
+		int memMB = project.getQuotaMemMB();
+		int diskGB = project.getQuotaDiskGB();
+		if(cpuCore >= 0 && memMB >= 0 && diskGB >= 0) {
         	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
         	if(soeEndpoint != null) {
         		log.info("Provisioning SOE slice via Kafka");
@@ -123,9 +124,16 @@ public class ProjectServiceImpl implements ProjectService {
                 long infrastructureId = project.getInfrastructure().getId();
                 Map<String, String> parameters = new HashMap<String, String>();
                 parameters.put("limits_cpu", ""+cpuCore);
-                parameters.put("limits_memory", ""+memGB);
                 parameters.put("requests_cpu", ""+cpuCore);
-                parameters.put("requests_memory", ""+memGB);
+                parameters.put("units_cpu", "core");
+                
+                parameters.put("limits_memory", ""+memMB);
+                parameters.put("requests_memory", ""+memMB);
+                parameters.put("units_memory", "MB");
+                
+                parameters.put("limits_disk", ""+diskGB);
+                parameters.put("requests_disk", ""+diskGB);
+                parameters.put("units_disk", "GB");
                 
                 parameters.putAll(ConverterJSON.convertToMap(project.getProperties()));
                 
