@@ -60,7 +60,17 @@
                     </td>
                     <td class="text-right">
                         <div class="btn-group">
-                        	<button type="submit" [hidden]="!isProvisioningVisible(project)" (click)="provision(project)"
+                        	<button type="submit" [hidden]="!isProvisioningVisible(project)" (click)="unprovision(project)"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon icon="asterisk"></fa-icon>
+                                <span class="d-none d-md-inline">Unprovision</span>
+                            </button>
+                            <button type="submit" [disabled]="true" [hidden]="isProvisioningVisible(project)"
+                                    class="btn btn-info btn-sm">
+                                <fa-icon icon="asterisk"></fa-icon>
+                                <span class="d-none d-md-inline">Unprovision</span>
+                            </button>
+                        	<button type="submit" [hidden]="!isProvisioningVisible(project)" (click)="unprovision(project)"
                                     class="btn btn-primary btn-sm">
                                 <fa-icon icon="asterisk"></fa-icon>
                                 <span class="d-none d-md-inline">Provision</span>

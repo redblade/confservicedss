@@ -88,6 +88,11 @@ export class ProjectComponent implements OnInit, OnDestroy {
 		
     });    
   }
+  unprovision(project: IProject): void {
+	this.projectService.unprovision(project).subscribe(() => {
+		
+    });    
+  }
 
   delete(project: IProject): void {
     const modalRef = this.modalService.open(ProjectDeleteDialogComponent, { size: 'lg', backdrop: 'static' });

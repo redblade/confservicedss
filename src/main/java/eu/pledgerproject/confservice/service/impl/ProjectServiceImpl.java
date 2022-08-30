@@ -153,6 +153,50 @@ public class ProjectServiceImpl implements ProjectService {
         CheckRole.block("ROLE_ROAPI");
         provision_kafka(project);
     }
+    
+    private void unprovision_kafka(Project project) {
+    	boolean msgSent = false;
+    	
+    	int cpuCore = project.getQuotaCpuMillicore();
+		int memMB = project.getQuotaMemMB();
+		int diskGB = project.getQuotaDiskGB();
+		if(cpuCore >= 0 && memMB >= 0 && diskGB >= 0) {
+        	String soeEndpoint = ConverterJSON.getProperty(project.getInfrastructure().getMonitoringPlugin(), "soe_endpoint");
+        	if(soeEndpoint != null) {
+        		log.info("Provisioning SOE slice via Kafka");
+
+                long infrastructureId = project.getInfrastructure().getId();
+                Map<String, String> parameters = new HashMap<String, String>();
+                parameters.put("limits_cpu", ""+cpuCore*1000);
+                parameters.put("requests_cpu", ""+cpuCore*1000);
+                parameters.put("units_cpu", "m");
+                
+                parameters.put("limits_memory", ""+memMB);
+                parameters.put("requests_memory", ""+memMB);
+                parameters.put("units_memory", "Mi");
+                
+                parameters.put("limits_disk", ""+diskGB);
+                parameters.put("requests_disk", ""+diskGB);
+                parameters.put("units_disk", "GB");
+                
+                parameters.putAll(ConverterJSON.convertToMap(project.getProperties()));
+                
+                orchestrationNotifierService.publish(infrastructureId, "infrastructure", "unprovision", parameters, new JSONArray());
+                
+                msgSent = true;
+        	}
+		}
+        if(!msgSent) {
+        	saveErrorEvent("SOE provisioning", "Missing parameters for SOE Kafka msg");
+        }
+    }
+    
+    @Override
+    public void unprovision(Project project) {
+        log.debug("Request to unprovision Project : {}", project);
+        CheckRole.block("ROLE_ROAPI");
+        unprovision_kafka(project);
+    }
 
     @Override
     @Transactional(readOnly = true)
