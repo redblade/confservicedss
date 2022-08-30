@@ -29,12 +29,12 @@
                     <th scope="col"  jhiSortBy="quotaCpuMillicore"><span>Quota Cpu (millicore)</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="quotaMemMB"><span>Quota Mem (MB)</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="quotaDiskGB"><span>Quota Disk (GB)</span> <fa-icon icon="sort"></fa-icon></th>
-                    <th scope="col"  jhiSortBy="credentials"><span>Credentials</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="enableBenchmark"><span>Enable Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="privateBenchmark"><span>Private Benchmark</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="infrastructure.id"><span>Infrastructure</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"  jhiSortBy="serviceProvider.id"><span>Service Provider</span> <fa-icon icon="sort"></fa-icon></th>
                     <th scope="col"></th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -60,7 +60,8 @@
                     </td>
                     <td class="text-right">
                         <div class="btn-group">
-                        	<button type="submit" [hidden]="!isProvisioningVisible(project)" (click)="unprovision(project)"
+                    
+                            <button type="submit" [hidden]="!isProvisioningVisible(project)" (click)="unprovision(project)"
                                     class="btn btn-info btn-sm">
                                 <fa-icon icon="asterisk"></fa-icon>
                                 <span class="d-none d-md-inline">Unprovision</span>
@@ -70,6 +71,7 @@
                                 <fa-icon icon="asterisk"></fa-icon>
                                 <span class="d-none d-md-inline">Unprovision</span>
                             </button>
+
                         	<button type="submit" [hidden]="!isProvisioningVisible(project)" (click)="unprovision(project)"
                                     class="btn btn-primary btn-sm">
                                 <fa-icon icon="asterisk"></fa-icon>
