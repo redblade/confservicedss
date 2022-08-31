@@ -59,7 +59,7 @@ public class ProjectResource {
     }
     
     /**
-     * {@code POST  /projects/provision} : Create a new project.
+     * {@code POST  /projects/provision} : Provision a project.
      *
      * @param project the project to provision.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
@@ -69,6 +69,20 @@ public class ProjectResource {
     public ResponseEntity<Void> provisionProject(@Valid @RequestBody Project project) throws URISyntaxException {
         log.debug("REST request to provision Project : {}", project);
         projectService.provision(project);
+        return ResponseEntity.noContent().build();
+    }
+    
+    /**
+     * {@code POST  /projects/unprovision} : Unprovision a project.
+     *
+     * @param project the project to unprovision.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/projects/unprovision")
+    public ResponseEntity<Void> unprovisionProject(@Valid @RequestBody Project project) throws URISyntaxException {
+        log.debug("REST request to unprovision Project : {}", project);
+        projectService.unprovision(project);
         return ResponseEntity.noContent().build();
     }
 

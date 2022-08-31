@@ -48,6 +48,6 @@ From here, Jenkins build number was restarted
 2.5.4b90:pledgerui_v32   - added support to autoscale.percentage.decrease SP preference
 2.6.0b93:pledgerui_v32   - added support to max cpu/mem/replicas in services
 2.7.0b98:pledgerui_v32   - added support to EA-ECODA optimisation
-2.7.1b100:pledgerui_v32   - added support to Project unprovision for SOE
+2.7.1b101:pledgerui_v32   - added support to Project unprovision for SOE
 
 
