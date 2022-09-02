@@ -167,8 +167,8 @@ public class ProjectServiceImpl implements ProjectService {
 
                 long infrastructureId = project.getInfrastructure().getId();
                 Map<String, String> parameters = new HashMap<String, String>();
-                parameters.put("limits_cpu", ""+cpuCore*1000);
-                parameters.put("requests_cpu", ""+cpuCore*1000);
+                parameters.put("limits_cpu", ""+cpuCore);
+                parameters.put("requests_cpu", ""+cpuCore);
                 parameters.put("units_cpu", "m");
                 
                 parameters.put("limits_memory", ""+memMB);
