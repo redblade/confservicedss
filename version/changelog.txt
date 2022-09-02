@@ -33,21 +33,22 @@ minor is changed ONLY WHEN the DB model changes (pledgerui_vXXX)
 2.4.4b155:pledgerui_v32 - updated Infrastructure with credentials - removed Penalty entity - 
 
 From here, Jenkins build number was restarted
-2.4.4b10:pledgerui_v32   - fixed Mail properties and README
-2.4.4b26:pledgerui_v32   - fixed Kind scenario, changed InitDB logic, fixed steady optimisation
-2.4.5b30:pledgerui_v32   - fixed service initialisation and mandatory fields on the UI
-2.4.6b38:pledgerui_v32   - added resource monitoring management on "metric" topic
-2.4.7b42:pledgerui_v32   - added SOE provisioning features from Project entity
-2.4.8b51:pledgerui_v32   - added scaling and offloading optimisations benchmarksummary servicebenchmarkmatch initial Docker management
-2.4.9b52:pledgerui_v32   - setting the ground for TTODA - initial implementation
-2.5.0b60:pledgerui_v32   - TTODA implementation + TTODA resource implementation (faredge_latency and resource_faredge_latency optimisations)
-2.5.1b76:pledgerui_v32   - updated SOE integration
-2.5.2b81:pledgerui_v32   - added support to K8S multi cluster with Skupper.io
-2.5.3b84:pledgerui_v32   - added support to AlertManager via SlaManager microservice
-2.5.3b86:pledgerui_v32   - improved support to logging level and events. Fix about scaling optimisation
-2.5.4b90:pledgerui_v32   - added support to autoscale.percentage.decrease SP preference
-2.6.0b93:pledgerui_v32   - added support to max cpu/mem/replicas in services
-2.7.0b98:pledgerui_v32   - added support to EA-ECODA optimisation
-2.7.1b101:pledgerui_v32   - added support to Project unprovision for SOE
+2.4.4b10: pledgerui_v32   - fixed Mail properties and README
+2.4.4b26: pledgerui_v32   - fixed Kind scenario, changed InitDB logic, fixed steady optimisation
+2.4.5b30: pledgerui_v32   - fixed service initialisation and mandatory fields on the UI
+2.4.6b38: pledgerui_v32   - added resource monitoring management on "metric" topic
+2.4.7b42: pledgerui_v32   - added SOE provisioning features from Project entity
+2.4.8b51: pledgerui_v32   - added scaling and offloading optimisations benchmarksummary servicebenchmarkmatch initial Docker management
+2.4.9b52: pledgerui_v32   - setting the ground for TTODA - initial implementation
+2.5.0b60: pledgerui_v32   - TTODA implementation + TTODA resource implementation (faredge_latency and resource_faredge_latency optimisations)
+2.5.1b76: pledgerui_v32   - updated SOE integration
+2.5.2b81: pledgerui_v32   - added support to K8S multi cluster with Skupper.io
+2.5.3b84: pledgerui_v32   - added support to AlertManager via SlaManager microservice
+2.5.3b86: pledgerui_v32   - improved support to logging level and events. Fix about scaling optimisation
+2.5.4b90: pledgerui_v32   - added support to autoscale.percentage.decrease SP preference
+2.6.0b93: pledgerui_v32   - added support to max cpu/mem/replicas in services
+2.7.0b98: pledgerui_v32   - added support to EA-ECODA optimisation
+2.7.1b102:pledgerui_v32   - added support to Project unprovision for SOE and initial deployment_feedback parsing for events
+
 
 

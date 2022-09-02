@@ -36,31 +36,33 @@ public class ConsumerDeploymentFeedbackDTO {
     	Long serviceID = message.id;
     	String status = message.status;
     	if(status != null && !status.isEmpty()) {
-	    	Optional<Service> serviceOptional = serviceRepository.findById(serviceID);
-	    	if(serviceOptional.isPresent()) {
-	    		Service service = serviceOptional.get();
-	    		if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
-	    			ExecStatus serviceStatus = null;
-	    			if(status.equals("DEPLOYED")) {
-	    				serviceStatus = ExecStatus.RUNNING;
-	    			}
-	    			else if(status.equals("ERROR")) {
-	    				serviceStatus = ExecStatus.ERROR;
-	    			}
-	    			else if(status.equals("STOPPED")) {
-	    				serviceStatus = ExecStatus.STOPPED;
-	    			}
-	    			if(serviceStatus != null) {
-		    			service.setStatus(serviceStatus);
-		    			serviceRepository.save(service);
-		    			if(serviceStatus.equals(ExecStatus.ERROR)) {
-		    				App app = service.getApp();
-		    				app.setStatus(serviceStatus);
-		    				appRepository.save(app);
+    		if(status.startsWith("DEPLOYMENT_")) {
+		    	Optional<Service> serviceOptional = serviceRepository.findById(serviceID);
+		    	if(serviceOptional.isPresent()) {
+		    		Service service = serviceOptional.get();
+		    		if(service.getApp().getManagementType().equals(ManagementType.DELEGATED)) {
+		    			ExecStatus serviceStatus = null;
+		    			if(status.equals("DEPLOYMENT_DEPLOYED")) {
+		    				serviceStatus = ExecStatus.RUNNING;
 		    			}
-	    			}
-	    		}
-	    	}
+		    			else if(status.equals("DEPLOYMENT_ERROR") || status.equals("DEPLOYMENT_FAILED")) {
+		    				serviceStatus = ExecStatus.ERROR;
+		    			}
+		    			if(serviceStatus != null) {
+			    			service.setStatus(serviceStatus);
+			    			serviceRepository.save(service);
+			    			if(serviceStatus.equals(ExecStatus.ERROR)) {
+			    				App app = service.getApp();
+			    				app.setStatus(serviceStatus);
+			    				appRepository.save(app);
+			    			}
+		    			}
+		    		}
+		    	}
+    		}
+    		else if(status.contains("PROVISION")) {
+    			//TODO save into the Events
+    		}
     	}
     }
     		
