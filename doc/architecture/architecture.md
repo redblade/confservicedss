@@ -33,7 +33,7 @@ The conceptual data model is represented in this [UML diagram](data_model.png). 
 **DSS main role** is to autonomously trigger placing and scaling of Apps on the infrastructure in order to:
 - minimise SLA violations
 - optimise resource usage on the edge
-- minimise latency using ECODA optimisation algorithm.
+- minimise latency using optimisation algorithms.
 
 Instantiation is triggered by the ConfService (manually) or by the DSS (automatically) and is managed through messages sent to the StreamHandler using Kafka protocol.
 
@@ -42,7 +42,9 @@ To take its decisions and have them applied, the DSS needs:
 2. to retrieve monitoring data about Apps and Infrastructure usage from the Monitoring Engine component;
 3. to retrieve SLA violations coming from SLA Lite component. 
 
-In Pledger, all the data above is shared through the StreamHandler component using the Kafka protocol. The high-level architecture is shown in [this picture](confservice_dss.drawio.png)
+In Pledger, all the data above is shared through the StreamHandler component using the Kafka protocol. The high-level workflow with Pledger dependencies is shown in [this picture](confservice_dss.drawio.png).
+
+A more detailed picture with the all the Pledger components involved is shown in [this picture](sp_full_demo.drawio.png)
 
 To **facilitate the system integrators** and to **reduce the dependencies on other Pledger components**, the ConfService and DSS also offer direct support to:
 1. Kafka, to communicate without the need to have the **StreamHandler**
@@ -50,4 +52,4 @@ To **facilitate the system integrators** and to **reduce the dependencies on oth
 3. Prometheus AlertManager (work in progress) to get SLA violations, without the need to have the **SLA Lite**. Currently, SLA violations over App metrics can be sent using **bash scripts** (see **doc/kafka** folder).
 4. Kubernetes metrics-server and GoldPinger services for the system and application metrics retrieval, without the need to have the **MonitoringEngine**
 
-The high-level architecture with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) used for DSS the integration tests described in the **doc/optimisations** folder and allow their replication using KinD environments (see **doc/kind** folder)
+The high-level workflow with no dependencies on other Pledger components is shown in [this picture](confservice_dss_no_pledger.drawio.png) used for DSS the integration tests described in the **doc/optimisations** folder and allow their replication using KinD environments (see **doc/kind** folder)
