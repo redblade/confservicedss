@@ -1,7 +1,7 @@
 # ConfServiceDSS
 
 ConfServiceDSS is a smart orchestrator that provides resource and latency optimisation in edge/cloud multi-clusters.
-It provides native support to Kubernetes orchestration and monitoring, and offers more advanced features when working together with the other [Pledger](https://pledger-project.eu/) core components.
+It provides native support to Kubernetes (vanilla, GKE, AKS, microK8S, K3S) orchestration and monitoring, and offers more advanced features when working together with the other [Pledger](https://pledger-project.eu/) core components.
  
 ConfService and DSS core components are two functional components built as a unique artefact in Java, from now on called "ConfServiceDSS". 
 **Please refer to the [doc](doc/README.md) folder for the main documentation**
